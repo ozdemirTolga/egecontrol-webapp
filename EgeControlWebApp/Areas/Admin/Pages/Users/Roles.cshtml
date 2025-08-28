@@ -1,0 +1,68 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Users.RolesModel
+@{
+    ViewData["Title"] = "Kullanıcı Rolleri";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">@Model.AppUser?.FullName - Roller</h3>
+                </div>
+
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            @Model.StatusMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <div class="mb-4">
+                            <h5>Kullanıcı Bilgileri</h5>
+                            <p><strong>Ad Soyad:</strong> @Model.AppUser?.FullName</p>
+                            <p><strong>E-posta:</strong> @Model.AppUser?.Email</p>
+                            <p><strong>Departman:</strong> @Model.AppUser?.Department</p>
+                            <p><strong>Pozisyon:</strong> @Model.AppUser?.Position</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h5>Roller</h5>
+                            <div class="row">
+                                @foreach (var role in Model.AvailableRoles)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input type="checkbox" name="SelectedRoles" value="@role.Key" 
+                                                   class="form-check-input" id="role-@role.Key"
+                                                   @(Model.SelectedRoles.Contains(role.Key) ? "checked" : "") />
+                                            <label class="form-check-label" for="role-@role.Key">
+                                                <strong>@role.Key</strong><br>
+                                                <small class="text-muted">@role.Value</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-page="./Index" class="btn btn-secondary me-md-2">İptal</a>
+                            <button type="submit" class="btn btn-primary">Rolleri Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

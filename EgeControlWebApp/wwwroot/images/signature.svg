@@ -1,0 +1,16 @@
+<svg width="300" height="100" xmlns="http://www.w3.org/2000/svg">
+  <!-- EGE OTOMASYON yazısı -->
+  <text x="150" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="black">EGE OTOMASYON</text>
+  <text x="150" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="black">Nurhan ÖZDEMİR</text>
+  
+  <!-- Mavi imza çizgileri - el yazısı tarzı -->
+  <path d="M 50 60 Q 70 45 90 55 Q 110 65 130 50 Q 150 35 170 50 Q 190 65 210 55 Q 230 45 250 60" 
+        stroke="#1E3A8A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <path d="M 60 70 Q 80 55 100 65 Q 120 75 140 60 Q 160 45 180 60 Q 200 75 220 65 Q 240 55 260 70" 
+        stroke="#1E3A8A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Alt bilgiler -->
+  <text x="150" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="black">Kültür Mah. Atatürk Sk. No:4/2 - Bolu/MERKEZ</text>
+  <text x="150" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="black">Tel:0545 494 19 57 - Tic Sic. No:28456298970</text>
+</svg>

@@ -1,0 +1,205 @@
+@page
+@using EgeControlWebApp.Models
+@model EgeControlWebApp.Areas.Admin.Pages.Customers.DetailsModel
+@{
+    ViewData["Title"] = "Müşteri Detayları";
+    ViewData["ActivePage"] = "Customers";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    Müşteri Detayları
+                </h2>
+                <div>
+                    <a asp-page="./Edit" asp-route-id="@Model.Customer.Id" class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i> Düzenle
+                    </a>
+                    <a asp-area="Admin" asp-page="/Quotes/Create" asp-route-customerId="@Model.Customer.Id" class="btn btn-success">
+                        <i class="fas fa-file-invoice me-1"></i> Teklif Oluştur
+                    </a>
+                    <a asp-page="./Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Geri
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Müşteri Bilgileri</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4 class="text-primary mb-3">@Model.Customer.CompanyName</h4>
+                                    <p><strong>Yetkili Kişi:</strong> @Model.Customer.ContactPerson</p>
+                                    <p><strong>E-posta:</strong> 
+                                        <a href="mailto:@Model.Customer.Email">@Model.Customer.Email</a>
+                                    </p>
+                                    <p><strong>Telefon:</strong> 
+                                        <a href="tel:@Model.Customer.Phone">@Model.Customer.Phone</a>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(Model.Customer.Website))
+                                    {
+                                        <p><strong>Website:</strong> 
+                                            <a href="@Model.Customer.Website" target="_blank">@Model.Customer.Website</a>
+                                        </p>
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    @if (!string.IsNullOrEmpty(Model.Customer.TaxNumber))
+                                    {
+                                        <p><strong>Vergi Numarası:</strong> @Model.Customer.TaxNumber</p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Customer.TaxOffice))
+                                    {
+                                        <p><strong>Vergi Dairesi:</strong> @Model.Customer.TaxOffice</p>
+                                    }
+                                    <p><strong>Kayıt Tarihi:</strong> @Model.Customer.CreatedAt.ToString("dd.MM.yyyy")</p>
+                                    <p><strong>Son Güncelleme:</strong> @Model.Customer.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6><strong>Adres:</strong></h6>
+                                    <address>
+                                        @Model.Customer.Address<br>
+                                        @Model.Customer.City, @Model.Customer.Country
+                                    </address>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Customer.Notes))
+                            {
+                                <hr>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6><strong>Notlar:</strong></h6>
+                                        <p class="text-muted">@Model.Customer.Notes</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">İstatistikler</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h3 class="text-primary">@Model.TotalQuotes</h3>
+                                    <small class="text-muted">Toplam Teklif</small>
+                                </div>
+                                <div class="col-6">
+                                    <h3 class="text-success">@Model.AcceptedQuotes</h3>
+                                    <small class="text-muted">Kabul Edilen</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <h4 class="text-info">@Model.TotalQuoteValue.ToString("C")</h4>
+                                <small class="text-muted">Toplam Teklif Tutarı</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quotes Table -->
+            @if (Model.Quotes.Any())
+            {
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Teklifler</h5>
+                        <a asp-area="Admin" asp-page="/Quotes/Create" asp-route-customerId="@Model.Customer.Id" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-1"></i> Yeni Teklif
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Teklif No</th>
+                                        <th>Başlık</th>
+                                        <th>Tarih</th>
+                                        <th>Geçerlilik</th>
+                                        <th>Tutar</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var quote in Model.Quotes)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-area="Admin" asp-page="/Quotes/Details" asp-route-id="@quote.Id" class="text-decoration-none">
+                                                    @quote.QuoteNumber
+                                                </a>
+                                            </td>
+                                            <td>@quote.Title</td>
+                                            <td>@quote.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                            <td>@quote.ValidUntil.ToString("dd.MM.yyyy")</td>
+                                            <td>@quote.TotalAmount.ToString("C")</td>
+                                            <td>
+                                                @if (quote.Status == QuoteStatus.Draft)
+                                                {
+                                                    <span class="badge bg-secondary">Taslak</span>
+                                                }
+                                                else if (quote.Status == QuoteStatus.Sent)
+                                                {
+                                                    <span class="badge bg-primary">Gönderildi</span>
+                                                }
+                                                else if (quote.Status == QuoteStatus.Accepted)
+                                                {
+                                                    <span class="badge bg-success">Kabul Edildi</span>
+                                                }
+                                                else if (quote.Status == QuoteStatus.Rejected)
+                                                {
+                                                    <span class="badge bg-danger">Reddedildi</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-area="Admin" asp-page="/Quotes/Details" asp-route-id="@quote.Id" class="btn btn-outline-info" title="Detaylar">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-area="Admin" asp-page="/Quotes/Edit" asp-route-id="@quote.Id" class="btn btn-outline-warning" title="Düzenle">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card mt-4">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                        <h5>Henüz teklif bulunmuyor</h5>
+                        <p class="text-muted">Bu müşteri için henüz hiç teklif oluşturulmamış.</p>
+                        <a asp-area="Admin" asp-page="/Quotes/Create" asp-route-customerId="@Model.Customer.Id" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i> İlk Teklifi Oluştur
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

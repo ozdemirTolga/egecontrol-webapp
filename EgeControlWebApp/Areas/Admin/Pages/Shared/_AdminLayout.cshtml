@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Ege Control Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/EgeControlWebApp.styles.css" asp-append-version="true" />
+    <style>
+        .admin-sidebar {
+            background-color: #1e3a8a;
+            min-height: 100vh;
+        }
+        .admin-nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin: 2px 0;
+            transition: all 0.3s;
+        }
+        .admin-nav-link:hover,
+        .admin-nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        .admin-header {
+            background-color: #3b82f6;
+            color: white;
+            padding: 1rem 0;
+        }
+        .admin-content {
+            padding: 2rem;
+            background-color: #f8fafc;
+            min-height: calc(100vh - 80px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 admin-sidebar p-0">
+                <div class="p-3">
+                    <h4 class="text-white mb-4">
+                        <i class="fas fa-cog"></i> Ege Control
+                    </h4>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link admin-nav-link" asp-area="Admin" asp-page="/Index">
+                                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link admin-nav-link" asp-area="Admin" asp-page="/Customers/Index">
+                                <i class="fas fa-users me-2"></i> Müşteriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link admin-nav-link" asp-area="Admin" asp-page="/Quotes/Index">
+                                <i class="fas fa-file-invoice me-2"></i> Teklifler
+                            </a>
+                        </li>
+                        <li class="nav-item mt-4">
+                            <form method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })">
+                                <button type="submit" class="btn admin-nav-link text-start w-100 border-0">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Çıkış Yap
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 p-0">
+                <header class="admin-header">
+                    <div class="container-fluid px-4">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+                            </div>
+                            <div class="col-auto">
+                                <span class="text-light">
+                                    <i class="fas fa-user me-1"></i>
+                                    Hoş geldiniz, @User.Identity!.Name
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="admin-content">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

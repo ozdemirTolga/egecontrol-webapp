@@ -1,0 +1,186 @@
+@page
+@using EgeControlWebApp.Models
+@using System.Security.Claims
+@model EgeControlWebApp.Areas.Admin.Pages.Quotes.IndexModel
+@{
+    ViewData["Title"] = "Teklif Listesi";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Teklif Listesi</h1>
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteCreator"))
+    {
+        <a asp-page="Create" class="btn btn-success">
+            <i class="fas fa-plus"></i> Yeni Teklif
+        </a>
+    }
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6">
+                <form method="get">
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Teklif ara...">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="text-muted">Toplam @Model.Quotes.Count() teklif</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Model.Quotes.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Teklif No</th>
+                            <th>Müşteri</th>
+                            <th>Başlık</th>
+                            <th>Tutar</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>Oluşturan</th>
+                            <th>Son Değiştiren</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var quote in Model.Quotes)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@quote.QuoteNumber</strong>
+                                </td>
+                                <td>@(quote.Customer?.CompanyName ?? "-")</td>
+                                <td>@quote.Title</td>
+                                <td>
+                                    <strong class="text-success">
+                                        @EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(quote.TotalAmount, quote.Currency ?? "TRY")
+                                    </strong>
+                                    <small class="d-block text-muted">Currency: @(quote.Currency ?? "null")</small>
+                                </td>
+                                <td>
+                                    @switch (quote.Status)
+                                    {
+                                        case QuoteStatus.Draft:
+                                            <span class="badge bg-secondary">Taslak</span>
+                                            break;
+                                        case QuoteStatus.Sent:
+                                            <span class="badge bg-primary">Gönderildi</span>
+                                            break;
+                                        case QuoteStatus.Accepted:
+                                            <span class="badge bg-success">Onaylandı</span>
+                                            break;
+                                        case QuoteStatus.Rejected:
+                                            <span class="badge bg-danger">Reddedildi</span>
+                                            break;
+                                        case QuoteStatus.Cancelled:
+                                            <span class="badge bg-dark">İptal</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@quote.QuoteDate.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    @if (quote.CreatedByUser is not null)
+                                    {
+                                        <strong>@quote.CreatedByUser.FullName</strong>
+                                        <small class="d-block text-muted">@quote.CreatedByUser.Department</small>
+                                    }
+                                    else if (!string.IsNullOrEmpty(quote.CreatedBy))
+                                    {
+                                        <span class="text-muted">@quote.CreatedBy</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (quote.LastModifiedByUser is not null)
+                                    {
+                                        <strong>@quote.LastModifiedByUser.FullName</strong>
+                                        <small class="d-block text-muted">@quote.LastModifiedByUser.Department</small>
+                                        <small class="d-block text-muted">@quote.UpdatedAt.ToString("dd.MM.yyyy")</small>
+                                    }
+                                    else if (!string.IsNullOrEmpty(quote.LastModifiedBy))
+                                    {
+                                        <span class="text-muted">@quote.LastModifiedBy</span>
+                                        <small class="d-block text-muted">@quote.UpdatedAt.ToString("dd.MM.yyyy")</small>
+                                    }
+                                    else if (quote.CreatedByUser is not null)
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="./Details" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteEditor") || 
+                                            (User.IsInRole("QuoteCreator") && quote.CreatedByUserId == currentUserId))
+                                        {
+                                            <a asp-page="Edit" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+                                        
+                                        <!-- PDF İndirme Dropdown -->
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="PDF İndir">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" asp-page="DownloadPdf" asp-route-id="@quote.Id" asp-route-type="detailed">
+                                                        <i class="fas fa-list-alt me-2"></i> Detaylı
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-page="DownloadPdf" asp-route-id="@quote.Id" asp-route-type="summary">
+                                                        <i class="fas fa-file-alt me-2"></i> Özet
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Henüz teklif bulunmamaktadır</h5>
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteCreator"))
+                {
+                    <p class="text-muted">İlk teklifinizi oluşturmak için aşağıdaki butona tıklayın.</p>
+                    <a asp-page="Create" class="btn btn-success">
+                        <i class="fas fa-plus"></i> İlk Teklifi Oluştur
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted">Henüz hiçbir teklif oluşturulmamış.</p>
+                }
+            </div>
+        }
+    </div>
+</div>
