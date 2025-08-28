@@ -1,0 +1,378 @@
+@page
+@using EgeControlWebApp.Models
+@model EgeControlWebApp.Areas.Admin.Pages.Quotes.CreateModel
+@{
+    ViewData["Title"] = "Yeni Teklif";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Yeni Teklif Oluştur</h1>
+    <a asp-page="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Geri
+    </a>
+</div>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    
+    @if (TempData["ValidationErrors"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Validation Hatalar:</strong> @TempData["ValidationErrors"]
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Hata:</strong> @TempData["ErrorMessage"]
+        </div>
+    }
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Teklif Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Quote.CustomerId" class="form-label">Müşteri *</label>
+                                <select asp-for="Quote.CustomerId" class="form-select" asp-items="Model.CustomerSelectList">
+                                    <option value="">Müşteri seçiniz...</option>
+                                </select>
+                                <span asp-validation-for="Quote.CustomerId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Quote.Title" class="form-label"></label>
+                                <input asp-for="Quote.Title" class="form-control" />
+                                <span asp-validation-for="Quote.Title" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Quote.Description" class="form-label"></label>
+                        <textarea asp-for="Quote.Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Quote.Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label asp-for="Quote.QuoteDate" class="form-label"></label>
+                                <input asp-for="Quote.QuoteDate" class="form-control" type="date" />
+                                <span asp-validation-for="Quote.QuoteDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label asp-for="Quote.ValidUntil" class="form-label"></label>
+                                <input asp-for="Quote.ValidUntil" class="form-control" type="date" />
+                                <span asp-validation-for="Quote.ValidUntil" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label asp-for="Quote.VatRate" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="Quote.VatRate" class="form-control" type="number" step="0.01" />
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <span asp-validation-for="Quote.VatRate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label asp-for="Quote.Currency" class="form-label"></label>
+                                <select asp-for="Quote.Currency" class="form-select" id="currencySelect">
+                                    @{
+                                        var currencyOptions = EgeControlWebApp.Models.CurrencyHelper.GetCurrencyOptions();
+                                    }
+                                    @foreach (var option in currencyOptions)
+                                    {
+                                        <option value="@option.Key">@option.Value</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Quote.Currency" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Quote.Notes" class="form-label"></label>
+                        <textarea asp-for="Quote.Notes" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Quote.Notes" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teklif Kalemleri -->
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Teklif Kalemleri</h5>
+                    <button type="button" class="btn btn-sm btn-success" id="addItem">
+                        <i class="fas fa-plus"></i> Kalem Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="quote-items">
+                        <!-- Dinamik olarak eklenecek -->
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Ara Toplam:</strong></td>
+                                        <td class="text-end" id="subtotal">₺0,00</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>KDV (<span id="vat-rate">20</span>%):</strong></td>
+                                        <td class="text-end" id="vat-amount">₺0,00</td>
+                                    </tr>
+                                    <tr class="table-success">
+                                        <td><strong>GENEL TOPLAM:</strong></td>
+                                        <td class="text-end"><strong id="grand-total">₺0,00</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Eylemler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="saveAsDraft" value="true" class="btn btn-secondary">
+                            <i class="fas fa-save"></i> Taslak Kaydet
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Teklifi Oluştur
+                        </button>
+                        <a asp-page="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> İptal
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Bilgi</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text small">
+                        <i class="fas fa-info-circle text-info"></i>
+                        Teklif numarası otomatik olarak oluşturulacaktır.
+                    </p>
+                    <p class="card-text small">
+                        <i class="fas fa-calendar text-primary"></i>
+                        Geçerlilik tarihi varsayılan olarak 30 gün sonraya ayarlanmıştır.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let itemIndex = 0;
+
+        document.getElementById('addItem').addEventListener('click', function() {
+            addQuoteItem();
+        });
+
+        document.getElementById('Quote_VatRate').addEventListener('input', function() {
+            document.getElementById('vat-rate').textContent = this.value;
+            calculateTotals();
+        });
+
+        function addQuoteItem() {
+            const container = document.getElementById('quote-items');
+            const itemHtml = `
+                <div class="quote-item border rounded p-3 mb-3" data-index="${itemIndex}">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Ürün/Hizmet *</label>
+                            <input name="Quote.QuoteItemsList[${itemIndex}].ItemName" class="form-control" required />
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Açıklama</label>
+                            <input name="Quote.QuoteItemsList[${itemIndex}].Description" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-2">
+                            <label class="form-label">Miktar *</label>
+                            <input name="Quote.QuoteItemsList[${itemIndex}].Quantity" type="number" step="0.01" value="1" class="form-control quantity" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Birim</label>
+                            <input name="Quote.QuoteItemsList[${itemIndex}].Unit" value="adet" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Birim Fiyat *</label>
+                            <input name="Quote.QuoteItemsList[${itemIndex}].UnitPrice" type="number" step="0.01" class="form-control unit-price" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">İndirim %</label>
+                            <input name="Quote.QuoteItemsList[${itemIndex}].DiscountPercentage" type="number" step="0.01" value="0" class="form-control discount" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Toplam</label>
+                            <input type="text" class="form-control item-total" readonly />
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn-danger btn-sm w-100 remove-item">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <input name="Quote.QuoteItemsList[${itemIndex}].SortOrder" type="hidden" value="${itemIndex}" />
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', itemHtml);
+            
+            // Event listeners ekle
+            const newItem = container.lastElementChild;
+            const removeBtn = newItem.querySelector('.remove-item');
+            const inputs = newItem.querySelectorAll('.quantity, .unit-price, .discount');
+            
+            removeBtn.addEventListener('click', function() {
+                newItem.remove();
+                calculateTotals();
+            });
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    calculateItemTotal(newItem);
+                    calculateTotals();
+                });
+            });
+            
+            itemIndex++;
+        }
+
+        function toNumber(val) {
+            if (val == null) return 0;
+            if (typeof val !== 'string') return Number(val) || 0;
+            // Turkish decimal format: 1.234,56 -> remove dots (thousand sep), replace comma with dot
+            // Also handle 50,65 -> 50.65
+            let normalized = val.toString().trim();
+            
+            // If there's both dot and comma, assume Turkish format (1.234,56)
+            if (normalized.includes('.') && normalized.includes(',')) {
+                normalized = normalized.replace(/\./g, '').replace(',', '.');
+            }
+            // If only comma, treat as decimal separator (50,65 -> 50.65)
+            else if (normalized.includes(',') && !normalized.includes('.')) {
+                normalized = normalized.replace(',', '.');
+            }
+            // If only dots, could be thousand separator or decimal - assume decimal if last dot has <=3 digits after
+            else if (normalized.includes('.')) {
+                const lastDotIndex = normalized.lastIndexOf('.');
+                const afterLastDot = normalized.substring(lastDotIndex + 1);
+                if (afterLastDot.length <= 2) {
+                    // Likely decimal: 50.65
+                    // Keep as is
+                } else {
+                    // Likely thousand separator: 1.234 -> 1234
+                    normalized = normalized.replace(/\./g, '');
+                }
+            }
+            
+            const n = parseFloat(normalized);
+            return isNaN(n) ? 0 : n;
+        }
+
+        function calculateItemTotal(itemElement) {
+            const quantity = toNumber(itemElement.querySelector('.quantity').value);
+            const unitPrice = toNumber(itemElement.querySelector('.unit-price').value);
+            const discount = toNumber(itemElement.querySelector('.discount').value);
+            
+            const subtotal = quantity * unitPrice;
+            const discountAmount = subtotal * (discount / 100);
+            const total = subtotal - discountAmount;
+            
+            itemElement.querySelector('.item-total').value = formatCurrency(total);
+        }
+
+    function calculateTotals() {
+            let subtotal = 0;
+            
+            document.querySelectorAll('.quote-item').forEach(item => {
+        const quantity = toNumber(item.querySelector('.quantity').value);
+        const unitPrice = toNumber(item.querySelector('.unit-price').value);
+        const discount = toNumber(item.querySelector('.discount').value);
+                
+                const itemSubtotal = quantity * unitPrice;
+                const discountAmount = itemSubtotal * (discount / 100);
+                subtotal += itemSubtotal - discountAmount;
+            });
+            
+        const vatRate = toNumber(document.getElementById('Quote_VatRate').value);
+            const vatAmount = subtotal * (vatRate / 100);
+            const grandTotal = subtotal + vatAmount;
+            
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('vat-amount').textContent = formatCurrency(vatAmount);
+            document.getElementById('grand-total').textContent = formatCurrency(grandTotal);
+        }
+
+        function formatCurrency(amount) {
+            const currency = document.getElementById('currencySelect').value || 'EUR';
+            
+            // Para birimi sembol pozisyonlarını doğru şekilde göstermek için
+            switch(currency) {
+                case 'USD':
+                    return `$${amount.toFixed(2)}`;
+                case 'TRY':
+                    return `${amount.toFixed(2)} ₺`;
+                case 'EUR':
+                default:
+                    return `${amount.toFixed(2)} €`;
+            }
+        }
+
+    // İlk item'ı ekle
+        addQuoteItem();
+
+        // Para birimi değiştiğinde totalleri güncelle
+        document.getElementById('currencySelect').addEventListener('change', function() {
+            calculateTotals();
+            // Tüm item totallerini de güncelle
+            document.querySelectorAll('.quote-item').forEach(item => {
+                calculateItemTotal(item);
+            });
+        });
+
+        // Form submit edilmeden önce currency değerini kontrol et
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const currency = document.getElementById('currencySelect').value;
+            console.log('Form submit - Currency değeri:', currency);
+        });
+    </script>
+}

@@ -1,0 +1,108 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Users.CreateModel
+@{
+    ViewData["Title"] = "Yeni Kullanıcı";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Yeni Kullanıcı Oluştur</h3>
+                </div>
+
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.FirstName" class="form-label"></label>
+                                    <input asp-for="Input.FirstName" class="form-control" autocomplete="given-name" />
+                                    <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.LastName" class="form-label"></label>
+                                    <input asp-for="Input.LastName" class="form-control" autocomplete="family-name" />
+                                    <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label"></label>
+                            <input asp-for="Input.Email" class="form-control" autocomplete="email" />
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.Department" class="form-label"></label>
+                                    <input asp-for="Input.Department" class="form-control" />
+                                    <span asp-validation-for="Input.Department" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.Position" class="form-label"></label>
+                                    <input asp-for="Input.Position" class="form-control" />
+                                    <span asp-validation-for="Input.Position" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.Password" class="form-label"></label>
+                                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+                                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Roller</label>
+                            <div class="row">
+                                @foreach (var role in Model.AvailableRoles)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" name="Input.SelectedRoles" value="@role.Key" 
+                                                   class="form-check-input" id="role-@role.Key" />
+                                            <label class="form-check-label" for="role-@role.Key">
+                                                <strong>@role.Key</strong><br>
+                                                <small class="text-muted">@role.Value</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-page="./Index" class="btn btn-secondary me-md-2">İptal</a>
+                            <button type="submit" class="btn btn-primary">Kullanıcı Oluştur</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

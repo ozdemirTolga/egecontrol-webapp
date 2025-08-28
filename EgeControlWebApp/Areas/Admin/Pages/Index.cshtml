@@ -1,0 +1,213 @@
+@page
+@using EgeControlWebApp.Models
+@model EgeControlWebApp.Areas.Admin.Pages.IndexModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.TotalCustomers</h4>
+                        <p class="mb-0">Toplam Müşteri</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.TotalQuotes</h4>
+                        <p class="mb-0">Toplam Teklif</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-invoice fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.PendingQuotes</h4>
+                        <p class="mb-0">Bekleyen Teklif</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="mb-1">
+                            @foreach (var total in Model.TotalsByCurrency.OrderBy(x => x.Key))
+                            {
+                                var symbol = total.Key switch {
+                                    "EUR" => "€",
+                                    "USD" => "$",
+                                    _ => "₺"
+                                };
+                                <div class="small">@symbol@total.Value.ToString("N0") @total.Key</div>
+                            }
+                        </div>
+                        <p class="mb-0">Toplam Teklif Değeri</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-lira-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Son Teklifler</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentQuotes.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Teklif No</th>
+                                    <th>Müşteri</th>
+                                    <th>Tutar</th>
+                                    <th>Tarih</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var quote in Model.RecentQuotes)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-area="Admin" asp-page="/Quotes/Details" asp-route-id="@quote.Id">
+                                                @quote.QuoteNumber
+                                            </a>
+                                        </td>
+                                        <td>@(quote.Customer?.CompanyName ?? "-")</td>
+                                        <td>
+                                            @{
+                                                var symbol = quote.Currency switch {
+                                                    "EUR" => "€",
+                                                    "USD" => "$",
+                                                    _ => "₺"
+                                                };
+                                            }
+                                            @symbol@quote.TotalAmount.ToString("N2") @quote.Currency
+                                        </td>
+                                        <td>@quote.QuoteDate.ToString("dd.MM.yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Henüz teklif bulunmamaktadır.</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Son Müşteriler</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentCustomers.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Şirket</th>
+                                    <th>İletişim</th>
+                                    <th>Kayıt Tarihi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var customer in Model.RecentCustomers)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-area="Admin" asp-page="/Customers/Details" asp-route-id="@customer.Id">
+                                                @customer.CompanyName
+                                            </a>
+                                        </td>
+                                        <td>@customer.ContactPerson</td>
+                                        <td>@customer.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Henüz müşteri bulunmamaktadır.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hızlı İşlemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a asp-area="Admin" asp-page="/Customers/Create" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-user-plus"></i><br>
+                            Yeni Müşteri
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a asp-area="Admin" asp-page="/Quotes/Create" class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-file-plus"></i><br>
+                            Yeni Teklif
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a asp-area="Admin" asp-page="/Customers/Index" class="btn btn-info btn-lg w-100">
+                            <i class="fas fa-users"></i><br>
+                            Müşteri Listesi
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a asp-area="Admin" asp-page="/Quotes/Index" class="btn btn-warning btn-lg w-100">
+                            <i class="fas fa-file-invoice"></i><br>
+                            Teklif Listesi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

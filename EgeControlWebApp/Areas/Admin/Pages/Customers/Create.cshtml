@@ -1,0 +1,120 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Customers.CreateModel
+@{
+    ViewData["Title"] = "Yeni Müşteri";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Yeni Müşteri Ekle</h1>
+    <a asp-page="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Customer.CompanyName" class="form-label"></label>
+                                <input asp-for="Customer.CompanyName" class="form-control" />
+                                <span asp-validation-for="Customer.CompanyName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Customer.ContactPerson" class="form-label"></label>
+                                <input asp-for="Customer.ContactPerson" class="form-control" />
+                                <span asp-validation-for="Customer.ContactPerson" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Customer.Email" class="form-label"></label>
+                                <input asp-for="Customer.Email" class="form-control" type="email" />
+                                <span asp-validation-for="Customer.Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Customer.Phone" class="form-label"></label>
+                                <input asp-for="Customer.Phone" class="form-control" />
+                                <span asp-validation-for="Customer.Phone" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group mb-3">
+                                <label asp-for="Customer.Address" class="form-label"></label>
+                                <textarea asp-for="Customer.Address" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Customer.Address" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="Customer.City" class="form-label"></label>
+                                <input asp-for="Customer.City" class="form-control" />
+                                <span asp-validation-for="Customer.City" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Customer.TaxNumber" class="form-label"></label>
+                        <input asp-for="Customer.TaxNumber" class="form-control" />
+                        <span asp-validation-for="Customer.TaxNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <div class="form-check">
+                            <input asp-for="Customer.IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="Customer.IsActive" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-page="Index" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Bilgi</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Yeni müşteri eklerken tüm zorunlu alanları doldurmayı unutmayın.
+                </p>
+                <p class="card-text">
+                    <i class="fas fa-envelope text-primary"></i>
+                    Email adresi benzersiz olmalıdır.
+                </p>
+                <p class="card-text">
+                    <i class="fas fa-phone text-success"></i>
+                    Telefon numarası geçerli formatta olmalıdır.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,196 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Customers.CustomerEditModel
+@{
+    ViewData["Title"] = "Müşteri Düzenle";
+    ViewData["ActivePage"] = "Customers";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Müşteri Düzenle
+                </h2>
+                <a asp-page="./Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Geri
+                </a>
+            </div>
+
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="Customer.Id" />
+                <input type="hidden" asp-for="Customer.CreatedAt" />
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Temel Bilgiler</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.CompanyName" class="form-label">Şirket Adı</label>
+                                            <input asp-for="Customer.CompanyName" class="form-control" />
+                                            <span asp-validation-for="Customer.CompanyName" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.ContactPerson" class="form-label">Yetkili Kişi</label>
+                                            <input asp-for="Customer.ContactPerson" class="form-control" />
+                                            <span asp-validation-for="Customer.ContactPerson" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.Email" class="form-label">E-posta</label>
+                                            <input asp-for="Customer.Email" type="email" class="form-control" />
+                                            <span asp-validation-for="Customer.Email" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.Phone" class="form-label">Telefon</label>
+                                            <input asp-for="Customer.Phone" class="form-control" />
+                                            <span asp-validation-for="Customer.Phone" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="Customer.Website" class="form-label">Website</label>
+                                    <input asp-for="Customer.Website" type="url" class="form-control" placeholder="https://" />
+                                    <span asp-validation-for="Customer.Website" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Vergi Bilgileri</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.TaxNumber" class="form-label">Vergi Numarası</label>
+                                            <input asp-for="Customer.TaxNumber" class="form-control" />
+                                            <span asp-validation-for="Customer.TaxNumber" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.TaxOffice" class="form-label">Vergi Dairesi</label>
+                                            <input asp-for="Customer.TaxOffice" class="form-control" />
+                                            <span asp-validation-for="Customer.TaxOffice" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Adres Bilgileri</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Customer.Address" class="form-label">Adres</label>
+                                    <textarea asp-for="Customer.Address" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Customer.Address" class="text-danger"></span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.City" class="form-label">Şehir</label>
+                                            <input asp-for="Customer.City" class="form-control" />
+                                            <span asp-validation-for="Customer.City" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="Customer.Country" class="form-label">Ülke</label>
+                                            <input asp-for="Customer.Country" class="form-control" />
+                                            <span asp-validation-for="Customer.Country" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Notlar</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Customer.Notes" class="form-label">Ek Notlar</label>
+                                    <textarea asp-for="Customer.Notes" class="form-control" rows="4" placeholder="Müşteri hakkında özel notlarınızı buraya yazabilirsiniz..."></textarea>
+                                    <span asp-validation-for="Customer.Notes" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">İşlemler</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-1"></i> Kaydet
+                                    </button>
+                                    <a asp-page="./Details" asp-route-id="@Model.Customer.Id" class="btn btn-info">
+                                        <i class="fas fa-eye me-1"></i> Görüntüle
+                                    </a>
+                                    <a asp-page="./Index" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i> İptal
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Son Güncelleme</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small mb-1"><strong>Oluşturma:</strong> @Model.Customer.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                <p class="small mb-0"><strong>Güncelleme:</strong> @Model.Customer.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                            </div>
+                        </div>
+
+                        @if (Model.TotalQuotes > 0)
+                        {
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">İstatistikler</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="small mb-1"><strong>Toplam Teklif:</strong> @Model.TotalQuotes</p>
+                                    <p class="small mb-1"><strong>Kabul Edilen:</strong> @Model.AcceptedQuotes</p>
+                                    <p class="small mb-0"><strong>Toplam Tutar:</strong> @Model.TotalQuoteValue.ToString("C")</p>
+                                    <hr>
+                                    <a asp-area="Admin" asp-page="/Quotes/Create" asp-route-customerId="@Model.Customer.Id" class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus me-1"></i> Yeni Teklif
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

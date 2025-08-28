@@ -1,0 +1,283 @@
+@page
+@using EgeControlWebApp.Models
+@model EgeControlWebApp.Areas.Admin.Pages.Quotes.DetailsModel
+@{
+    ViewData["Title"] = "Teklif Detayları";
+    ViewData["ActivePage"] = "Quotes";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    Teklif Detayları
+                </h2>
+                <div>
+                    <a asp-page="./Edit" asp-route-id="@Model.Quote.Id" class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i> Düzenle
+                    </a>
+                    
+                    <!-- PDF İndirme Dropdown -->
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-file-pdf me-1"></i> PDF İndir
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" asp-page="./DownloadPdf" asp-route-id="@Model.Quote.Id" asp-route-type="detailed">
+                                    <i class="fas fa-list-alt me-2"></i> Detaylı PDF (Birim Fiyatları Dahil)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-page="./DownloadPdf" asp-route-id="@Model.Quote.Id" asp-route-type="summary">
+                                    <i class="fas fa-file-alt me-2"></i> Özet PDF (Sadece Toplam)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- E-posta Gönderme Dropdown -->
+                    <div class="d-inline ms-2">
+                        <div class="input-group input-group-sm" style="width: 400px; display: inline-flex; vertical-align: middle;">
+                            <input type="email" id="emailAddress" value="@Model.Quote.Customer?.Email" class="form-control" placeholder="E-posta adresi" />
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-paper-plane me-1"></i> E-posta Gönder
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form asp-page-handler="SendEmail" method="post" class="dropdown-item-form">
+                                            <input type="hidden" name="id" value="@Model.Quote.Id" />
+                                            <input type="hidden" name="pdfType" value="detailed" />
+                                            <input type="hidden" name="to" id="detailedEmailTo" />
+                                            <button type="submit" class="dropdown-item" onclick="setEmailTo('detailed')">
+                                                <i class="fas fa-list-alt me-2"></i> Detaylı PDF ile Gönder
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form asp-page-handler="SendEmail" method="post" class="dropdown-item-form">
+                                            <input type="hidden" name="id" value="@Model.Quote.Id" />
+                                            <input type="hidden" name="pdfType" value="summary" />
+                                            <input type="hidden" name="to" id="summaryEmailTo" />
+                                            <button type="submit" class="dropdown-item" onclick="setEmailTo('summary')">
+                                                <i class="fas fa-file-alt me-2"></i> Özet PDF ile Gönder
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        function setEmailTo(type) {
+                            const emailValue = document.getElementById('emailAddress').value;
+                            document.getElementById(type + 'EmailTo').value = emailValue;
+                        }
+                    </script>
+                    
+                    <style>
+                        .dropdown-item-form {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        
+                        .dropdown-item-form .dropdown-item {
+                            border: none;
+                            background: none;
+                            width: 100%;
+                            text-align: left;
+                            padding: 0.375rem 1rem;
+                        }
+                        
+                        .dropdown-item-form .dropdown-item:hover {
+                            background-color: var(--bs-dropdown-link-hover-bg);
+                            color: var(--bs-dropdown-link-hover-color);
+                        }
+                    </style>
+                    <a asp-page="./Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Geri
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Quote Info -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Teklif Bilgileri</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Teklif No:</strong> @Model.Quote.QuoteNumber</p>
+                                    <p><strong>Başlık:</strong> @Model.Quote.Title</p>
+                                    <p><strong>Durum:</strong> 
+                                        @if (Model.Quote.Status == QuoteStatus.Draft)
+                                        {
+                                            <span class="badge bg-secondary">Taslak</span>
+                                        }
+                                        else if (Model.Quote.Status == QuoteStatus.Sent)
+                                        {
+                                            <span class="badge bg-primary">Gönderildi</span>
+                                        }
+                                        else if (Model.Quote.Status == QuoteStatus.Accepted)
+                                        {
+                                            <span class="badge bg-success">Kabul Edildi</span>
+                                        }
+                                        else if (Model.Quote.Status == QuoteStatus.Rejected)
+                                        {
+                                            <span class="badge bg-danger">Reddedildi</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Oluşturma Tarihi:</strong> @Model.Quote.CreatedAt.ToString("dd.MM.yyyy")</p>
+                                    <p><strong>Geçerlilik Tarihi:</strong> @Model.Quote.ValidUntil.ToString("dd.MM.yyyy")</p>
+                                    <p><strong>KDV Oranı:</strong> %@Model.Quote.VatRate</p>
+                                    <p><strong>Oluşturan:</strong> 
+                                        @if (Model.Quote.CreatedByUser != null)
+                                        {
+                                            <span class="text-primary">@(Model.Quote.CreatedByUser.FirstName + " " + Model.Quote.CreatedByUser.LastName)</span>
+                                            @if (!string.IsNullOrEmpty(Model.Quote.CreatedByUser.Department))
+                                            {
+                                                <small class="text-muted d-block">@Model.Quote.CreatedByUser.Department</small>
+                                            }
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Quote.CreatedBy))
+                                        {
+                                            <span class="text-muted">@Model.Quote.CreatedBy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </p>
+                                    @if (Model.Quote.LastModifiedByUser is not null || !string.IsNullOrEmpty(Model.Quote.LastModifiedBy))
+                                    {
+                                        <p><strong>Son Değiştiren:</strong>
+                                            @if (Model.Quote.LastModifiedByUser is not null)
+                                            {
+                                                <span class="text-primary">@(Model.Quote.LastModifiedByUser.FirstName + " " + Model.Quote.LastModifiedByUser.LastName)</span>
+                                                @if (!string.IsNullOrEmpty(Model.Quote.LastModifiedByUser.Department))
+                                                {
+                                                    <small class="text-muted d-block">@Model.Quote.LastModifiedByUser.Department</small>
+                                                }
+                                                <small class="text-muted d-block">@Model.Quote.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                            }
+                                            else if (!string.IsNullOrEmpty(Model.Quote.LastModifiedBy))
+                                            {
+                                                <span class="text-muted">@Model.Quote.LastModifiedBy</span>
+                                                <small class="text-muted d-block">@Model.Quote.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                            }
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Quote.Notes))
+                            {
+                                <div class="mt-3">
+                                    <p><strong>Notlar:</strong></p>
+                                    <p class="text-muted">@Model.Quote.Notes</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Quote Items -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Teklif Kalemleri</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Açıklama</th>
+                                            <th>Miktar</th>
+                                            <th>Birim</th>
+                                            <th>Birim Fiyat</th>
+                                            <th>İndirim (%)</th>
+                                            <th>Toplam</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Quote.QuoteItems)
+                                        {
+                                            <tr>
+                                                <td>@item.Description</td>
+                                                <td>@item.Quantity.ToString("N2")</td>
+                                                <td>@item.Unit</td>
+                                                <td>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(item.UnitPrice, Model.Quote.Currency ?? "TRY")</td>
+                                                <td>@item.DiscountPercentage.ToString("N1")</td>
+                                                <td>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(item.Total, Model.Quote.Currency ?? "TRY")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="5" class="text-end">Ara Toplam:</th>
+                                            <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.SubTotal, Model.Quote.Currency ?? "TRY")</th>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="5" class="text-end">KDV (%@Model.Quote.VatRate):</th>
+                                            <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.VatAmount, Model.Quote.Currency ?? "TRY")</th>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <th colspan="5" class="text-end">GENEL TOPLAM:</th>
+                                            <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.TotalAmount, Model.Quote.Currency ?? "TRY")</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Müşteri Bilgileri</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="text-primary">@(Model.Quote.Customer?.CompanyName ?? "-")</h6>
+                            <p class="mb-1"><strong>Yetkili:</strong> @(Model.Quote.Customer?.ContactPerson ?? "-")</p>
+                            <p class="mb-1"><strong>E-posta:</strong> @(Model.Quote.Customer?.Email ?? "-")</p>
+                            <p class="mb-1"><strong>Telefon:</strong> @(Model.Quote.Customer?.Phone ?? "-")</p>
+                            @if (!string.IsNullOrEmpty(Model.Quote.Customer?.TaxNumber))
+                            {
+                                <p class="mb-1"><strong>Vergi No:</strong> @Model.Quote.Customer!.TaxNumber</p>
+                            }
+                            <hr>
+                            <p class="mb-1"><strong>Adres:</strong></p>
+                            <address class="small">
+                                @(Model.Quote.Customer?.Address ?? "-")<br>
+                                @(Model.Quote.Customer?.City ?? "-") , @(Model.Quote.Customer?.Country ?? "-")
+                            </address>
+                            @if (Model.Quote.Customer != null)
+                            {
+                                <a asp-area="Admin" asp-page="/Customers/Details" asp-route-id="@Model.Quote.Customer.Id" class="btn btn-sm btn-outline-primary">
+                                Müşteri Detayları
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

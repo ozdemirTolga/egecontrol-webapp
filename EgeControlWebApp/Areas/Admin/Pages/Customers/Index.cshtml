@@ -1,0 +1,101 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Customers.IndexModel
+@{
+    ViewData["Title"] = "Müşteri Listesi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Müşteri Listesi</h1>
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+        <a asp-page="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Müşteri
+        </a>
+    }
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6">
+                <form method="get">
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Müşteri ara...">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="text-muted">Toplam @Model.Customers.Count() müşteri</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Model.Customers.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Şirket Adı</th>
+                            <th>İletişim Kişisi</th>
+                            <th>Email</th>
+                            <th>Telefon</th>
+                            <th>Şehir</th>
+                            <th>Kayıt Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var customer in Model.Customers)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@customer.CompanyName</strong>
+                                </td>
+                                <td>@customer.ContactPerson</td>
+                                <td>
+                                    <a href="mailto:@customer.Email">@customer.Email</a>
+                                </td>
+                                <td>
+                                    <a href="tel:@customer.Phone">@customer.Phone</a>
+                                </td>
+                                <td>@customer.City</td>
+                                <td>@customer.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="Details" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                                        {
+                                            <a asp-page="Edit" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-page="Delete" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Henüz müşteri bulunmamaktadır</h5>
+                <p class="text-muted">İlk müşterinizi eklemek için aşağıdaki butona tıklayın.</p>
+                <a asp-page="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> İlk Müşteriyi Ekle
+                </a>
+            </div>
+        }
+    </div>
+</div>
