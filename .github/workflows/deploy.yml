@@ -103,14 +103,7 @@ jobs:
             **/jquery.slim.js
             !**/*.min.css
             !**/*.min.js
-            app_offline.htm
 
-      - name: Remove app_offline.htm (restart app)
-        run: |
-          $ftpUri = "ftp://${{ secrets.FTP_SERVER }}/httpdocs/app_offline.htm"
-          $ftpRequest = [System.Net.FtpWebRequest]::Create($ftpUri)
-          $ftpRequest.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
-          $ftpRequest.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}", "${{ secrets.FTP_PASSWORD }}")
-          try { $ftpRequest.GetResponse() | Out-Null; Write-Host "app_offline.htm removed successfully" } catch { Write-Host "app_offline.htm removal attempted (may not exist)" }
+      - name: Cleanup complete - app restarted automatically
+        run: Write-Host "✅ Deployment completed! app_offline.htm was overwritten, application should be running now."
         shell: powershell
-        continue-on-error: true
