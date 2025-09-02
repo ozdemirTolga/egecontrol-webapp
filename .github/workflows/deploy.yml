@@ -47,8 +47,9 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           timeout: 60000
-          include: |
-            app_offline.htm
+          exclude: |
+            **/*
+            !app_offline.htm
 
       - name: Wait for app to stop
         run: timeout 10
@@ -72,20 +73,18 @@ jobs:
           exclude: |
             **/.git*
             **/*.pdb
-            app.db     # üretimde veritabanını ezmemek ve 550 hatasını önlemek için
+            app.db
             **/*.map
             **/*.br
             **/*.gz
             **/*.xml
             **/*.md
-            # Non-Windows runtimes (not needed on Windows IIS)
-            runtimes/linux*/**
-            runtimes/osx*/**
+            runtimes/linux-*/**
+            runtimes/osx-*/**
             runtimes/*-musl-*/**
             runtimes/maccatalyst*/**
             runtimes/win-x86/**
             runtimes/win-arm*/**
-            # Extra satellite language folders (keep tr only)
             cs/**
             de/**
             es/**
@@ -95,10 +94,12 @@ jobs:
             ko/**
             zh-Hans/**
             zh-Hant/**
-            # Reduce large static files (compress files, non-minified versions)
-            **/bootstrap*.css
-            **/bootstrap*.js
-            **/jquery*.js
+            **/bootstrap.css
+            **/bootstrap.js
+            **/bootstrap-*.css
+            **/bootstrap-*.js
+            **/jquery.js
+            **/jquery.slim.js
             !**/*.min.css
             !**/*.min.js
             app_offline.htm
