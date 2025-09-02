@@ -52,10 +52,11 @@ bld/
 # Rider
 .idea/
 
-# Database
+# Database (but include app.db)
 *.db
 *.sqlite
 *.sqlite3
+!app.db
 
 # Logs
 logs
