@@ -13,6 +13,8 @@ namespace EgeControlWebApp.Services
         public string Password { get; set; } = string.Empty;
         public string From { get; set; } = string.Empty;
         public string? DisplayName { get; set; }
+    public bool UsePickupDirectory { get; set; } = false;
+    public string? PickupDirectory { get; set; }
     }
 
     public class SmtpEmailService : IEmailService
@@ -27,10 +29,37 @@ namespace EgeControlWebApp.Services
         public async Task SendAsync(string to, string subject, string htmlBody, IEnumerable<EmailAttachment>? attachments = null, string? cc = null, string? bcc = null)
         {
             using var message = new MailMessage();
+            if (string.IsNullOrWhiteSpace(_settings.From))
+                throw new ArgumentException("Gönderen (From) adresi yapılandırılmamış.", nameof(_settings.From));
             message.From = new MailAddress(_settings.From, _settings.DisplayName ?? _settings.From);
-            message.To.Add(to);
-            if (!string.IsNullOrWhiteSpace(cc)) message.CC.Add(cc);
-            if (!string.IsNullOrWhiteSpace(bcc)) message.Bcc.Add(bcc);
+            // Validate and add To address
+            if (string.IsNullOrWhiteSpace(to))
+                throw new ArgumentException("E-posta alıcısı boş olamaz.", nameof(to));
+            try
+            {
+                var toAddress = new MailAddress(to.Trim());
+                message.To.Add(toAddress);
+            }
+            catch (FormatException ex)
+            {
+                throw new ArgumentException("Geçersiz e-posta adresi.", nameof(to), ex);
+            }
+            // Add CC addresses if any (comma-separated)
+            if (!string.IsNullOrWhiteSpace(cc))
+            {
+                foreach (var addr in cc.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    message.CC.Add(new MailAddress(addr.Trim()));
+                }
+            }
+            // Add BCC addresses if any (comma-separated)
+            if (!string.IsNullOrWhiteSpace(bcc))
+            {
+                foreach (var addr in bcc.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    message.Bcc.Add(new MailAddress(addr.Trim()));
+                }
+            }
             message.Subject = subject;
             message.Body = htmlBody;
             message.IsBodyHtml = true;
@@ -45,54 +74,45 @@ namespace EgeControlWebApp.Services
                 }
             }
 
-            async Task SendInternalAsync(string host, int port, bool enableSsl)
+            // Development/test için: e-postayı dosyaya yaz
+            if (_settings.UsePickupDirectory)
             {
-                using var client = new SmtpClient(host, port)
+                var pickup = _settings.PickupDirectory;
+                if (string.IsNullOrWhiteSpace(pickup))
                 {
-                    EnableSsl = enableSsl,
+                    pickup = Path.Combine(AppContext.BaseDirectory, "MailDrop");
+                }
+                // Ensure absolute path
+                var absolutePickup = Path.IsPathRooted(pickup)
+                    ? pickup
+                    : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, pickup));
+                Directory.CreateDirectory(absolutePickup);
+                using var client = new SmtpClient
+                {
+                    DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
+                    PickupDirectoryLocation = absolutePickup
+                };
+                await client.SendMailAsync(message);
+                return;
+            }
+
+            // Tek bir yapılandırma ile SMTP gönderimini gerçekleştiriyoruz.
+            try
+            {
+                using var client = new SmtpClient(_settings.Host, _settings.Port)
+                {
+                    EnableSsl = _settings.EnableSsl,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
                     UseDefaultCredentials = false,
                     Credentials = new NetworkCredential(_settings.User, _settings.Password),
-                    Timeout = 100000
+                    Timeout = 15000 // 15 saniye timeout
                 };
-
-                // Log connection details for debugging
-                System.Diagnostics.Debug.WriteLine($"Attempting SMTP connection to {host}:{port}, SSL={enableSsl}, User={_settings.User}");
-                
                 await client.SendMailAsync(message);
             }
-
-            // Try different configurations
-            var configs = new[]
+            catch (Exception ex)
             {
-                (host: _settings.Host, port: _settings.Port, ssl: _settings.EnableSsl),
-                (host: _settings.Host, port: 587, ssl: true),  // STARTTLS
-                (host: _settings.Host, port: 465, ssl: true),  // Implicit SSL
-                (host: _settings.Host, port: 25, ssl: false),  // Plain SMTP
-                (host: _settings.Host, port: 2525, ssl: false) // Alternative port
-            };
-
-            Exception? lastException = null;
-            var attempts = new List<string>();
-
-            foreach (var config in configs)
-            {
-                try
-                {
-                    await SendInternalAsync(config.host, config.port, config.ssl);
-                    return; // Success!
-                }
-                catch (Exception ex)
-                {
-                    lastException = ex;
-                    attempts.Add($"{config.host}:{config.port} SSL={config.ssl} -> {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"Failed: {config.host}:{config.port} SSL={config.ssl} - {ex.Message}");
-                }
+                throw new Exception($"SMTP gönderimi başarısız oldu: {ex.Message}", ex);
             }
-
-            // All attempts failed
-            var attemptDetails = string.Join(" | ", attempts);
-            throw new Exception($"SMTP gönderimi başarısız oldu. Denenen konfigürasyonlar: {attemptDetails}. Son hata: {lastException?.Message} {lastException?.InnerException?.Message}");
         }
     }
 }

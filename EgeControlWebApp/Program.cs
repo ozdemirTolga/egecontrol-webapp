@@ -57,6 +57,8 @@ builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
+// Uygulamanın dış dünyadan erişilebilir olması için tüm arayüzlerde dinle
+builder.WebHost.UseUrls("http://0.0.0.0:5238");
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

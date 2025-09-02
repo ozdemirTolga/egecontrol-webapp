@@ -6,6 +6,7 @@ using EgeControlWebApp.Data;
 using EgeControlWebApp.Models;
 using EgeControlWebApp.Services;
 using EmailAttachment = EgeControlWebApp.Services.EmailAttachment;
+using Microsoft.Extensions.Options;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 {
@@ -120,7 +121,21 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 };
 
                 await _emailService.SendAsync(recipient, subject, body, attachments);
-                TempData["SuccessMessage"] = $"Teklif ({pdfTypeDescription}) e-posta ile gönderildi: {recipient}";
+                // If pickup directory is enabled, inform where the email was saved
+                var smtpOpts = HttpContext.RequestServices.GetService<IOptions<SmtpSettings>>();
+                if (smtpOpts?.Value.UsePickupDirectory == true)
+                {
+                    var pickup = smtpOpts.Value.PickupDirectory;
+                    if (string.IsNullOrWhiteSpace(pickup))
+                    {
+                        pickup = Path.Combine(AppContext.BaseDirectory, "MailDrop");
+                    }
+                    TempData["SuccessMessage"] = $"Teklif ({pdfTypeDescription}) e-posta dosyaya kaydedildi: {pickup}";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = $"Teklif ({pdfTypeDescription}) e-posta ile gönderildi: {recipient}";
+                }
             }
             catch (Exception ex)
             {
