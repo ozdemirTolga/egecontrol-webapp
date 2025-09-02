@@ -37,7 +37,6 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             Quote.VatRate = 20;
             Quote.CreatedBy = User.Identity?.Name ?? "Admin";
             Quote.Currency = "EUR"; // Set default currency
-            Quote.Notes = "KDV dahil değildir"; // Set default notes
             
             // Set user ID for tracking
             var user = await _userManager.GetUserAsync(User);
@@ -54,8 +53,8 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 Quote.CustomerId = customerId.Value;
             }
             
-            // Varsayılan notlar: teklif geçerlilik süresi ve ödeme şekli
-            Quote.Notes = $"• Teklif geçerlilik süresi: {Quote.ValidUntil:dd.MM.yyyy}.\n• Ödeme şekli: Fatura tarihinden itibaren 30 gün içinde banka havalesi ile.";
+            // Varsayılan notlar: KDV bilgisi, teklif geçerlilik süresi ve ödeme şekli
+            Quote.Notes = $"• KDV dahil değildir.\n• Teklif geçerlilik süresi: {Quote.ValidUntil:dd.MM.yyyy}.\n• Ödeme şekli: Fatura tarihinden itibaren 30 gün içinde banka havalesi ile.";
             
             return Page();
         }
