@@ -37,6 +37,7 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             Quote.VatRate = 20;
             Quote.CreatedBy = User.Identity?.Name ?? "Admin";
             Quote.Currency = "EUR"; // Set default currency
+            Quote.Notes = "KDV dahil değildir"; // Set default notes
             
             // Set user ID for tracking
             var user = await _userManager.GetUserAsync(User);
