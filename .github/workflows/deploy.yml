@@ -32,33 +32,7 @@ jobs:
       #   run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -r win-x64 --self-contained true ^
       #        /p:PublishSingleFile=true /p:PublishTrimmed=false -o publish
 
-      - name: Create app_offline.htm for maintenance
-        run: echo '<html><body><h1>Site temporarily offline for maintenance</h1><p>Please wait a moment...</p></body></html>' > publish/app_offline.htm
-
-      - name: Upload app_offline.htm first (to stop IIS app)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          security: loose
-          local-dir: publish/
-          server-dir: /httpdocs/
-          timeout: 60000
-          exclude: |
-            **/*
-            !app_offline.htm
-
-      - name: Wait for app to stop
-        run: Start-Sleep -Seconds 10
-        shell: powershell
-
-      - name: Create empty file to overwrite app_offline.htm
-        run: echo '' > publish/app_offline_remove.txt
-
-      - name: FTP Deploy (main files)
+      - name: FTP Deploy (all files at once)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -107,6 +81,6 @@ jobs:
             !**/*.min.css
             !**/*.min.js
 
-      - name: Cleanup complete - app should be running now
-        run: Write-Host "✅ Deployment completed! app_offline.htm should have been removed by sync operation. Site should be online now!"
+      - name: Deployment completed successfully
+        run: Write-Host "✅ Deployment completed successfully! Site should be online."
         shell: powershell
