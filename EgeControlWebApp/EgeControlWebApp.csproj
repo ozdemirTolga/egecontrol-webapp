@@ -9,6 +9,10 @@
 
   <ItemGroup>
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="web.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="logs\**\*" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>

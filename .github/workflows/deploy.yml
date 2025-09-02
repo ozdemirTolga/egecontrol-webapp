@@ -23,6 +23,10 @@ jobs:
       - name: Publish (Framework-dependent DLL)
         run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish
 
+      - name: Ensure logs folder exists in publish output
+        run: |
+          if (!(Test-Path -Path publish\logs)) { New-Item -ItemType Directory -Path publish\logs | Out-Null }
+
       # Eğer self-contained istiyorsan üsttekini yorumlayıp bunu aç:
       # - name: Publish (Self-contained EXE)
       #   run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -r win-x64 --self-contained true ^
@@ -34,9 +38,12 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
           local-dir: publish/
-          server-dir: /public_html/
+          server-dir: /httpdocs/
           dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
+            # app.db   # üretimde veritabanını ezmemek için açabilirsiniz
