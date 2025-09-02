@@ -42,8 +42,13 @@ jobs:
           port: 21
           local-dir: publish/
           server-dir: /httpdocs/
+          state-name: .ftp-deploy-sync-state.json
+          timeout: 600000
           dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
             app.db     # üretimde veritabanını ezmemek ve 550 hatasını önlemek için
+            **/*.map
+            **/*.xml
+            **/*.md
