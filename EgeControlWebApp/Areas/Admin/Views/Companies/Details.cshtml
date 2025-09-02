@@ -1,0 +1,303 @@
+@model EgeControlWebApp.Models.Company
+
+@{
+    ViewData["Title"] = "Şirket Detayları";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Admin</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Şirketler</a></li>
+                    <li class="breadcrumb-item active">@Model.Name</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2>@Model.Name</h2>
+                    @if (!string.IsNullOrEmpty(Model.TaxNumber))
+                    {
+                        <p class="text-muted mb-0">Vergi No: @Model.TaxNumber</p>
+                    }
+                </div>
+                <div>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success fs-6">Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary fs-6">Pasif</span>
+                    }
+                </div>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Şirket Bilgileri</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <strong>Şirket Adı:</strong>
+                                </div>
+                                <div class="col-sm-9">
+                                    @Model.Name
+                                </div>
+                            </div>
+                            <hr>
+
+                            @if (!string.IsNullOrEmpty(Model.Address))
+                            {
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <strong>Adres:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @Html.Raw(Model.Address.Replace("\n", "<br>"))
+                                    </div>
+                                </div>
+                                <hr>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.TaxNumber))
+                            {
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <strong>Vergi Numarası:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @Model.TaxNumber
+                                    </div>
+                                </div>
+                                <hr>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.TaxOffice))
+                            {
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <strong>Vergi Dairesi:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @Model.TaxOffice
+                                    </div>
+                                </div>
+                                <hr>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Website))
+                            {
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <strong>Website:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <a href="@(Model.Website.StartsWith("http") ? Model.Website : "https://" + Model.Website)" target="_blank">
+                                            @Model.Website <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <hr>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <strong>Notlar:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @Html.Raw(Model.Notes.Replace("\n", "<br>"))
+                                    </div>
+                                </div>
+                                <hr>
+                            }
+
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <strong>Durum:</strong>
+                                </div>
+                                <div class="col-sm-9">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Pasif</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- İletişim Kişileri -->
+                    @if (Model.Contacts?.Any() == true)
+                    {
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">İletişim Kişileri (@Model.Contacts.Count())</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Ad Soyad</th>
+                                                <th>Ünvan</th>
+                                                <th>Email</th>
+                                                <th>Telefon</th>
+                                                <th>İşlemler</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var contact in Model.Contacts.Where(c => c.IsActive))
+                                            {
+                                                <tr>
+                                                    <td>@contact.FullName</td>
+                                                    <td>@contact.Title</td>
+                                                    <td>
+                                                        <a href="mailto:@contact.Email">@contact.Email</a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="tel:@contact.Phone">@contact.Phone</a>
+                                                    </td>
+                                                    <td>
+                                                        <a asp-area="Admin" asp-controller="Contacts" asp-action="Details" asp-route-id="@contact.Id" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i> Detay
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-2">
+                                    <a asp-area="Admin" asp-controller="Contacts" asp-action="Create" asp-route-companyId="@Model.Id" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus"></i> Yeni İletişim Kişisi Ekle
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- İlişkili Teklifler -->
+                    @if (Model.Quotes?.Any() == true)
+                    {
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">İlişkili Teklifler (@Model.Quotes.Count())</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Teklif No</th>
+                                                <th>Tarih</th>
+                                                <th>Tutar</th>
+                                                <th>İşlemler</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var quote in Model.Quotes.OrderByDescending(q => q.QuoteDate))
+                                            {
+                                                <tr>
+                                                    <td>@quote.QuoteNumber</td>
+                                                    <td>@quote.QuoteDate.ToString("dd.MM.yyyy")</td>
+                                                    <td>@quote.TotalAmount.ToString("C2")</td>
+                                                    <td>
+                                                        <a asp-area="" asp-controller="Quote" asp-action="Details" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i> Görüntüle
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">İşlemler</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Düzenle
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Sil
+                                </a>
+                                <hr>
+                                <a asp-area="Admin" asp-controller="Contacts" asp-action="Create" asp-route-companyId="@Model.Id" class="btn btn-outline-success">
+                                    <i class="fas fa-user-plus"></i> İletişim Kişisi Ekle
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">İstatistikler</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text small">
+                                <strong>İletişim Kişileri:</strong> @(Model.Contacts?.Count(c => c.IsActive) ?? 0)<br>
+                                <strong>Toplam Teklif:</strong> @(Model.Quotes?.Count() ?? 0)<br>
+                                <strong>Toplam Tutar:</strong> @(Model.Quotes?.Sum(q => q.TotalAmount).ToString("C2") ?? "₺0,00")
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Kayıt Bilgileri</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text small">
+                                <strong>Oluşturulma:</strong><br>
+                                @Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")<br><br>
+                                @if (Model.UpdatedDate.HasValue)
+                                {
+                                    <strong>Son Güncelleme:</strong><br>
+                                    @Model.UpdatedDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Listeye Dön
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

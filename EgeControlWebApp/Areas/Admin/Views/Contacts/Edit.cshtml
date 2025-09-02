@@ -1,0 +1,172 @@
+@model EgeControlWebApp.Models.Contact
+
+@{
+    ViewData["Title"] = "İletişim Kişisi Düzenle";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Admin</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">İletişim Kişileri</a></li>
+                    <li class="breadcrumb-item active">@Model.FullName - Düzenle</li>
+                </ol>
+            </nav>
+
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted">@Model.FullName düzenleniyor</p>
+
+            <form asp-action="Edit">
+                <input asp-for="Id" type="hidden" />
+                <input asp-for="CreatedDate" type="hidden" />
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">İletişim Bilgileri</h5>
+                            </div>
+                            <div class="card-body">
+                                <div asp-validation-summary="All" class="text-danger"></div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="CompanyId" class="form-label">Şirket *</label>
+                                            <select asp-for="CompanyId" class="form-control" asp-items="ViewBag.CompanyId">
+                                                <option value="">Şirket Seçin...</option>
+                                            </select>
+                                            <span asp-validation-for="CompanyId" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="FirstName" class="form-label">Ad *</label>
+                                            <input asp-for="FirstName" class="form-control" />
+                                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="LastName" class="form-label">Soyad *</label>
+                                            <input asp-for="LastName" class="form-control" />
+                                            <span asp-validation-for="LastName" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="Title" class="form-label">Ünvan</label>
+                                            <input asp-for="Title" class="form-control" placeholder="Örn: Satış Müdürü" />
+                                            <span asp-validation-for="Title" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="Department" class="form-label">Departman</label>
+                                            <input asp-for="Department" class="form-control" placeholder="Örn: Satış Departmanı" />
+                                            <span asp-validation-for="Department" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="Email" class="form-label">Email *</label>
+                                            <input asp-for="Email" class="form-control" type="email" />
+                                            <span asp-validation-for="Email" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="Phone" class="form-label">Telefon *</label>
+                                            <input asp-for="Phone" class="form-control" placeholder="Örn: +90 212 123 45 67" />
+                                            <span asp-validation-for="Phone" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="Extension" class="form-label">Dahili</label>
+                                            <input asp-for="Extension" class="form-control" placeholder="Örn: 123" />
+                                            <span asp-validation-for="Extension" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="MobilePhone" class="form-label">Cep Telefonu</label>
+                                            <input asp-for="MobilePhone" class="form-control" placeholder="Örn: +90 555 123 45 67" />
+                                            <span asp-validation-for="MobilePhone" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Ayarlar</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        Aktif
+                                    </label>
+                                    <span asp-validation-for="IsActive" class="text-danger"></span>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Pasif olan kişiler teklif oluşturma sırasında görünmez.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Kayıt Bilgileri</h6>
+                                <p class="card-text small text-muted">
+                                    <strong>Oluşturulma:</strong><br>
+                                    @Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")<br><br>
+                                    @if (Model.UpdatedDate.HasValue)
+                                    {
+                                        <strong>Son Güncelleme:</strong><br>
+                                        @Model.UpdatedDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Güncelle
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                            <i class="fas fa-eye"></i> Detaylar
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Geri
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
