@@ -32,7 +32,28 @@ jobs:
       #   run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -r win-x64 --self-contained true ^
       #        /p:PublishSingleFile=true /p:PublishTrimmed=false -o publish
 
-      - name: FTP Deploy
+      - name: Create app_offline.htm for maintenance
+        run: echo '<html><body><h1>Site temporarily offline for maintenance</h1><p>Please wait a moment...</p></body></html>' > publish/app_offline.htm
+
+      - name: Upload app_offline.htm first (to stop IIS app)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs/
+          timeout: 60000
+          include: |
+            app_offline.htm
+
+      - name: Wait for app to stop
+        run: timeout 10
+
+      - name: FTP Deploy (main files)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -80,3 +101,7 @@ jobs:
             **/jquery*.js
             !**/*.min.css
             !**/*.min.js
+            app_offline.htm
+
+      - name: Remove app_offline.htm (restart app)
+        run: echo '' | curl -T - ftp://${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}@${{ secrets.FTP_SERVER }}/httpdocs/app_offline.htm --quote "DELE app_offline.htm" || echo "File removal attempted"
