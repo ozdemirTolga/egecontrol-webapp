@@ -38,7 +38,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftps-legacy
           port: 21
           local-dir: publish/
           server-dir: /httpdocs/
@@ -52,3 +52,20 @@ jobs:
             **/*.map
             **/*.xml
             **/*.md
+            # Non-Windows runtimes (not needed on Windows IIS)
+            runtimes/linux*/**
+            runtimes/osx*/**
+            runtimes/*-musl-*/**
+            runtimes/maccatalyst*/**
+            runtimes/win-x86/**
+            runtimes/win-arm*/**
+            # Extra satellite language folders (keep tr only)
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
