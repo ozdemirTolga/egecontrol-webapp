@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Mail;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Options;
 
 namespace EgeControlWebApp.Services
@@ -99,6 +101,10 @@ namespace EgeControlWebApp.Services
             // Tek bir yapılandırma ile SMTP gönderimini gerçekleştiriyoruz.
             try
             {
+                // SSL sertifika doğrulamasını esnek hale getir
+                ServicePointManager.ServerCertificateValidationCallback = 
+                    new RemoteCertificateValidationCallback(ValidateServerCertificate);
+
                 using var client = new SmtpClient(_settings.Host, _settings.Port)
                 {
                     EnableSsl = _settings.EnableSsl,
@@ -113,6 +119,34 @@ namespace EgeControlWebApp.Services
             {
                 throw new Exception($"SMTP gönderimi başarısız oldu: {ex.Message}", ex);
             }
+        }
+
+        // SSL sertifika doğrulaması için güvenli callback metodu
+        private static bool ValidateServerCertificate(
+            object sender,
+            X509Certificate? certificate,
+            X509Chain? chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            // Development ortamında tüm sertifikaları kabul et
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                return true;
+            }
+
+            // Production ortamında sadece RemoteCertificateNameMismatch hatalarını göz ardı et
+            // Diğer SSL hataları (expired, self-signed vs.) için false döndür
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
+
+            if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            {
+                return true; // Host name mismatch hatalarını göz ardı et
+            }
+
+            return false; // Diğer tüm SSL hataları için false
         }
     }
 }
