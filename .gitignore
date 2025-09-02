@@ -133,3 +133,10 @@ __pycache__/
 # !tools/packages.config
 
 # End of https://www.gitignore.io/api/aspnetcore
+
+# --- Deployment artifacts (do not commit) ---
+hosting-framework-dependent*/
+hosting-self-contained*/
+publish/
+*.PublishSettings
+*.zip
