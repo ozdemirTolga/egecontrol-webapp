@@ -13,9 +13,15 @@ namespace EgeControlWebApp.Models
         [StringLength(50)]
         public string QuoteNumber { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
-        [Display(Name = "Müşteri")]
-        public int CustomerId { get; set; }
+        [Display(Name = "Şirket")]
+        public int? CompanyId { get; set; }
+
+        [Display(Name = "İletişim Kişisi")]
+        public int? ContactId { get; set; }
+
+        // Keep CustomerId for backward compatibility (will be removed later)
+        [Display(Name = "Müşteri (Eski)")]
+        public int? CustomerId { get; set; }
 
         [Required(ErrorMessage = "Teklif başlığı zorunludur")]
         [Display(Name = "Teklif Başlığı")]
@@ -81,6 +87,17 @@ namespace EgeControlWebApp.Models
         public string? LastModifiedByUserId { get; set; }
 
     // Navigation properties
+    [ForeignKey("CompanyId")]
+    [ValidateNever]
+    [BindNever]
+    public virtual Company? Company { get; set; }
+
+    [ForeignKey("ContactId")]
+    [ValidateNever]
+    [BindNever]
+    public virtual Contact? Contact { get; set; }
+
+    // Keep for backward compatibility (will be removed later)
     [ForeignKey("CustomerId")]
     [ValidateNever]
     [BindNever]

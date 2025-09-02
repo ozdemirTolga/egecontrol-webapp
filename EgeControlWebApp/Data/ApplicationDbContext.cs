@@ -11,6 +11,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    public DbSet<Company> Companies { get; set; } = default!;
+    public DbSet<Contact> Contacts { get; set; } = default!;
     public DbSet<Customer> Customers { get; set; } = default!;
     public DbSet<Quote> Quotes { get; set; } = default!;
     public DbSet<QuoteItem> QuoteItems { get; set; } = default!;
