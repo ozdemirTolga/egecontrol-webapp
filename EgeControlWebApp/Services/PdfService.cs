@@ -315,8 +315,15 @@ namespace EgeControlWebApp.Services
                                     .Bold()
                                     .Italic();
                             }
-                        });
-                    });
+                        }); // end signature column
+
+                        // Notlar bölümü - imzadan sonra
+                        if (!string.IsNullOrWhiteSpace(quote.Notes))
+                        {
+                            foreach (var line in quote.Notes.Split('\n'))
+                                col.Item().Text(line).FontSize(10);
+                        }
+                    }); // end content column
                 });
             });
 
