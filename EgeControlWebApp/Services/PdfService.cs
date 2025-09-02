@@ -30,7 +30,7 @@ namespace EgeControlWebApp.Services
                     page.Margin(30);
                     page.Size(PageSizes.A4);
 
-                    page.Header().Height(80).Column(headerCol =>
+                    page.Header().Column(headerCol =>
                     {
                         // Üst kısım: Logo ve İletişim Bilgileri
                         headerCol.Item().Row(row =>
@@ -45,9 +45,9 @@ namespace EgeControlWebApp.Services
                                     {
                                         var logoBytes = File.ReadAllBytes(logoPath);
                                         logoCol.Item()
-                                            .MaxHeight(35)
-                                            .MaxWidth(150)
-                                            .Image(logoBytes);
+                                            .MaxHeight(80)
+                                            .MaxWidth(200)
+                                            .Image(logoBytes, ImageScaling.FitArea);
                                     }
                                     else
                                     {
@@ -79,13 +79,13 @@ namespace EgeControlWebApp.Services
                         });
 
                         // Büyük TEKLİF FORMU başlığı
-                        headerCol.Item().PaddingTop(4).Column(titleCol =>
+                        headerCol.Item().PaddingTop(0).Column(titleCol =>
                         {
                             titleCol.Item().AlignCenter().Text("TEKLİF FORMU")
                                 .Bold().FontSize(16).FontColor("#4A90E2");
                             
                             // Mavi çizgi
-                            titleCol.Item().PaddingTop(2).LineHorizontal(1).LineColor("#4A90E2");
+                            titleCol.Item().PaddingTop(0).LineHorizontal(1).LineColor("#4A90E2");
                         });
                     });
 
@@ -114,14 +114,14 @@ namespace EgeControlWebApp.Services
                             infoRow.RelativeItem().Padding(5).Border(1).BorderColor("#90EE90").Background("#F0FFF0").Column(customerCol =>
                             {
                                 var cust = quote.Customer;
-                                customerCol.Item().AlignCenter().Text("MÜŞTERİ BİLGİLERİ").Bold().FontSize(12).FontColor("#006400");
-                                customerCol.Item().PaddingTop(5).Text($"Şirket: {cust?.CompanyName ?? "-"}").FontSize(10);
-                                customerCol.Item().Text($"Yetkili: {cust?.ContactPerson ?? "-"}").FontSize(10);
-                                customerCol.Item().Text($"Email: {cust?.Email ?? "-"}").FontSize(10);
-                                customerCol.Item().Text($"Telefon: {cust?.Phone ?? "-"}").FontSize(10);
+                                customerCol.Item().AlignCenter().Text(" MÜŞTERİ BİLGİLERİ").Bold().FontSize(12).FontColor("#006400");
+                                customerCol.Item().PaddingTop(5).Text($" Şirket: {cust?.CompanyName ?? "-"}").FontSize(10);
+                                customerCol.Item().Text($" Yetkili: {cust?.ContactPerson ?? "-"}").FontSize(10);
+                                customerCol.Item().Text($" Email: {cust?.Email ?? "-"}").FontSize(10);
+                                customerCol.Item().Text($" Telefon: {cust?.Phone ?? "-"}").FontSize(10);
                                 if (!string.IsNullOrWhiteSpace(cust?.Address))
-                                    customerCol.Item().Text($"Adres: {cust!.Address}").FontSize(10);
-                                customerCol.Item().Text($"Şehir: {cust?.City ?? "Merkez"}").FontSize(10);
+                                    customerCol.Item().Text($" Adres: {cust!.Address}").FontSize(10);
+                                customerCol.Item().Text($" Şehir: {cust?.City ?? " Merkez"}").FontSize(10);
                             });
 
                             infoRow.ConstantItem(10); // Boşluk
@@ -133,21 +133,21 @@ namespace EgeControlWebApp.Services
                                 
                                 if (quote.CreatedByUser != null)
                                 {
-                                    creatorCol.Item().PaddingTop(5).Text($"Ad Soyad: {quote.CreatedByUser.FirstName} {quote.CreatedByUser.LastName}").FontSize(10);
-                                    creatorCol.Item().Text($"Email: {quote.CreatedByUser.Email ?? "-"}").FontSize(10);
-                                    creatorCol.Item().Text($"Departman: {quote.CreatedByUser.Department ?? "IT"}").FontSize(10);
-                                    creatorCol.Item().Text($"Pozisyon: {quote.CreatedByUser.Position ?? "System Administrator"}").FontSize(10);
-                                    creatorCol.Item().Text($"Telefon: {quote.CreatedByUser.PhoneNumber ?? "Belirtilmemiş"}").FontSize(10);
-                                    creatorCol.Item().Text($"Oluşturma: {quote.CreatedAt:dd.MM.yyyy HH:mm}").FontSize(10);
+                                    creatorCol.Item().PaddingTop(5).Text($" Ad Soyad: {quote.CreatedByUser.FirstName} {quote.CreatedByUser.LastName}").FontSize(10);
+                                    creatorCol.Item().Text($" Email: {quote.CreatedByUser.Email ?? "-"}").FontSize(10);
+                                    creatorCol.Item().Text($" Departman: {quote.CreatedByUser.Department ?? "IT"}").FontSize(10);
+                                    creatorCol.Item().Text($" Pozisyon: {quote.CreatedByUser.Position ?? "System Administrator"}").FontSize(10);
+                                    creatorCol.Item().Text($" Telefon: {quote.CreatedByUser.PhoneNumber ?? "Belirtilmemiş"}").FontSize(10);
+                                    creatorCol.Item().Text($" Oluşturma: {quote.CreatedAt:dd.MM.yyyy HH:mm}").FontSize(10);
                                 }
                                 else
                                 {
-                                    creatorCol.Item().PaddingTop(5).Text($"Ad Soyad: Admin User").FontSize(10);
-                                    creatorCol.Item().Text($"Email: admin@egecontrol.com").FontSize(10);
-                                    creatorCol.Item().Text($"Departman: IT").FontSize(10);
-                                    creatorCol.Item().Text($"Pozisyon: System Administrator").FontSize(10);
-                                    creatorCol.Item().Text($"Telefon: Belirtilmemiş").FontSize(10);
-                                    creatorCol.Item().Text($"Oluşturma: {quote.CreatedAt:dd.MM.yyyy HH:mm}").FontSize(10);
+                                    creatorCol.Item().PaddingTop(5).Text($" Ad Soyad: Admin User").FontSize(10);
+                                    creatorCol.Item().Text($" Email: admin@egecontrol.com").FontSize(10);
+                                    creatorCol.Item().Text($" Departman: IT").FontSize(10);
+                                    creatorCol.Item().Text($" Pozisyon: System Administrator").FontSize(10);
+                                    creatorCol.Item().Text($" Telefon: Belirtilmemiş").FontSize(10);
+                                    creatorCol.Item().Text($" Oluşturma: {quote.CreatedAt:dd.MM.yyyy HH:mm}").FontSize(10);
                                 }
                             });
                         });
@@ -196,7 +196,15 @@ namespace EgeControlWebApp.Services
 
                                 foreach (var item in quote.QuoteItems.OrderBy(x => x.SortOrder))
                                 {
-                                    table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).Text(item.ItemName);
+                                    // Show item name and description if available
+                                    table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4)
+                                        .Text(
+                                            !string.IsNullOrWhiteSpace(item.ItemName)
+                                                ? (!string.IsNullOrWhiteSpace(item.Description)
+                                                    ? $"{item.ItemName} - {item.Description}"
+                                                    : item.ItemName)
+                                                : item.Description
+                                        );
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.Quantity.ToString("N2"));
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.Unit);
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignRight().Text(CurrencyHelper.FormatCurrency(item.UnitPrice, quote.Currency ?? "TRY"));
@@ -205,9 +213,8 @@ namespace EgeControlWebApp.Services
                                 }
                             });
 
-                            // Detaylı toplam bilgileri
-                            col.Item().PaddingTop(6).AlignRight().Text($"Ara Toplam: {CurrencyHelper.FormatCurrency(quote.SubTotal, quote.Currency ?? "TRY")}");
-                            col.Item().AlignRight().Text($"KDV (%{quote.VatRate:N1}): {CurrencyHelper.FormatCurrency(quote.VatAmount, quote.Currency ?? "TRY")}");
+                            // Remove VAT line and rename subtotal to total for detailed PDF version
+                            //col.Item().PaddingTop(6).AlignRight().Text($"TOPLAM: {CurrencyHelper.FormatCurrency(quote.SubTotal, quote.Currency ?? "TRY")} ");
                         }
                         else if (pdfType == PdfType.Summary && quote.QuoteItems.Any())
                         {
@@ -241,7 +248,15 @@ namespace EgeControlWebApp.Services
 
                                 foreach (var item in quote.QuoteItems.OrderBy(x => x.SortOrder))
                                 {
-                                    table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).Text(item.ItemName);
+                                   // table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).Text(item.ItemName);
+                                    table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4)
+                                        .Text(
+                                            !string.IsNullOrWhiteSpace(item.ItemName)
+                                                ? (!string.IsNullOrWhiteSpace(item.Description)
+                                                    ? $"{item.ItemName} - {item.Description}"
+                                                    : item.ItemName)
+                                                : item.Description
+                                        );
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.Quantity.ToString("N2"));
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.Unit);
                                 }
@@ -260,7 +275,7 @@ namespace EgeControlWebApp.Services
                             // Alt beyaz alan - Toplam tutar
                             totalCol.Item()
                                 .Border(1).BorderColor("#4A90E2").Padding(10).Background("#FFFFFF").AlignCenter()
-                                .Text($"TOPLAM: {CurrencyHelper.FormatCurrency(quote.TotalAmount, quote.Currency ?? "TRY")} ")
+                                .Text($"TOPLAM: {CurrencyHelper.FormatCurrency(quote.SubTotal, quote.Currency ?? "TRY")} ") // KDV dahil değil, net toplam
                                 .Bold().FontSize(16).FontColor("#FF0000");
                         });
 
