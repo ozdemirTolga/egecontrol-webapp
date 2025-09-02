@@ -44,7 +44,9 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 300000
+          timeout: 120000
+          log-level: verbose
+          concurrency: 1
           dangerous-clean-slate: false
           exclude: |
             **/.git*
