@@ -46,4 +46,4 @@ jobs:
           exclude: |
             **/.git*
             **/*.pdb
-            # app.db   # üretimde veritabanını ezmemek için açabilirsiniz
+            app.db     # üretimde veritabanını ezmemek ve 550 hatasını önlemek için
