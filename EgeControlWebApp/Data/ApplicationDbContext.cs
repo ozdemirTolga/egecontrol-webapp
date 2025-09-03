@@ -14,6 +14,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Customer> Customers { get; set; } = default!;
     public DbSet<Quote> Quotes { get; set; } = default!;
     public DbSet<QuoteItem> QuoteItems { get; set; } = default!;
+    public DbSet<ContactMessage> ContactMessages { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
