@@ -55,8 +55,8 @@ jobs:
         run: Start-Sleep -Seconds 10
         shell: powershell
 
-      - name: Create empty file to overwrite app_offline.htm
-        run: echo '' > publish/app_offline_remove.txt
+
+
 
       - name: FTP Deploy (main files)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
