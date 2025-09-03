@@ -52,11 +52,8 @@ jobs:
             !app_offline.htm
 
       - name: Wait for app to stop
-        run: Start-Sleep -Seconds 10
+        run: Start-Sleep -Seconds 30
         shell: powershell
-
-
-
 
       - name: FTP Deploy (main files)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -70,19 +67,19 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 120000
+          timeout: 300000
           log-level: verbose
-          concurrency: 1
           dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
-            app.db
             **/*.map
             **/*.br
             **/*.gz
             **/*.xml
             **/*.md
+            app.db
+            logs/
             runtimes/linux-*/**
             runtimes/osx-*/**
             runtimes/*-musl-*/**
