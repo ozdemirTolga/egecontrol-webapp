@@ -39,9 +39,20 @@ public class IndexModel : PageModel
 
         _logger.LogInformation("İletişim mesajı alındı: {Email} - {Name}", Contact.Email, Contact.Name);
 
-        // Önce veritabanına kaydet
-        _context.ContactMessages.Add(Contact);
-        await _context.SaveChangesAsync();
+        // Önce veritabanına kaydet (canlı ortamda SQLite yetki sorunlarına karşı try/catch)
+        var savedToDb = false;
+        try
+        {
+            _context.ContactMessages.Add(Contact);
+            await _context.SaveChangesAsync();
+            savedToDb = true;
+        }
+        catch (Exception dbEx)
+        {
+            _logger.LogError(dbEx, "İletişim mesajı veritabanına kaydedilemedi. Email: {Email}, Name: {Name}", Contact.Email, Contact.Name);
+            // Kullanıcıya kibar bir bilgilendirme verelim; e-postayı yine de deneyeceğiz
+            StatusMessage = "Mesajınız alınmıştır ancak sistem kaydı sırasında sorun oluştu. E-postayla iletmeyi deneyeceğiz.";
+        }
 
         // E-posta göndermeyi dene
         try
@@ -60,21 +71,41 @@ public class IndexModel : PageModel
 
             await _emailService.SendAsync("tolga.ozdemir@egecontrol.com", subject, body);
             
-            // E-posta başarılı, veritabanını güncelle
+            // E-posta başarılı, mümkünse veritabanını güncelle
             Contact.EmailSent = true;
-            _context.ContactMessages.Update(Contact);
-            await _context.SaveChangesAsync();
+            if (savedToDb)
+            {
+                try
+                {
+                    _context.ContactMessages.Update(Contact);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception updateEx)
+                {
+                    _logger.LogError(updateEx, "E-posta sonrası veritabanı güncellenemedi. ID: {Id}", Contact.Id);
+                }
+            }
             
             _logger.LogInformation("İletişim mesajı başarıyla gönderildi: {Email} - ID: {Id}", Contact.Email, Contact.Id);
             StatusMessage = $"Mesajınız başarıyla gönderildi (#{Contact.Id}). En kısa sürede size dönüş yapacağız.";
         }
         catch (Exception ex)
         {
-            // E-posta hatası, veritabanına kaydet ama kullanıcıya bildirme
+            // E-posta hatası, mümkünse veritabanına kaydet
             Contact.EmailSent = false;
             Contact.EmailError = ex.Message;
-            _context.ContactMessages.Update(Contact);
-            await _context.SaveChangesAsync();
+            if (savedToDb)
+            {
+                try
+                {
+                    _context.ContactMessages.Update(Contact);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception updateEx)
+                {
+                    _logger.LogError(updateEx, "E-posta hatası sonrası veritabanı güncellenemedi. ID: {Id}", Contact.Id);
+                }
+            }
             
             _logger.LogError(ex, "İletişim mesajı gönderilirken hata oluştu: {Email} - ID: {Id} - {Error}", 
                 Contact.Email, Contact.Id, ex.Message);
@@ -85,7 +116,7 @@ public class IndexModel : PageModel
         }
 
         // Formu temizle
-        Contact = new ContactMessage();
-        return RedirectToPage();
+    Contact = new ContactMessage();
+    return RedirectToPage();
     }
 }
