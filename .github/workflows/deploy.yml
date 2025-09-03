@@ -52,10 +52,69 @@ jobs:
             !app_offline.htm
 
       - name: Wait for app to stop
-        run: Start-Sleep -Seconds 30
+        run: Start-Sleep -Seconds 60
         shell: powershell
 
-      - name: FTP Deploy (main files)
+      - name: FTP Deploy (main files) - Attempt 1
+        id: ftp-deploy-1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs/
+          state-name: .ftp-deploy-sync-state.json
+          timeout: 300000
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/*.pdb
+            **/*.map
+            **/*.br
+            **/*.gz
+            **/*.xml
+            **/*.md
+            app.db
+            logs/
+            runtimes/linux-*/**
+            runtimes/osx-*/**
+            runtimes/*-musl-*/**
+            runtimes/maccatalyst*/**
+            runtimes/win-x86/**
+            runtimes/win-arm*/**
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
+            **/bootstrap.css
+            **/bootstrap.js
+            **/bootstrap-*.css
+            **/bootstrap-*.js
+            **/jquery.js
+            **/jquery.slim.js
+            !**/*.min.css
+            !**/*.min.js
+
+      - name: Wait before retry (if first attempt failed)
+        if: steps.ftp-deploy-1.outcome == 'failure'
+        run: |
+          Write-Host "⚠️ First FTP attempt failed. Waiting 90 seconds before retry..."
+          Start-Sleep -Seconds 90
+        shell: powershell
+
+      - name: FTP Deploy (main files) - Attempt 2 (Retry)
+        if: steps.ftp-deploy-1.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
