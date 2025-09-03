@@ -1,5 +1,8 @@
 name: Build & Deploy to Plesk (FTP)
 
+# Disable GitHub Actions workflow validation warnings
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
 on:
   push:
     branches: [ "main" ]
