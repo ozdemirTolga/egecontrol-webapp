@@ -51,62 +51,25 @@ jobs:
             **/*
             !app_offline.htm
 
-      - name: Wait for app to stop
-        run: Start-Sleep -Seconds 10
+      - name: Install lftp
+        run: choco install lftp --yes --no-progress
         shell: powershell
 
-      - name: Create empty file to overwrite app_offline.htm
-        run: echo '' > publish/app_offline_remove.txt
+      - name: Wait for app to stop
+        run: Start-Sleep -Seconds 20
+        shell: powershell
 
-      - name: FTP Deploy (main files)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          security: loose
-          local-dir: publish/
-          server-dir: /httpdocs/
-          state-name: .ftp-deploy-sync-state.json
-          timeout: 120000
-          log-level: verbose
-          concurrency: 1
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/*.pdb
-            app.db
-            **/*.map
-            **/*.br
-            **/*.gz
-            **/*.xml
-            **/*.md
-            runtimes/linux-*/**
-            runtimes/osx-*/**
-            runtimes/*-musl-*/**
-            runtimes/maccatalyst*/**
-            runtimes/win-x86/**
-            runtimes/win-arm*/**
-            cs/**
-            de/**
-            es/**
-            fr/**
-            it/**
-            ja/**
-            ko/**
-            zh-Hans/**
-            zh-Hant/**
-            **/bootstrap.css
-            **/bootstrap.js
-            **/bootstrap-*.css
-            **/bootstrap-*.js
-            **/jquery.js
-            **/jquery.slim.js
-            !**/*.min.css
-            !**/*.min.js
+      - name: Sync files with lftp
+        run: |
+          lftp -c "set ftp:ssl-allow yes; set ftp:list-options -a; open -u ${{ secrets.FTP_USERNAME }},'${{ secrets.FTP_PASSWORD }}' ftps://${{ secrets.FTP_SERVER }}; mirror -R -v -e --delete --parallel=5 --exclude-glob .git* --exclude-glob .github/ --exclude-glob .vscode/ --exclude-glob app.db --exclude-glob logs/ publish/ /httpdocs/"
+        shell: bash
+
+      - name: Remove app_offline.htm
+        run: |
+          lftp -c "set ftp:ssl-allow yes; open -u ${{ secrets.FTP_USERNAME }},'${{ secrets.FTP_PASSWORD }}' ftps://${{ secrets.FTP_SERVER }}; rm /httpdocs/app_offline.htm"
+        shell: bash
+        continue-on-error: true
 
       - name: Cleanup complete - app should be running now
-        run: Write-Host "✅ Deployment completed! app_offline.htm should have been removed by sync operation. Site should be online now!"
+        run: Write-Host "✅ Deployment completed with lftp! Site should be online now!"
         shell: powershell
