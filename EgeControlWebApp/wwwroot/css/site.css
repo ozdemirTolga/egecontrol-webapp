@@ -37,3 +37,15 @@ body {
   max-height: 50px;
   width: auto;
 }
+
+/* Logo yatayda 2x geniş görünüm için esnetme (yükseklik sabit kalır) */
+.site-logo-wide {
+  transform: scaleX(2);
+  transform-origin: left center;
+}
+
+.navbar-brand .brand-text {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
