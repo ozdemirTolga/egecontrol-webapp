@@ -27,17 +27,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="Admin" asp-page="/Customers/Index">
-                                <i class="fas fa-users"></i> Müşteriler (Eski)
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Companies" asp-action="Index">
-                                <i class="fas fa-building"></i> Şirketler
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Contacts" asp-action="Index">
-                                <i class="fas fa-address-book"></i> İletişim Kişileri
+                                <i class="fas fa-users"></i> Müşteriler
                             </a>
                         </li>
                         <li class="nav-item">
@@ -50,15 +40,8 @@
                                 <i class="fas fa-plus"></i> Yeni
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-area="Admin" asp-controller="Companies" asp-action="Create">
-                                    <i class="fas fa-building"></i> Şirket
-                                </a></li>
-                                <li><a class="dropdown-item" asp-area="Admin" asp-controller="Contacts" asp-action="Create">
-                                    <i class="fas fa-user-plus"></i> İletişim Kişisi
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" asp-area="Admin" asp-page="/Customers/Create">
-                                    <i class="fas fa-user-plus"></i> Müşteri (Eski)
+                                    <i class="fas fa-user-plus"></i> Müşteri
                                 </a></li>
                                 <li><a class="dropdown-item" asp-area="Admin" asp-page="/Quotes/Create">
                                     <i class="fas fa-file-plus"></i> Teklif
@@ -84,17 +67,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="Admin" asp-page="/Customers/Index">
-                                <i class="fas fa-users"></i> Müşteriler (Eski)
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Companies" asp-action="Index">
-                                <i class="fas fa-building"></i> Şirketler
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Contacts" asp-action="Index">
-                                <i class="fas fa-address-book"></i> İletişim Kişileri
+                                <i class="fas fa-users"></i> Müşteriler
                             </a>
                         </li>
                         <li class="nav-item">
@@ -106,18 +79,8 @@
                         @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Admin" asp-controller="Companies" asp-action="Create">
-                                    <i class="fas fa-plus"></i> Yeni Şirket
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="Admin" asp-controller="Contacts" asp-action="Create">
-                                    <i class="fas fa-user-plus"></i> Yeni İletişim Kişisi
-                                </a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" asp-area="Admin" asp-page="/Customers/Create">
-                                    <i class="fas fa-user-plus"></i> Yeni Müşteri (Eski)
+                                    <i class="fas fa-user-plus"></i> Yeni Müşteri
                                 </a>
                             </li>
                         }
