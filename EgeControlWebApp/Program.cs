@@ -54,8 +54,6 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
-builder.Services.AddScoped<ICompanyService, CompanyService>();
-builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
