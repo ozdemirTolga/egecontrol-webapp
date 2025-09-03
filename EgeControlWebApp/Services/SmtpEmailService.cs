@@ -62,6 +62,10 @@ namespace EgeControlWebApp.Services
                     message.Bcc.Add(new MailAddress(addr.Trim()));
                 }
             }
+            // UTF-8 içeriği doğru göndermek için encoding ayarları
+            message.SubjectEncoding = System.Text.Encoding.UTF8;
+            message.BodyEncoding = System.Text.Encoding.UTF8;
+            message.HeadersEncoding = System.Text.Encoding.UTF8;
             message.Subject = subject;
             message.Body = htmlBody;
             message.IsBodyHtml = true;
@@ -98,26 +102,38 @@ namespace EgeControlWebApp.Services
                 return;
             }
 
-            // Tek bir yapılandırma ile SMTP gönderimini gerçekleştiriyoruz.
+            // SMTP gönderimi: ana deneme + gerektiğinde 465'e geri dönüş (implicit SSL)
+            Exception? firstError = null;
             try
             {
-                // SSL sertifika doğrulamasını esnek hale getir
-                ServicePointManager.ServerCertificateValidationCallback = 
-                    new RemoteCertificateValidationCallback(ValidateServerCertificate);
-
-                using var client = new SmtpClient(_settings.Host, _settings.Port)
-                {
-                    EnableSsl = _settings.EnableSsl,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(_settings.User, _settings.Password),
-                    Timeout = 15000 // 15 saniye timeout
-                };
-                await client.SendMailAsync(message);
+                await SendWithSettingsAsync(message, _settings.Host, _settings.Port, _settings.EnableSsl, _settings.User, _settings.Password);
+                return;
             }
             catch (Exception ex)
             {
-                throw new Exception($"SMTP gönderimi başarısız oldu: {ex.Message}", ex);
+                firstError = ex;
+            }
+
+            // Fallback: 587 TLS başarısızsa 465 implicit SSL dene
+        if (_settings.EnableSsl && _settings.Port == 587)
+            {
+                try
+                {
+            await SendWithSettingsAsync(message, _settings.Host, 465, true, _settings.User, _settings.Password);
+                    return;
+                }
+                catch (Exception secondEx)
+                {
+                    var details = $"Birincil deneme H:{_settings.Host} P:{_settings.Port} SSL:{_settings.EnableSsl} hata: {firstError?.Message}. " +
+                                  $"Geri dönüş denemesi H:{_settings.Host} P:465 SSL:true hata: {secondEx.Message}.";
+                    throw new Exception($"SMTP gönderimi başarısız oldu. {details}", secondEx);
+                }
+            }
+
+            // Hiç geri dönüş uygulanmadıysa ilk hatayı zengin mesajla yükselt
+            if (firstError != null)
+            {
+                throw new Exception($"SMTP gönderimi başarısız oldu (H:{_settings.Host} P:{_settings.Port} SSL:{_settings.EnableSsl}). {firstError.Message}", firstError);
             }
         }
 
@@ -147,6 +163,23 @@ namespace EgeControlWebApp.Services
             }
 
             return false; // Diğer tüm SSL hataları için false
+        }
+
+        private static async Task SendWithSettingsAsync(MailMessage message, string host, int port, bool enableSsl, string user, string password)
+        {
+            // Geliştirme ortamında sertifika esnekliği korunuyor (ValidateServerCertificate içinde)
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+
+            using var client = new SmtpClient(host, port)
+            {
+                EnableSsl = enableSsl,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(user, password),
+                Timeout = 30000
+            };
+
+            await client.SendMailAsync(message);
         }
     }
 }
