@@ -180,7 +180,8 @@ namespace EgeControlWebApp.Services
                 }
             }
 
-            return $"EGE-{currentYear:yyyy}{currentMonth:00}-{nextNumber:000}";
+            // Note: currentYear is an int; use D4 to avoid literal "yyyy"; include dash for readability => EGE-YYYY-MM-###
+            return $"EGE-{currentYear:D4}-{currentMonth:00}-{nextNumber:000}";
         }
 
         public async Task<IEnumerable<Quote>> GetQuotesByCustomerIdAsync(int customerId)

@@ -109,11 +109,11 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 var typeText = selectedPdfType == PdfType.Summary ? "Ozet" : "Detayli";
                 var fileName = $"Teklif_{quote.QuoteNumber}_{typeText}_{DateTime.Now:yyyyMMdd}.pdf";
                 
-                var subject = $"Teklif {quote.QuoteNumber} - EGE CONTROL";
+                var subject = $"Teklif {quote.QuoteNumber} - Ege Otomasyon";
                 var pdfTypeDescription = selectedPdfType == PdfType.Summary ? "özet" : "detaylı";
                 var body = $@"Merhaba {quote.Customer?.ContactPerson ?? quote.Customer?.CompanyName ?? ""},<br/><br/>" +
                            $"Ek'te {quote.QuoteDate:dd.MM.yyyy} tarihli {quote.QuoteNumber} numaralı teklifimizin {pdfTypeDescription} versiyonunu bulabilirsiniz.<br/><br/>" +
-                           $"Saygılarımızla,<br/>EGE CONTROL";
+                           $"Saygılarımızla,<br/>Ege Otomasyon";
 
                 var attachments = new List<EmailAttachment>
                 {
