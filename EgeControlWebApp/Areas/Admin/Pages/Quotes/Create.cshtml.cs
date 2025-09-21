@@ -37,6 +37,7 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             Quote.VatRate = 20;
             Quote.CreatedBy = User.Identity?.Name ?? "Admin";
             Quote.Currency = "EUR"; // Set default currency
+            Quote.Status = QuoteStatus.Draft; // Varsayılan olarak taslak
             
             // Set user ID for tracking
             var user = await _userManager.GetUserAsync(User);
@@ -84,7 +85,7 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             }
             else
             {
-                Quote.Status = QuoteStatus.Sent;
+                Quote.Status = QuoteStatus.Draft; // Her durumda taslak olarak başla
             }
 
             Quote.CreatedBy = User.Identity?.Name ?? "Admin";
@@ -136,8 +137,8 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             {
                 await _quoteService.CreateQuoteAsync(Quote);
                 
-                var statusText = saveAsDraft ? "taslak olarak kaydedildi" : "oluşturuldu";
-                TempData["SuccessMessage"] = $"Teklif başarıyla {statusText}.";
+                var statusText = saveAsDraft ? "taslak olarak kaydedildi" : "başarıyla oluşturuldu ve taslak olarak kaydedildi";
+                TempData["SuccessMessage"] = $"Teklif {statusText}. E-posta göndermek için teklif detayına gidin.";
                 
                 return RedirectToPage("./Index");
             }

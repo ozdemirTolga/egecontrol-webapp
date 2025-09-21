@@ -142,6 +142,19 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 };
 
                 await _emailService.SendAsync(recipient, subject, body, attachments);
+                
+                // E-posta başarıyla gönderildikten sonra durumu "Gönderildi" olarak güncelle
+                quote.Status = QuoteStatus.Sent;
+                quote.UpdatedAt = DateTime.UtcNow;
+                quote.LastModifiedBy = User.Identity?.Name ?? "System";
+                var currentUserName = User.Identity?.Name ?? "";
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == currentUserName);
+                if (currentUser != null)
+                {
+                    quote.LastModifiedByUserId = currentUser.Id;
+                }
+                await _context.SaveChangesAsync();
+                
                 // If pickup directory is enabled, inform where the email was saved
                 var smtpOpts = HttpContext.RequestServices.GetService<IOptions<SmtpSettings>>();
                 if (smtpOpts?.Value.UsePickupDirectory == true)
@@ -261,6 +274,104 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 TempData["ErrorMessage"] = $"PDF oluşturulurken hata oluştu: {ex.Message}";
                 return RedirectToPage();
             }
+        }
+
+        public async Task<IActionResult> OnPostSaveAsAsync(int id)
+        {
+            var originalQuote = await _context.Quotes
+                .Include(q => q.Customer)
+                .Include(q => q.QuoteItems)
+                .FirstOrDefaultAsync(q => q.Id == id);
+
+            if (originalQuote == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Yeni teklifi oluştur (kopyala)
+                var newQuote = new Quote
+                {
+                    CustomerId = originalQuote.CustomerId,
+                    QuoteNumber = await GenerateNewQuoteNumberAsync(),
+                    QuoteDate = DateTime.Now,
+                    ValidUntil = DateTime.Now.AddDays(30),
+                    Title = originalQuote.Title + " (Kopya)",
+                    Description = originalQuote.Description,
+                    VatRate = originalQuote.VatRate,
+                    Currency = originalQuote.Currency,
+                    Status = QuoteStatus.Draft, // Kopyalanan teklif de taslak olarak başlar
+                    CreatedBy = User.Identity?.Name ?? "Admin",
+                    CreatedAt = DateTime.Now
+                };
+
+                // Kullanıcı ID'sini ayarla
+                var currentUserName = User.Identity?.Name ?? "";
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == currentUserName);
+                if (user != null)
+                {
+                    newQuote.CreatedByUserId = user.Id;
+                }
+
+                _context.Quotes.Add(newQuote);
+                await _context.SaveChangesAsync();
+
+                // Teklif kalemlerini kopyala
+                foreach (var originalItem in originalQuote.QuoteItems)
+                {
+                    var newItem = new QuoteItem
+                    {
+                        QuoteId = newQuote.Id,
+                        ItemName = originalItem.ItemName,
+                        Description = originalItem.Description,
+                        Quantity = originalItem.Quantity,
+                        UnitPrice = originalItem.UnitPrice,
+                        Unit = originalItem.Unit,
+                        DiscountPercentage = originalItem.DiscountPercentage,
+                        DiscountAmount = originalItem.DiscountAmount,
+                        Total = originalItem.Total
+                    };
+                    _context.QuoteItems.Add(newItem);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Toplamları hesapla
+                newQuote.SubTotal = newQuote.QuoteItems.Sum(qi => qi.Total);
+                newQuote.VatAmount = newQuote.SubTotal * (newQuote.VatRate / 100);
+                newQuote.TotalAmount = newQuote.SubTotal + newQuote.VatAmount;
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Teklif başarıyla kopyalandı. Yeni teklif numarası: {newQuote.QuoteNumber}";
+                return RedirectToPage("./Edit", new { id = newQuote.Id });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Teklif kopyalanırken hata oluştu: {ex.Message}";
+                return RedirectToPage(new { id });
+            }
+        }
+
+        private async Task<string> GenerateNewQuoteNumberAsync()
+        {
+            var currentYear = DateTime.Now.Year;
+            var lastQuote = await _context.Quotes
+                .Where(q => q.QuoteNumber.StartsWith($"TEK-{currentYear}"))
+                .OrderByDescending(q => q.QuoteNumber)
+                .FirstOrDefaultAsync();
+
+            int nextNumber = 1;
+            if (lastQuote != null)
+            {
+                var lastNumberPart = lastQuote.QuoteNumber.Split('-').LastOrDefault();
+                if (int.TryParse(lastNumberPart, out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            return $"TEK-{currentYear}-{nextNumber:D4}";
         }
     }
 }

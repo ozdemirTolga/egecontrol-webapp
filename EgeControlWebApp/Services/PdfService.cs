@@ -18,11 +18,13 @@ namespace EgeControlWebApp.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<PdfService> _logger;
 
-        public PdfService(IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager)
+        public PdfService(IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager, ILogger<PdfService> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
+            _logger = logger;
         }
 
         static PdfService()
@@ -43,14 +45,24 @@ namespace EgeControlWebApp.Services
                 if (httpContext?.User?.Identity?.IsAuthenticated == true)
                 {
                     var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    var userName = httpContext.User.Identity.Name;
+                    _logger.LogInformation("PDF Debug - UserId: {UserId}, UserName: {UserName}", userId, userName);
+                    
                     if (!string.IsNullOrEmpty(userId))
                     {
                         currentUser = await _userManager.FindByIdAsync(userId);
+                        _logger.LogInformation("PDF Debug - CurrentUser: {FirstName} {LastName} ({Email})", 
+                            currentUser?.FirstName, currentUser?.LastName, currentUser?.Email);
                     }
                 }
+                else
+                {
+                    _logger.LogWarning("PDF Debug - User not authenticated");
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "PDF Debug - Error getting current user");
                 // Hata durumunda null kalır, fallback kullanılır
             }
             var document = Document.Create(container =>

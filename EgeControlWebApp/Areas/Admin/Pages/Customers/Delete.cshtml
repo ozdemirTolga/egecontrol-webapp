@@ -1,0 +1,83 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Customers.DeleteModel
+@{
+    ViewData["Title"] = "Müşteri Sil";
+    ViewData["ActivePage"] = "Customers";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-trash me-2 text-danger"></i>
+                    Müşteri Sil
+                </h2>
+                <a asp-page="./Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Geri
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Silme Onayı
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Dikkat!</strong> Bu işlem geri alınamaz. Bu müşteriyi silmek istediğinizden emin misiniz?
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Şirket Adı:</dt>
+                                <dd class="col-sm-8">@Model.Customer.CompanyName</dd>
+
+                                <dt class="col-sm-4">İletişim Kişisi:</dt>
+                                <dd class="col-sm-8">@(Model.Customer.ContactPerson ?? "-")</dd>
+
+                                <dt class="col-sm-4">E-posta:</dt>
+                                <dd class="col-sm-8">@(Model.Customer.Email ?? "-")</dd>
+
+                                <dt class="col-sm-4">Telefon:</dt>
+                                <dd class="col-sm-8">@(Model.Customer.Phone ?? "-")</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Şehir:</dt>
+                                <dd class="col-sm-8">@(Model.Customer.City ?? "-")</dd>
+
+                                <dt class="col-sm-4">Ülke:</dt>
+                                <dd class="col-sm-8">@(Model.Customer.Country ?? "-")</dd>
+
+                                <dt class="col-sm-4">Vergi No:</dt>
+                                <dd class="col-sm-8">@(Model.Customer.TaxNumber ?? "-")</dd>
+
+                                <dt class="col-sm-4">Oluşturma Tarihi:</dt>
+                                <dd class="col-sm-8">@Model.Customer.CreatedAt.ToString("dd.MM.yyyy")</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-page="./Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> İptal
+                        </a>
+                        <form method="post" class="d-inline">
+                            <input type="hidden" asp-for="Customer.Id" />
+                            <button type="submit" class="btn btn-danger" 
+                                    onclick="return confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')">
+                                <i class="fas fa-trash me-1"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
