@@ -8,11 +8,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace EgeControlWebApp.Services
 {
     public class PdfService : IPdfService
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public PdfService(IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager)
+        {
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
+        }
+
         static PdfService()
         {
             // QuestPDF Community lisansını ayarla
@@ -21,8 +33,26 @@ namespace EgeControlWebApp.Services
             QuestPDF.Settings.EnableDebugging = false;
         }
 
-        public Task<byte[]> GenerateQuotePdfAsync(Quote quote, PdfType pdfType = PdfType.Detailed)
+        public async Task<byte[]> GenerateQuotePdfAsync(Quote quote, PdfType pdfType = PdfType.Detailed)
         {
+            // Mevcut kullanıcı bilgilerini al
+            ApplicationUser? currentUser = null;
+            try
+            {
+                var httpContext = _httpContextAccessor.HttpContext;
+                if (httpContext?.User?.Identity?.IsAuthenticated == true)
+                {
+                    var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        currentUser = await _userManager.FindByIdAsync(userId);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Hata durumunda null kalır, fallback kullanılır
+            }
             var document = Document.Create(container =>
             {
                 container.Page(page =>
@@ -131,13 +161,16 @@ namespace EgeControlWebApp.Services
                             {
                                 creatorCol.Item().AlignCenter().Text("TEKLİFİ OLUŞTURAN").Bold().FontSize(12).FontColor("#FF6600");
                                 
-                                if (quote.CreatedByUser != null)
+                                // Önce mevcut kullanıcıyı, sonra quote'daki kullanıcıyı, en son fallback kullan
+                                var userToShow = currentUser ?? quote.CreatedByUser;
+                                
+                                if (userToShow != null)
                                 {
-                                    creatorCol.Item().PaddingTop(5).Text($" Ad Soyad: {quote.CreatedByUser.FirstName} {quote.CreatedByUser.LastName}").FontSize(10);
-                                    creatorCol.Item().Text($" Email: {quote.CreatedByUser.Email ?? "-"}").FontSize(10);
-                                    creatorCol.Item().Text($" Departman: {quote.CreatedByUser.Department ?? "IT"}").FontSize(10);
-                                    creatorCol.Item().Text($" Pozisyon: {quote.CreatedByUser.Position ?? "System Administrator"}").FontSize(10);
-                                    creatorCol.Item().Text($" Telefon: {quote.CreatedByUser.PhoneNumber ?? "Belirtilmemiş"}").FontSize(10);
+                                    creatorCol.Item().PaddingTop(5).Text($" Ad Soyad: {userToShow.FirstName} {userToShow.LastName}").FontSize(10);
+                                    creatorCol.Item().Text($" Email: {userToShow.Email ?? "-"}").FontSize(10);
+                                    creatorCol.Item().Text($" Departman: {userToShow.Department ?? "IT"}").FontSize(10);
+                                    creatorCol.Item().Text($" Pozisyon: {userToShow.Position ?? "System Administrator"}").FontSize(10);
+                                    creatorCol.Item().Text($" Telefon: {userToShow.PhoneNumber ?? "Belirtilmemiş"}").FontSize(10);
                                     creatorCol.Item().Text($" Oluşturma: {quote.CreatedAt:dd.MM.yyyy HH:mm}").FontSize(10);
                                 }
                                 else
@@ -328,7 +361,7 @@ namespace EgeControlWebApp.Services
             });
 
             var bytes = document.GeneratePdf();
-            return Task.FromResult(bytes);
+            return bytes;
         }
 
         public Task<byte[]> GenerateCustomerListPdfAsync(IEnumerable<Customer> customers)

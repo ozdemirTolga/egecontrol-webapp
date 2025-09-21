@@ -32,6 +32,18 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddRoles<IdentityRole>() // Role desteği ekliyoruz
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Oturum süresini uzat - 12 saat
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromHours(12); // 12 saat
+    options.SlidingExpiration = true; // Kullanıcı aktif oldukça süre yenilenir
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
 builder.Services.AddRazorPages(options =>
 {
     // Admin sayfalarını koruma altına alıyoruz
@@ -51,6 +63,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Services
+builder.Services.AddHttpContextAccessor(); // HttpContext erişimi için
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
