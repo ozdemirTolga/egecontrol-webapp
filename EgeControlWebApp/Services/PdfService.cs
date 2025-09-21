@@ -45,8 +45,8 @@ namespace EgeControlWebApp.Services
                                     {
                                         var logoBytes = File.ReadAllBytes(logoPath);
                                         logoCol.Item()
-                                            .MaxHeight(35)
-                                            .MaxWidth(150)
+                                            .MaxHeight(50)
+                                            .MaxWidth(200)
                                             .Image(logoBytes);
                                     }
                                     else

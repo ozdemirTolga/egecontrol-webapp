@@ -59,7 +59,7 @@
                                         <form asp-page-handler="SendEmail" method="post" class="dropdown-item-form">
                                             <input type="hidden" name="id" value="@Model.Quote.Id" />
                                             <input type="hidden" name="pdfType" value="detailed" />
-                                            <input type="hidden" name="to" id="detailedEmailTo" />
+                                            <input type="hidden" name="to" id="detailedEmailTo" value="@Model.Quote.Customer?.Email" />
                                             <button type="submit" class="dropdown-item" onclick="setEmailTo('detailed')">
                                                 <i class="fas fa-list-alt me-2"></i> Detaylı PDF ile Gönder
                                             </button>
@@ -69,7 +69,7 @@
                                         <form asp-page-handler="SendEmail" method="post" class="dropdown-item-form">
                                             <input type="hidden" name="id" value="@Model.Quote.Id" />
                                             <input type="hidden" name="pdfType" value="summary" />
-                                            <input type="hidden" name="to" id="summaryEmailTo" />
+                                            <input type="hidden" name="to" id="summaryEmailTo" value="@Model.Quote.Customer?.Email" />
                                             <button type="submit" class="dropdown-item" onclick="setEmailTo('summary')">
                                                 <i class="fas fa-file-alt me-2"></i> Özet PDF ile Gönder
                                             </button>
@@ -80,12 +80,7 @@
                         </div>
                     </div>
                     
-                    <script>
-                        function setEmailTo(type) {
-                            const emailValue = document.getElementById('emailAddress').value;
-                            document.getElementById(type + 'EmailTo').value = emailValue;
-                        }
-                    </script>
+                    <script src="~/js/email-validation.js"></script>
                     
                     <style>
                         .dropdown-item-form {
@@ -281,3 +276,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/email-validation.js"></script>
+}

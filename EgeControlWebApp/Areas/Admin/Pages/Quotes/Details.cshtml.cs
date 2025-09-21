@@ -76,6 +76,9 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             if (quote == null)
                 return NotFound();
 
+            // Debug için log
+            Console.WriteLine($"SendEmail Debug - ID: {id}, TO: '{to}', Customer Email: '{quote.Customer?.Email}'");
+
             // compute totals if needed
             if (quote.TotalAmount == 0 && quote.SubTotal == 0 && quote.QuoteItems.Any())
             {
@@ -91,10 +94,28 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 await _context.SaveChangesAsync();
             }
 
-            var recipient = string.IsNullOrWhiteSpace(to) ? quote.Customer?.Email : to;
+            // E-posta alıcısını belirle - önce to parametresi, sonra müşteri e-postası
+            var recipient = !string.IsNullOrWhiteSpace(to?.Trim()) ? to.Trim() : quote.Customer?.Email?.Trim();
+            
+            // E-posta adresi kontrolü
             if (string.IsNullOrWhiteSpace(recipient))
             {
-                TempData["ErrorMessage"] = "Müşteri e-posta adresi bulunamadı.";
+                var errorMsg = string.IsNullOrWhiteSpace(quote.Customer?.Email) 
+                    ? "E-posta gönderilemedi: Bu müşterinin e-posta adresi kayıtlı değil. Lütfen önce müşteri bilgilerini düzenleyin ve e-posta adresi ekleyin."
+                    : "E-posta gönderilemedi: E-posta adresi boş. Lütfen geçerli bir e-posta adresi girin.";
+                TempData["ErrorMessage"] = errorMsg;
+                return RedirectToPage(new { id });
+            }
+
+            // E-posta formatı kontrolü
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(recipient);
+                recipient = addr.Address; // Normalize et
+            }
+            catch (FormatException)
+            {
+                TempData["ErrorMessage"] = $"E-posta gönderilemedi: Geçersiz e-posta formatı: '{recipient}'. Lütfen doğru e-posta adresi girin.";
                 return RedirectToPage(new { id });
             }
 

@@ -26,11 +26,17 @@ namespace EgeControlWebApp.Services
 
         public async Task SendAsync(string to, string subject, string htmlBody, IEnumerable<EmailAttachment>? attachments = null, string? cc = null, string? bcc = null)
         {
+            // E-posta adres kontrolü
+            if (string.IsNullOrWhiteSpace(to))
+            {
+                throw new ArgumentException("E-posta alıcısı adresi boş olamaz.", nameof(to));
+            }
+
             using var message = new MailMessage();
             message.From = new MailAddress(_settings.From, _settings.DisplayName ?? _settings.From);
-            message.To.Add(to);
-            if (!string.IsNullOrWhiteSpace(cc)) message.CC.Add(cc);
-            if (!string.IsNullOrWhiteSpace(bcc)) message.Bcc.Add(bcc);
+            message.To.Add(new MailAddress(to.Trim()));
+            if (!string.IsNullOrWhiteSpace(cc)) message.CC.Add(new MailAddress(cc.Trim()));
+            if (!string.IsNullOrWhiteSpace(bcc)) message.Bcc.Add(new MailAddress(bcc.Trim()));
             message.Subject = subject;
             message.Body = htmlBody;
             message.IsBodyHtml = true;
