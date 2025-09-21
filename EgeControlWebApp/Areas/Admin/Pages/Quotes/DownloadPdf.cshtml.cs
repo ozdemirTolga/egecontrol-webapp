@@ -31,6 +31,9 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 return NotFound();
             }
 
+            // Order items by SortOrder to ensure PDF lists all items correctly
+            quote.QuoteItems = quote.QuoteItems.OrderBy(qi => qi.SortOrder).ToList();
+
             // Ensure totals exist before generating PDF
             if ((quote.TotalAmount == 0 || quote.SubTotal == 0) && quote.QuoteItems.Any())
             {

@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Mail;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Options;
 
 namespace EgeControlWebApp.Services
@@ -13,6 +15,8 @@ namespace EgeControlWebApp.Services
         public string Password { get; set; } = string.Empty;
         public string From { get; set; } = string.Empty;
         public string? DisplayName { get; set; }
+    public bool UsePickupDirectory { get; set; } = false;
+    public string? PickupDirectory { get; set; }
     }
 
     public class SmtpEmailService : IEmailService
@@ -33,10 +37,41 @@ namespace EgeControlWebApp.Services
             }
 
             using var message = new MailMessage();
+            if (string.IsNullOrWhiteSpace(_settings.From))
+                throw new ArgumentException("Gönderen (From) adresi yapılandırılmamış.", nameof(_settings.From));
             message.From = new MailAddress(_settings.From, _settings.DisplayName ?? _settings.From);
-            message.To.Add(new MailAddress(to.Trim()));
-            if (!string.IsNullOrWhiteSpace(cc)) message.CC.Add(new MailAddress(cc.Trim()));
-            if (!string.IsNullOrWhiteSpace(bcc)) message.Bcc.Add(new MailAddress(bcc.Trim()));
+            // Validate and add To address
+            if (string.IsNullOrWhiteSpace(to))
+                throw new ArgumentException("E-posta alıcısı boş olamaz.", nameof(to));
+            try
+            {
+                var toAddress = new MailAddress(to.Trim());
+                message.To.Add(toAddress);
+            }
+            catch (FormatException ex)
+            {
+                throw new ArgumentException("Geçersiz e-posta adresi.", nameof(to), ex);
+            }
+            // Add CC addresses if any (comma-separated)
+            if (!string.IsNullOrWhiteSpace(cc))
+            {
+                foreach (var addr in cc.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    message.CC.Add(new MailAddress(addr.Trim()));
+                }
+            }
+            // Add BCC addresses if any (comma-separated)
+            if (!string.IsNullOrWhiteSpace(bcc))
+            {
+                foreach (var addr in bcc.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    message.Bcc.Add(new MailAddress(addr.Trim()));
+                }
+            }
+            // UTF-8 içeriği doğru göndermek için encoding ayarları
+            message.SubjectEncoding = System.Text.Encoding.UTF8;
+            message.BodyEncoding = System.Text.Encoding.UTF8;
+            message.HeadersEncoding = System.Text.Encoding.UTF8;
             message.Subject = subject;
             message.Body = htmlBody;
             message.IsBodyHtml = true;
@@ -51,54 +86,106 @@ namespace EgeControlWebApp.Services
                 }
             }
 
-            async Task SendInternalAsync(string host, int port, bool enableSsl)
+            // Development/test için: e-postayı dosyaya yaz
+            if (_settings.UsePickupDirectory)
             {
-                using var client = new SmtpClient(host, port)
+                var pickup = _settings.PickupDirectory;
+                if (string.IsNullOrWhiteSpace(pickup))
                 {
-                    EnableSsl = enableSsl,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(_settings.User, _settings.Password),
-                    Timeout = 100000
+                    pickup = Path.Combine(AppContext.BaseDirectory, "MailDrop");
+                }
+                // Ensure absolute path
+                var absolutePickup = Path.IsPathRooted(pickup)
+                    ? pickup
+                    : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, pickup));
+                Directory.CreateDirectory(absolutePickup);
+                using var client = new SmtpClient
+                {
+                    DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
+                    PickupDirectoryLocation = absolutePickup
                 };
-
-                // Log connection details for debugging
-                System.Diagnostics.Debug.WriteLine($"Attempting SMTP connection to {host}:{port}, SSL={enableSsl}, User={_settings.User}");
-                
                 await client.SendMailAsync(message);
+                return;
             }
 
-            // Try different configurations
-            var configs = new[]
+            // SMTP gönderimi: ana deneme + gerektiğinde 465'e geri dönüş (implicit SSL)
+            Exception? firstError = null;
+            try
             {
-                (host: _settings.Host, port: _settings.Port, ssl: _settings.EnableSsl),
-                (host: _settings.Host, port: 587, ssl: true),  // STARTTLS
-                (host: _settings.Host, port: 465, ssl: true),  // Implicit SSL
-                (host: _settings.Host, port: 25, ssl: false),  // Plain SMTP
-                (host: _settings.Host, port: 2525, ssl: false) // Alternative port
-            };
+                await SendWithSettingsAsync(message, _settings.Host, _settings.Port, _settings.EnableSsl, _settings.User, _settings.Password);
+                return;
+            }
+            catch (Exception ex)
+            {
+                firstError = ex;
+            }
 
-            Exception? lastException = null;
-            var attempts = new List<string>();
-
-            foreach (var config in configs)
+            // Fallback: 587 TLS başarısızsa 465 implicit SSL dene
+        if (_settings.EnableSsl && _settings.Port == 587)
             {
                 try
                 {
-                    await SendInternalAsync(config.host, config.port, config.ssl);
-                    return; // Success!
+            await SendWithSettingsAsync(message, _settings.Host, 465, true, _settings.User, _settings.Password);
+                    return;
                 }
-                catch (Exception ex)
+                catch (Exception secondEx)
                 {
-                    lastException = ex;
-                    attempts.Add($"{config.host}:{config.port} SSL={config.ssl} -> {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"Failed: {config.host}:{config.port} SSL={config.ssl} - {ex.Message}");
+                    var details = $"Birincil deneme H:{_settings.Host} P:{_settings.Port} SSL:{_settings.EnableSsl} hata: {firstError?.Message}. " +
+                                  $"Geri dönüş denemesi H:{_settings.Host} P:465 SSL:true hata: {secondEx.Message}.";
+                    throw new Exception($"SMTP gönderimi başarısız oldu. {details}", secondEx);
                 }
             }
 
-            // All attempts failed
-            var attemptDetails = string.Join(" | ", attempts);
-            throw new Exception($"SMTP gönderimi başarısız oldu. Denenen konfigürasyonlar: {attemptDetails}. Son hata: {lastException?.Message} {lastException?.InnerException?.Message}");
+            // Hiç geri dönüş uygulanmadıysa ilk hatayı zengin mesajla yükselt
+            if (firstError != null)
+            {
+                throw new Exception($"SMTP gönderimi başarısız oldu (H:{_settings.Host} P:{_settings.Port} SSL:{_settings.EnableSsl}). {firstError.Message}", firstError);
+            }
+        }
+
+        // SSL sertifika doğrulaması için güvenli callback metodu
+        private static bool ValidateServerCertificate(
+            object sender,
+            X509Certificate? certificate,
+            X509Chain? chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            // Development ortamında tüm sertifikaları kabul et
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                return true;
+            }
+
+            // Production ortamında sadece RemoteCertificateNameMismatch hatalarını göz ardı et
+            // Diğer SSL hataları (expired, self-signed vs.) için false döndür
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
+
+            if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            {
+                return true; // Host name mismatch hatalarını göz ardı et
+            }
+
+            return false; // Diğer tüm SSL hataları için false
+        }
+
+        private static async Task SendWithSettingsAsync(MailMessage message, string host, int port, bool enableSsl, string user, string password)
+        {
+            // Geliştirme ortamında sertifika esnekliği korunuyor (ValidateServerCertificate içinde)
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+
+            using var client = new SmtpClient(host, port)
+            {
+                EnableSsl = enableSsl,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(user, password),
+                Timeout = 30000
+            };
+
+            await client.SendMailAsync(message);
         }
     }
 }

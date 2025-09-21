@@ -170,17 +170,21 @@ namespace EgeControlWebApp.Services
 
             int nextNumber = 1;
             
-            if (lastQuote != null)
+            if (lastQuote != null && !string.IsNullOrWhiteSpace(lastQuote.QuoteNumber))
             {
                 // Son teklif numarasından sıradaki numarayı al
-                var parts = lastQuote.QuoteNumber.Split('-');
-                if (parts.Length >= 3 && int.TryParse(parts[2], out int lastNumber))
+                // Eski format: EGE-YYYYMM-###  -> [EGE, YYYYMM, ###]
+                // Yeni format: EGE-YYYY-MM-### -> [EGE, YYYY, MM, ###]
+                var parts = lastQuote.QuoteNumber.Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var lastPart = parts.Length > 0 ? parts[^1] : null;
+                if (!string.IsNullOrEmpty(lastPart) && int.TryParse(lastPart, out int lastNumber))
                 {
                     nextNumber = lastNumber + 1;
                 }
             }
 
-            return $"EGE-{currentYear:yyyy}{currentMonth:00}-{nextNumber:000}";
+            // Note: currentYear is an int; use D4 to avoid literal "yyyy"; include dash for readability => EGE-YYYY-MM-###
+            return $"EGE-{currentYear:D4}-{currentMonth:00}-{nextNumber:000}";
         }
 
         public async Task<IEnumerable<Quote>> GetQuotesByCustomerIdAsync(int customerId)

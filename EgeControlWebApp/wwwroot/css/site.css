@@ -11,6 +11,8 @@ html {
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
+/* Safety: hide any Register link if rendered from a cached view */
+a.nav-link[href*="/Account/Register"], a[href*="/Account/Register"] { display: none !important; }
 
 html {
   position: relative;
@@ -28,4 +30,22 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/* Logo büyüklüğü */
+.site-logo {
+  max-height: 50px;
+  width: auto;
+}
+
+/* Logo yatayda 2x geniş görünüm için esnetme (yükseklik sabit kalır) */
+.site-logo-wide {
+  transform: scaleX(2);
+  transform-origin: left center;
+}
+
+.navbar-brand .brand-text {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
 }

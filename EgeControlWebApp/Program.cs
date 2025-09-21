@@ -57,11 +57,14 @@ builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
+// IIS/Production altında ANCM (AspNetCoreModuleV2) dinleme adresini atar.
+// Geliştirici makinesinde launchSettings.json kullanılır. Burada sabit URL tanımlamıyoruz.
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
 }
 else
@@ -80,16 +83,16 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = supportedCultures
 });
 
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages();
 
 // Seed admin user and roles
 using (var scope = app.Services.CreateScope())
