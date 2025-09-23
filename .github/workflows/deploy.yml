@@ -97,18 +97,18 @@ jobs:
         run: Start-Sleep -Seconds 45
         shell: powershell
 
-      # Try different FTP approaches - hosting.com.tr requires SSL
-      - name: Deploy with FTPS Implicit (Port 990) - Primary
-        id: ftps-implicit
-        continue-on-error: true
+      # Deploy using FTPS explicit (Port 21 with AUTH TLS)
+      - name: Deploy application files (FTPS explicit 21)
+        id: ftps-explicit-deploy
+        continue-on-error: false
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
-          port: 990
-          security: strict
+          port: 21
+          security: loose
           local-dir: publish/
           server-dir: /httpdocs/
           timeout: 900000
@@ -125,11 +125,10 @@ jobs:
             runtimes/osx-*/**
             runtimes/*-musl-*/**
 
-      # If FTPS Implicit fails, try FTPS Explicit (Port 21 with TLS)
-      - name: Deploy with FTPS Explicit (Port 21) - Backup
-        if: steps.ftps-implicit.outcome == 'failure'
-        id: ftps-explicit
-        continue-on-error: true
+      # (Optional) Second attempt using legacy TLS negotiation if needed
+      - name: Deploy (FTPS legacy explicit 21) - Retry on failure
+        if: failure()
+        continue-on-error: false
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -140,7 +139,7 @@ jobs:
           security: loose
           local-dir: publish/
           server-dir: /httpdocs/
-          timeout: 600000
+          timeout: 900000
           log-level: verbose
           exclude: |
             **/.git*
@@ -154,11 +153,11 @@ jobs:
             runtimes/osx-*/**
             runtimes/*-musl-*/**
 
-      # (Optional) Final note if both FTPS attempts failed
+      # Final note if both attempts failed
       - name: Note - FTPS attempts finished
-        if: steps.ftps-implicit.outcome == 'failure' && steps.ftps-explicit.outcome == 'failure'
+        if: failure()
         run: |
-          echo "Both FTPS implicit and explicit failed. Please verify host, port, and credentials."
+          echo "FTPS failed. Verify FTP host, requires explicit AUTH TLS on port 21, and allow passive ports in firewall."
         shell: bash
 
       - name: Deployment completed
