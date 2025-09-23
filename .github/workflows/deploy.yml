@@ -1,4 +1,4 @@
-name: Deploy via WebDeploy
+name: Deploy via MSDeploy
 
 on:
   push:
@@ -26,9 +26,19 @@ jobs:
         run: |
           dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o ./publish --no-build
 
-      - name: Deploy to IIS
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: '${{ secrets.SITE_NAME }}'
-          publish-profile: '${{ secrets.PUBLISH_PROFILE }}'
-          package: './publish'
+      - name: Deploy via MSDeploy
+        run: |
+          # WebDeploy with MSDeploy command line
+          $deployUrl = "${{ secrets.DEPLOY_URL }}"
+          $username = "${{ secrets.DEPLOY_USERNAME }}"
+          $password = "${{ secrets.DEPLOY_PASSWORD }}"
+          $siteName = "${{ secrets.SITE_NAME }}"
+          
+          # MSDeploy command
+          & "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe" `
+            -verb:sync `
+            -source:iisApp=".\publish" `
+            -dest:iisApp="$siteName",computerName="$deployUrl",userName="$username",password="$password",authType="basic" `
+            -allowUntrusted `
+            -skip:Directory="\\App_Data" `
+            -enableRule:AppOffline
