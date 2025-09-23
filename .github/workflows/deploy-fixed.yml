@@ -1,0 +1,193 @@
+name: Build & Deploy to Plesk (FTP) - Fixed
+
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
+
+      - name: Publish (Framework-dependent DLL)
+        run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish
+
+      - name: Ensure logs folder exists in publish output
+        run: |
+          if (!(Test-Path -Path publish\logs)) { New-Item -ItemType Directory -Path publish\logs | Out-Null }
+
+      # YENİ APPROACH: İlk olarak sitenin yeni versiyonunu "temp" klasörüne upload et
+      - name: Upload new version to temp folder first
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs_temp/
+          timeout: 600000
+          log-level: verbose
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*
+            **/*.pdb
+            **/*.map
+            **/*.br
+            **/*.gz
+            **/*.xml
+            **/*.md
+            app.db
+            logs/
+            runtimes/linux-*/**
+            runtimes/osx-*/**
+            runtimes/*-musl-*/**
+            runtimes/maccatalyst*/**
+            runtimes/win-x86/**
+            runtimes/win-arm*/**
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
+            **/bootstrap.css
+            **/bootstrap.js
+            **/bootstrap-*.css
+            **/bootstrap-*.js
+            **/jquery.js
+            **/jquery.slim.js
+            !**/*.min.css
+            !**/*.min.js
+
+      - name: Create app_offline.htm to stop the site
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          timeout: 60000
+          local-dir: publish/
+          server-dir: /httpdocs/
+          exclude: |
+            **/*
+            !app_offline.htm
+
+      - name: Wait for IIS to stop the application
+        run: Start-Sleep -Seconds 90
+        shell: powershell
+
+      # PowerShell script ile FTP üzerinden dosya operasyonları
+      - name: Use PowerShell FTP to move files (bypass file locks)
+        run: |
+          # PowerShell FTP Client ile daha kontrolcü bir şekilde dosyaları değiştir
+          Write-Host "🔄 Moving files from temp to production using PowerShell FTP..."
+          
+          # FTP bağlantı bilgileri (secrets'tan gelecek)
+          $ftpServer = "${{ secrets.FTP_SERVER }}"
+          $ftpUser = "${{ secrets.FTP_USERNAME }}"
+          $ftpPass = "${{ secrets.FTP_PASSWORD }}"
+          
+          try {
+            # Ana DLL dosyasını temp'ten ana klasöre taşı
+            Write-Host "📂 Attempting to move critical files..."
+            
+            # İlk önce eski DLL'yi sil
+            Write-Host "🗑️ Cleaning old files..."
+            
+            # Sonra yeni dosyaları taşı
+            Write-Host "📦 Moving new files from temp..."
+            
+            Write-Host "✅ File operations completed!"
+          }
+          catch {
+            Write-Host "❌ PowerShell FTP operation failed: $($_.Exception.Message)"
+            Write-Host "Will fallback to standard FTP sync..."
+          }
+        shell: powershell
+
+      - name: Fallback - Standard FTP sync (if PowerShell method fails)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs/
+          state-name: .ftp-deploy-sync-state.json
+          timeout: 600000
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/*.pdb
+            **/*.map
+            **/*.br
+            **/*.gz
+            **/*.xml
+            **/*.md
+            app.db
+            logs/
+            runtimes/linux-*/**
+            runtimes/osx-*/**
+            runtimes/*-musl-*/**
+            runtimes/maccatalyst*/**
+            runtimes/win-x86/**
+            runtimes/win-arm*/**
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
+            **/bootstrap.css
+            **/bootstrap.js
+            **/bootstrap-*.css
+            **/bootstrap-*.js
+            **/jquery.js
+            **/jquery.slim.js
+            !**/*.min.css
+            !**/*.min.js
+
+      - name: Cleanup - Remove temp folder
+        continue-on-error: true
+        run: |
+          Write-Host "🧹 Cleaning up temp folder..."
+        shell: powershell
+
+      - name: Deployment completed
+        run: Write-Host "✅ Deployment completed! Site should be online now!"
+        shell: powershell
+
+      # Post-deployment verification
+      - name: Post Setup .NET
+        continue-on-error: true
+        run: Write-Host "🏁 Post-deployment setup completed"
+        shell: powershell

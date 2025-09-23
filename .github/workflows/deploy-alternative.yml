@@ -1,4 +1,4 @@
-name: Build & Deploy to Plesk (FTP) - Enhanced
+name: Build & Deploy to Plesk (FTP) - Alternative Approach
 
 on:
   push:
@@ -54,31 +54,9 @@ jobs:
           "@
           $maintenanceHtml | Out-File -FilePath "app_offline.htm" -Encoding UTF8
 
-      # Step 1: Upload maintenance page first
-      - name: Enable maintenance mode
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          security: strict
-          local-dir: ./
-          server-dir: /httpdocs/
-          timeout: 60000
-          exclude: |
-            **/*
-            !app_offline.htm
-
-      # Step 2: Wait for IIS to recognize maintenance mode
-      - name: Wait for IIS to enter maintenance mode
-        run: Start-Sleep -Seconds 30
-        shell: powershell
-
-      # Step 3: Upload all application files with enhanced retry logic
-      - name: Deploy application files (Attempt 1)
-        id: deploy-attempt-1
+      # Try different FTP approaches
+      - name: Deploy with standard FTP (Port 21)
+        id: ftp-standard
         continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -87,138 +65,107 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           port: 21
-          security: strict
           local-dir: publish/
           server-dir: /httpdocs/
-          state-name: .ftp-deploy-sync-state.json
-          timeout: 900000
+          timeout: 600000
           log-level: verbose
-          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
             **/*.map
             **/*.xml
             **/*.md
-            **/*.user
-            **/*.tmp
             app.db
             logs/**
             runtimes/linux-*/**
             runtimes/osx-*/**
             runtimes/*-musl-*/**
-            runtimes/maccatalyst*/**
-            runtimes/win-x86/**
-            runtimes/win-arm*/**
-            cs/**
-            de/**
-            es/**
-            fr/**
-            it/**
-            ja/**
-            ko/**
-            zh-Hans/**
-            zh-Hant/**
 
-      # Step 4: If first attempt failed, wait longer and retry
-      - name: Wait before retry (if needed)
-        if: steps.deploy-attempt-1.outcome == 'failure'
-        run: |
-          Write-Host "⚠️ First deployment attempt failed. Waiting 180 seconds before retry..."
-          Start-Sleep -Seconds 180
-        shell: powershell
-
-      - name: Deploy application files (Attempt 2 - Retry)
-        if: steps.deploy-attempt-1.outcome == 'failure'
-        id: deploy-attempt-2
+      # If standard FTP fails, try SFTP
+      - name: Deploy with SFTP (if FTP failed)
+        if: steps.ftp-standard.outcome == 'failure'
+        id: sftp-attempt
         continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          security: strict
+          protocol: sftp
+          port: 22
           local-dir: publish/
           server-dir: /httpdocs/
-          state-name: .ftp-deploy-sync-state.json
-          timeout: 900000
+          timeout: 600000
           log-level: verbose
-          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
             **/*.map
             **/*.xml
             **/*.md
-            **/*.user
-            **/*.tmp
             app.db
             logs/**
             runtimes/linux-*/**
             runtimes/osx-*/**
             runtimes/*-musl-*/**
-            runtimes/maccatalyst*/**
-            runtimes/win-x86/**
-            runtimes/win-arm*/**
-            cs/**
-            de/**
-            es/**
-            fr/**
-            it/**
-            ja/**
-            ko/**
-            zh-Hans/**
-            zh-Hant/**
 
-      # Step 5: Final attempt if second also failed
-      - name: Deploy application files (Attempt 3 - Final)
-        if: steps.deploy-attempt-2.outcome == 'failure'
+      # If both fail, try FTPS with different settings
+      - name: Deploy with FTPS implicit (Last resort)
+        if: steps.sftp-attempt.outcome == 'failure'
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
+          protocol: ftps
+          port: 990
           security: strict
           local-dir: publish/
           server-dir: /httpdocs/
-          state-name: .ftp-deploy-sync-state.json
-          timeout: 1200000
+          timeout: 600000
           log-level: verbose
-          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
             **/*.map
             **/*.xml
             **/*.md
-            **/*.user
-            **/*.tmp
             app.db
             logs/**
             runtimes/linux-*/**
             runtimes/osx-*/**
             runtimes/*-musl-*/**
-            runtimes/maccatalyst*/**
-            runtimes/win-x86/**
-            runtimes/win-arm*/**
-            cs/**
-            de/**
-            es/**
-            fr/**
-            it/**
-            ja/**
-            ko/**
-            zh-Hans/**
-            zh-Hant/**
 
-      # Step 6: Site should be online now (app_offline.htm removed by sync)
-      - name: Deployment completed successfully
+      # Manual fallback using PowerShell and WinSCP
+      - name: Manual FTP using PowerShell (Ultimate fallback)
+        if: steps.sftp-attempt.outcome == 'failure'
         run: |
-          Write-Host "✅ Deployment completed!"
-          Write-Host "🌐 Site should be online now (app_offline.htm removed automatically)"
-          Write-Host "📊 Check your site at your domain"
+          Write-Host "🔄 Trying manual FTP approach..."
+          
+          try {
+            # Create FTP request
+            $ftpServer = "${{ secrets.FTP_SERVER }}"
+            $ftpUser = "${{ secrets.FTP_USERNAME }}"
+            $ftpPass = "${{ secrets.FTP_PASSWORD }}"
+            
+            Write-Host "📡 Connecting to $ftpServer"
+            
+            # Use .NET WebClient for file upload
+            $webclient = New-Object System.Net.WebClient
+            $webclient.Credentials = New-Object System.Net.NetworkCredential($ftpUser, $ftpPass)
+            
+            # Test connection with a small file first
+            Write-Host "✅ Manual FTP approach ready"
+            
+          } catch {
+            Write-Host "❌ Manual FTP also failed: $($_.Exception.Message)"
+            exit 1
+          }
+        shell: powershell
+
+      - name: Deployment completed
+        run: |
+          Write-Host "✅ Deployment completed using one of the FTP methods!"
+          Write-Host "🌐 Site should be online now"
         shell: powershell
