@@ -16,8 +16,20 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+{
+    if (builder.Environment.IsProduction())
+    {
+        // Production'da SQL Server kullan
+        options.UseSqlServer(connectionString);
+    }
+    else
+    {
+        // Development'da SQLite kullan
+        options.UseSqlite(connectionString);
+    }
+});
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => 
@@ -69,6 +81,9 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+
+// Otomatik veritabanı yedekleme servisi
+builder.Services.AddHostedService<DatabaseBackupService>();
 
 // IIS/Production altında ANCM (AspNetCoreModuleV2) dinleme adresini atar.
 // Geliştirici makinesinde launchSettings.json kullanılır. Burada sabit URL tanımlamıyoruz.

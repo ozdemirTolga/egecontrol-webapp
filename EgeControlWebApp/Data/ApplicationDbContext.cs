@@ -53,6 +53,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(qi => qi.UnitPrice)
                 .HasPrecision(18, 2);
 
+            entity.Property(qi => qi.Quantity)
+                .HasPrecision(18, 2);
+
             entity.Property(qi => qi.DiscountPercentage)
                 .HasPrecision(5, 2);
 
