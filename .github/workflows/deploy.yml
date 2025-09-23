@@ -1,13 +1,13 @@
-name: Build & Deploy to Plesk (FTP) - Alternative Approach
+name: Deploy to Plesk via FTP
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: windows-latest
-
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,145 +23,26 @@ jobs:
       - name: Build and Publish
         run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --no-restore
 
-      - name: Create required directories
-        run: |
-          if (!(Test-Path -Path publish\logs)) { New-Item -ItemType Directory -Path publish\logs | Out-Null }
-          if (!(Test-Path -Path publish\backups)) { New-Item -ItemType Directory -Path publish\backups | Out-Null }
-
-      # Create maintenance page
       - name: Create maintenance page
         run: |
-          $maintenanceHtml = @"
-          <!DOCTYPE html>
-          <html lang='tr'>
-          <head>
-              <meta charset='UTF-8'>
-              <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-              <title>Site Bakım Modunda</title>
-              <style>
-                  body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; }
-                  .maintenance { background: #f0f0f0; padding: 20px; border-radius: 10px; display: inline-block; }
-              </style>
-          </head>
-          <body>
-              <div class='maintenance'>
-                  <h1>🔧 Site Bakım Modunda</h1>
-                  <p>Site güncelleniyor, lütfen birkaç dakika bekleyin...</p>
-                  <p>Site is being updated, please wait a few minutes...</p>
-              </div>
-          </body>
-          </html>
-          "@
-          $maintenanceHtml | Out-File -FilePath "app_offline.htm" -Encoding UTF8
+          echo '<!DOCTYPE html><html><head><title>Maintenance</title></head><body><h1>Site updating...</h1></body></html>' > publish/app_offline.htm
 
-      # Upload maintenance page first (FTPS implicit primary)
-      - name: Enable maintenance mode (FTPS implicit 990)
-        id: enable-maintenance-implicit
-        continue-on-error: true
+      - name: Deploy to Plesk via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 990
-          security: loose
-          local-dir: ./
-          server-dir: /httpdocs/
-          timeout: 60000
-          exclude: |
-            **/*
-            !app_offline.htm
-
-      # Fallback to explicit FTPS on port 21 if implicit fails
-      - name: Enable maintenance mode (FTPS explicit 21)
-        if: steps.enable-maintenance-implicit.outcome == 'failure'
-        id: enable-maintenance-explicit
-        continue-on-error: false
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps-legacy
+          protocol: ftp
           port: 21
-          security: loose
-          local-dir: ./
+          local-dir: ./publish/
           server-dir: /httpdocs/
-          timeout: 60000
-          exclude: |
-            **/*
-            !app_offline.htm
+          timeout: 300000
 
-      - name: Wait for IIS to stop
-        run: Start-Sleep -Seconds 45
-        shell: powershell
+      - name: Wait for deployment
+        run: Start-Sleep -Seconds 10
 
-      # Deploy using FTPS explicit (Port 21 with AUTH TLS)
-      - name: Deploy application files (FTPS explicit 21)
-        id: ftps-explicit-deploy
-        continue-on-error: false
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          security: loose
-          local-dir: publish/
-          server-dir: /httpdocs/
-          timeout: 900000
-          log-level: verbose
-          exclude: |
-            **/.git*
-            **/*.pdb
-            **/*.map
-            **/*.xml
-            **/*.md
-            app.db
-            logs/**
-            runtimes/linux-*/**
-            runtimes/osx-*/**
-            runtimes/*-musl-*/**
-
-      # (Optional) Second attempt using legacy TLS negotiation if needed
-      - name: Deploy (FTPS legacy explicit 21) - Retry on failure
-        if: failure()
-        continue-on-error: false
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps-legacy
-          port: 21
-          security: loose
-          local-dir: publish/
-          server-dir: /httpdocs/
-          timeout: 900000
-          log-level: verbose
-          exclude: |
-            **/.git*
-            **/*.pdb
-            **/*.map
-            **/*.xml
-            **/*.md
-            app.db
-            logs/**
-            runtimes/linux-*/**
-            runtimes/osx-*/**
-            runtimes/*-musl-*/**
-
-      # Final note if both attempts failed
-      - name: Note - FTPS attempts finished
-        if: failure()
+      - name: Remove maintenance page
         run: |
-          echo "FTPS failed. Verify FTP host, requires explicit AUTH TLS on port 21, and allow passive ports in firewall."
-        shell: bash
-
-      - name: Deployment completed
-        run: |
-          Write-Host "✅ Deployment completed using one of the FTP methods!"
-          Write-Host "🌐 Site should be online now"
-        shell: powershell
+          echo 'Deployment completed' > temp_complete.txt
+        
