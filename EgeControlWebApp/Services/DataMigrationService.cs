@@ -125,6 +125,8 @@ namespace EgeControlWebApp.Services
                     Id = reader.GetInt32("Id"),
                     QuoteNumber = reader.GetString("QuoteNumber"),
                     CustomerId = reader.GetInt32("CustomerId"),
+                    Title = reader.IsDBNull("Title") ? "" : reader.GetString("Title"),
+                    Description = reader.IsDBNull("Description") ? "" : reader.GetString("Description"),
                     QuoteDate = reader.GetDateTime("QuoteDate"),
                     ValidUntil = reader.GetDateTime("ValidUntil"),
                     SubTotal = reader.GetDecimal("SubTotal"),
@@ -135,7 +137,6 @@ namespace EgeControlWebApp.Services
                     Notes = reader.IsDBNull("Notes") ? null : reader.GetString("Notes"),
                     CreatedAt = reader.GetDateTime("CreatedAt"),
                     UpdatedAt = reader.GetDateTime("UpdatedAt"),
-                    IsActive = reader.GetBoolean("IsActive"),
                     CreatedByUserId = reader.IsDBNull("CreatedByUserId") ? null : reader.GetString("CreatedByUserId"),
                     LastModifiedByUserId = reader.IsDBNull("LastModifiedByUserId") ? null : reader.GetString("LastModifiedByUserId")
                 });
@@ -159,10 +160,11 @@ namespace EgeControlWebApp.Services
                 {
                     Id = reader.GetInt32("Id"),
                     QuoteId = reader.GetInt32("QuoteId"),
-                    ProductName = reader.GetString("ProductName"),
-                    Description = reader.IsDBNull("Description") ? null : reader.GetString("Description"),
+                    ItemName = reader.GetString("ItemName"), // ProductName -> ItemName
+                    Description = reader.IsDBNull("Description") ? "" : reader.GetString("Description"),
                     Quantity = reader.GetDecimal("Quantity"),
                     UnitPrice = reader.GetDecimal("UnitPrice"),
+                    Unit = reader.IsDBNull("Unit") ? "adet" : reader.GetString("Unit"),
                     DiscountPercentage = reader.GetDecimal("DiscountPercentage"),
                     DiscountAmount = reader.GetDecimal("DiscountAmount"),
                     Total = reader.GetDecimal("Total")
@@ -188,12 +190,10 @@ namespace EgeControlWebApp.Services
                     Id = reader.GetInt32("Id"),
                     Name = reader.GetString("Name"),
                     Email = reader.GetString("Email"),
-                    Phone = reader.IsDBNull("Phone") ? null : reader.GetString("Phone"),
-                    Subject = reader.GetString("Subject"),
                     Message = reader.GetString("Message"),
                     CreatedAt = reader.GetDateTime("CreatedAt"),
-                    IsRead = reader.GetBoolean("IsRead"),
-                    IsReplied = reader.GetBoolean("IsReplied")
+                    EmailSent = reader.IsDBNull("EmailSent") ? false : reader.GetBoolean("EmailSent"),
+                    EmailError = reader.IsDBNull("EmailError") ? null : reader.GetString("EmailError")
                 });
             }
 
