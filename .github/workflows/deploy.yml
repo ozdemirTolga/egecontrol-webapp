@@ -1,4 +1,4 @@
-name: Deploy to Plesk via FTP
+name: Deploy to Plesk - Rock Solid FTPS
 
 on:
   push:
@@ -25,24 +25,104 @@ jobs:
 
       - name: Create maintenance page
         run: |
-          echo '<!DOCTYPE html><html><head><title>Maintenance</title></head><body><h1>Site updating...</h1></body></html>' > publish/app_offline.htm
+          $html = @'
+          <!DOCTYPE html>
+          <html>
+          <head><title>Updating...</title><meta charset="utf-8"></head>
+          <body style="text-align:center;padding:50px;font-family:Arial;">
+          <h1>🔧 Site Updating</h1>
+          <p>Please wait a moment...</p>
+          </body>
+          </html>
+          '@
+          $html | Out-File -FilePath "publish/app_offline.htm" -Encoding UTF8 -NoNewline
 
-      - name: Deploy to Plesk via FTP
+      # Method 1: FTPS Explicit on port 21 (most common)
+      - name: Deploy via FTPS Explicit (Port 21)
+        id: ftps-explicit
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
+          security: strict
+          local-dir: ./publish/
+          server-dir: /httpdocs/
+          timeout: 300000
+          
+      # Method 2: FTPS Legacy mode (for older servers)
+      - name: Deploy via FTPS Legacy (Port 21)
+        id: ftps-legacy
+        if: steps.ftps-explicit.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps-legacy
+          port: 21
+          security: loose
           local-dir: ./publish/
           server-dir: /httpdocs/
           timeout: 300000
 
-      - name: Wait for deployment
-        run: Start-Sleep -Seconds 10
+      # Method 3: FTPS Implicit on port 990 (some hosting providers)
+      - name: Deploy via FTPS Implicit (Port 990)
+        id: ftps-implicit
+        if: steps.ftps-legacy.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 990
+          security: loose
+          local-dir: ./publish/
+          server-dir: /httpdocs/
+          timeout: 300000
 
-      - name: Remove maintenance page
+      # Method 4: SFTP (SSH-based, most secure)
+      - name: Deploy via SFTP (Port 22)
+        id: sftp
+        if: steps.ftps-implicit.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: sftp
+          port: 22
+          local-dir: ./publish/
+          server-dir: /httpdocs/
+          timeout: 300000
+
+      # Final check and cleanup
+      - name: Verify deployment success
         run: |
-          echo 'Deployment completed' > temp_complete.txt
+          if ("${{ steps.ftps-explicit.outcome }}" -eq "success") {
+            Write-Host "✅ Deployed successfully via FTPS Explicit"
+          } elseif ("${{ steps.ftps-legacy.outcome }}" -eq "success") {
+            Write-Host "✅ Deployed successfully via FTPS Legacy"
+          } elseif ("${{ steps.ftps-implicit.outcome }}" -eq "success") {
+            Write-Host "✅ Deployed successfully via FTPS Implicit"
+          } elseif ("${{ steps.sftp.outcome }}" -eq "success") {
+            Write-Host "✅ Deployed successfully via SFTP"
+          } else {
+            Write-Error "❌ All deployment methods failed!"
+            exit 1
+          }
+
+      - name: Cleanup
+        if: always()
+        run: |
+          Write-Host "🧹 Cleaning up temporary files..."
+          Remove-Item -Path "publish/app_offline.htm" -ErrorAction SilentlyContinue
+          Write-Host "✨ Deployment process completed!"
         
