@@ -1,7 +1,4 @@
-name: Build & Deploy to Plesk (FTP)
-
-# Disable GitHub Actions workflow validation warnings
-# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Build & Deploy to Plesk (FTP) - Enhanced
 
 on:
   push:
@@ -20,25 +17,45 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore
+      - name: Restore dependencies
         run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
 
-      - name: Publish (Framework-dependent DLL)
-        run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish
+      - name: Build and Publish
+        run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --no-restore
 
-      - name: Ensure logs folder exists in publish output
+      - name: Create required directories
         run: |
           if (!(Test-Path -Path publish\logs)) { New-Item -ItemType Directory -Path publish\logs | Out-Null }
+          if (!(Test-Path -Path publish\backups)) { New-Item -ItemType Directory -Path publish\backups | Out-Null }
 
-      # Eğer self-contained istiyorsan üsttekini yorumlayıp bunu aç:
-      # - name: Publish (Self-contained EXE)
-      #   run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -r win-x64 --self-contained true ^
-      #        /p:PublishSingleFile=true /p:PublishTrimmed=false -o publish
+      # Create maintenance page
+      - name: Create maintenance page
+        run: |
+          $maintenanceHtml = @"
+          <!DOCTYPE html>
+          <html lang='tr'>
+          <head>
+              <meta charset='UTF-8'>
+              <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+              <title>Site Bakım Modunda</title>
+              <style>
+                  body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; }
+                  .maintenance { background: #f0f0f0; padding: 20px; border-radius: 10px; display: inline-block; }
+              </style>
+          </head>
+          <body>
+              <div class='maintenance'>
+                  <h1>🔧 Site Bakım Modunda</h1>
+                  <p>Site güncelleniyor, lütfen birkaç dakika bekleyin...</p>
+                  <p>Site is being updated, please wait a few minutes...</p>
+              </div>
+          </body>
+          </html>
+          "@
+          $maintenanceHtml | Out-File -FilePath "app_offline.htm" -Encoding UTF8
 
-      - name: Create app_offline.htm for maintenance
-        run: echo '<html><body><h1>Site temporarily offline for maintenance</h1><p>Please wait a moment...</p></body></html>' > publish/app_offline.htm
-
-      - name: Upload app_offline.htm first (to stop IIS app)
+      # Step 1: Upload maintenance page first
+      - name: Enable maintenance mode
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -47,19 +64,21 @@ jobs:
           protocol: ftps
           port: 21
           security: loose
-          local-dir: publish/
+          local-dir: ./
           server-dir: /httpdocs/
           timeout: 60000
           exclude: |
             **/*
             !app_offline.htm
 
-      - name: Wait for app to stop
-        run: Start-Sleep -Seconds 60
+      # Step 2: Wait for IIS to recognize maintenance mode
+      - name: Wait for IIS to enter maintenance mode
+        run: Start-Sleep -Seconds 30
         shell: powershell
 
-      - name: FTP Deploy (main files) - Attempt 1
-        id: ftp-deploy-1
+      # Step 3: Upload all application files with enhanced retry logic
+      - name: Deploy application files (Attempt 1)
+        id: deploy-attempt-1
         continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -72,19 +91,19 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 300000
+          timeout: 900000
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
             **/*.map
-            **/*.br
-            **/*.gz
             **/*.xml
             **/*.md
+            **/*.user
+            **/*.tmp
             app.db
-            logs/
+            logs/**
             runtimes/linux-*/**
             runtimes/osx-*/**
             runtimes/*-musl-*/**
@@ -100,24 +119,19 @@ jobs:
             ko/**
             zh-Hans/**
             zh-Hant/**
-            **/bootstrap.css
-            **/bootstrap.js
-            **/bootstrap-*.css
-            **/bootstrap-*.js
-            **/jquery.js
-            **/jquery.slim.js
-            !**/*.min.css
-            !**/*.min.js
 
-      - name: Wait before retry (if first attempt failed)
-        if: steps.ftp-deploy-1.outcome == 'failure'
+      # Step 4: If first attempt failed, wait longer and retry
+      - name: Wait before retry (if needed)
+        if: steps.deploy-attempt-1.outcome == 'failure'
         run: |
-          Write-Host "⚠️ First FTP attempt failed. Waiting 90 seconds before retry..."
-          Start-Sleep -Seconds 90
+          Write-Host "⚠️ First deployment attempt failed. Waiting 180 seconds before retry..."
+          Start-Sleep -Seconds 180
         shell: powershell
 
-      - name: FTP Deploy (main files) - Attempt 2 (Retry)
-        if: steps.ftp-deploy-1.outcome == 'failure'
+      - name: Deploy application files (Attempt 2 - Retry)
+        if: steps.deploy-attempt-1.outcome == 'failure'
+        id: deploy-attempt-2
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -129,19 +143,19 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 300000
+          timeout: 900000
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/*.pdb
             **/*.map
-            **/*.br
-            **/*.gz
             **/*.xml
             **/*.md
+            **/*.user
+            **/*.tmp
             app.db
-            logs/
+            logs/**
             runtimes/linux-*/**
             runtimes/osx-*/**
             runtimes/*-musl-*/**
@@ -157,15 +171,54 @@ jobs:
             ko/**
             zh-Hans/**
             zh-Hant/**
-            **/bootstrap.css
-            **/bootstrap.js
-            **/bootstrap-*.css
-            **/bootstrap-*.js
-            **/jquery.js
-            **/jquery.slim.js
-            !**/*.min.css
-            !**/*.min.js
 
-      - name: Cleanup complete - app should be running now
-        run: Write-Host "✅ Deployment completed! app_offline.htm should have been removed by sync operation. Site should be online now!"
+      # Step 5: Final attempt if second also failed
+      - name: Deploy application files (Attempt 3 - Final)
+        if: steps.deploy-attempt-2.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs/
+          state-name: .ftp-deploy-sync-state.json
+          timeout: 1200000
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/*.pdb
+            **/*.map
+            **/*.xml
+            **/*.md
+            **/*.user
+            **/*.tmp
+            app.db
+            logs/**
+            runtimes/linux-*/**
+            runtimes/osx-*/**
+            runtimes/*-musl-*/**
+            runtimes/maccatalyst*/**
+            runtimes/win-x86/**
+            runtimes/win-arm*/**
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
+
+      # Step 6: Site should be online now (app_offline.htm removed by sync)
+      - name: Deployment completed successfully
+        run: |
+          Write-Host "✅ Deployment completed!"
+          Write-Host "🌐 Site should be online now (app_offline.htm removed automatically)"
+          Write-Host "📊 Check your site at your domain"
         shell: powershell

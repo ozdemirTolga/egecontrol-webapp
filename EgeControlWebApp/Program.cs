@@ -19,16 +19,20 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    if (builder.Environment.IsProduction())
-    {
-        // Production'da SQL Server kullan
-        options.UseSqlServer(connectionString);
-    }
-    else
-    {
-        // Development'da SQLite kullan
-        options.UseSqlite(connectionString);
-    }
+    // Test için geçici olarak hep SQL Server kullan
+    options.UseSqlServer(connectionString);
+    
+    // Orijinal kod:
+    // if (builder.Environment.IsProduction())
+    // {
+    //     // Production'da SQL Server kullan
+    //     options.UseSqlServer(connectionString);
+    // }
+    // else
+    // {
+    //     // Development'da SQLite kullan
+    //     options.UseSqlite(connectionString);
+    // }
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

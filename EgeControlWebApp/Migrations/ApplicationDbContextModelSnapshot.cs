@@ -211,40 +211,6 @@ namespace EgeControlWebApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Address = "Ataşehir Mah. Mustafa Kemal Cad. No:123",
-                            City = "İstanbul",
-                            CompanyName = "ABC Teknoloji Ltd. Şti.",
-                            ContactPerson = "Ahmet Yılmaz",
-                            Country = "Türkiye",
-                            CreatedAt = new DateTime(2024, 7, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "ahmet@abcteknoloji.com",
-                            IsActive = true,
-                            Phone = "+90 212 555 0101",
-                            TaxNumber = "1234567890",
-                            TaxOffice = "Ataşehir Vergi Dairesi",
-                            UpdatedAt = new DateTime(2024, 7, 10, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Address = "Çankaya Mah. Atatürk Bulvarı No:456",
-                            City = "Ankara",
-                            CompanyName = "XYZ Mühendislik A.Ş.",
-                            ContactPerson = "Fatma Demir",
-                            Country = "Türkiye",
-                            CreatedAt = new DateTime(2024, 7, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "fatma@xyzmuhendislik.com",
-                            IsActive = true,
-                            Phone = "+90 312 555 0202",
-                            TaxNumber = "0987654321",
-                            TaxOffice = "Çankaya Vergi Dairesi",
-                            UpdatedAt = new DateTime(2024, 7, 25, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
                 });
 
             modelBuilder.Entity("EgeControlWebApp.Models.Quote", b =>
@@ -366,6 +332,7 @@ namespace EgeControlWebApp.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("QuoteId")
@@ -536,7 +503,7 @@ namespace EgeControlWebApp.Migrations
                     b.HasOne("EgeControlWebApp.Models.ApplicationUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("EgeControlWebApp.Models.Customer", "Customer")
                         .WithMany("Quotes")
@@ -547,7 +514,7 @@ namespace EgeControlWebApp.Migrations
                     b.HasOne("EgeControlWebApp.Models.ApplicationUser", "LastModifiedByUser")
                         .WithMany()
                         .HasForeignKey("LastModifiedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CreatedByUser");
 
