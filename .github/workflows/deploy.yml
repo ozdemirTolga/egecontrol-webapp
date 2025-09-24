@@ -23,9 +23,9 @@ jobs:
       - name: Restore
         run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
 
-      - name: Publish (Self-contained Any CPU) - Optimized for 500.32 fix
+      - name: Publish (Framework-dependent) - Optimized
         run: |
-          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --no-restore --verbosity quiet --self-contained true /p:PublishSingleFile=false
+          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --no-restore --verbosity quiet
           # Remove unnecessary files immediately after publish
           Remove-Item -Path "publish\*.pdb" -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "publish\*.xml" -Force -ErrorAction SilentlyContinue
@@ -33,7 +33,7 @@ jobs:
           # Ensure critical files exist for IIS
           if (!(Test-Path -Path "publish\web.config")) { Write-Host "Warning: web.config missing!" }
           if (!(Test-Path -Path "publish\EgeControlWebApp.dll")) { Write-Host "Warning: Main DLL missing!" }
-          if (Test-Path -Path "publish\EgeControlWebApp.exe") { Write-Host "Info: EXE created for self-contained" }
+          Write-Host "Framework-dependent publish completed successfully"
         shell: powershell
 
       - name: Ensure logs folder exists in publish output
