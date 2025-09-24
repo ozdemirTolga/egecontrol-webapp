@@ -39,7 +39,9 @@ jobs:
       - name: Create default.htm for Plesk compatibility
         run: |
           echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/"></head><body>Redirecting...</body></html>' > publish/default.htm
-          echo 'Default.htm created for Plesk compatibility'
+          # Also copy index.html for fallback
+          Copy-Item "EgeControlWebApp\index.html" "publish\" -Force -ErrorAction SilentlyContinue
+          echo 'Default documents created for Plesk compatibility'
         shell: powershell
 
       - name: Ensure logs folder exists in publish output
