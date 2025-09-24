@@ -20,12 +20,12 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore
-        run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
+      - name: Restore with runtime
+        run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj --runtime win-x64
 
       - name: Publish (Self-contained with runtime) - Fix CoreLib error
         run: |
-          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --no-restore --verbosity quiet --self-contained true --runtime win-x64 /p:PublishSingleFile=false
+          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --verbosity quiet --self-contained true --runtime win-x64 /p:PublishSingleFile=false
           # Remove unnecessary files immediately after publish
           Remove-Item -Path "publish\*.pdb" -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "publish\*.xml" -Force -ErrorAction SilentlyContinue
