@@ -41,6 +41,16 @@ jobs:
           if (!(Test-Path -Path "publish\logs")) { New-Item -ItemType Directory -Path "publish\logs" | Out-Null }
         shell: powershell
 
+      - name: Create debug info file
+        run: |
+          echo "=== EgeControl WebApp Debug Info ===" > publish/debug.txt
+          echo "Deploy Time: $(Get-Date)" >> publish/debug.txt
+          echo "Files in publish:" >> publish/debug.txt
+          Get-ChildItem publish -Recurse | Out-String >> publish/debug.txt
+          echo "=== End Debug Info ===" >> publish/debug.txt
+          Write-Host "Debug file created. Check /debug.txt on website"
+        shell: powershell
+
       # Eğer framework-dependent istiyorsan üsttekini yorumlayıp bunu aç:
       # - name: Publish (Framework-dependent DLL)
       #   run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish
