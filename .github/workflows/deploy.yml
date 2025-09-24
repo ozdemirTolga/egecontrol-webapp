@@ -20,8 +20,8 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore with runtime
-        run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj --runtime win-x64
+      - name: Restore
+        run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
 
       - name: Publish (Self-contained with runtime) - Fix CoreLib error
         run: |
