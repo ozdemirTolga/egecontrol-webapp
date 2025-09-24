@@ -23,8 +23,15 @@ jobs:
       - name: Restore
         run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
 
-      - name: Publish (Framework-dependent DLL)
-        run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish
+      - name: Publish (Framework-dependent DLL) - Optimized
+        run: |
+          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --no-restore --verbosity quiet
+          # Remove unnecessary files immediately after publish
+          Remove-Item -Path "publish/*.pdb" -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path "publish/*.xml" -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path "publish/runtimes" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path "publish/cs", "publish/de", "publish/es", "publish/fr", "publish/it", "publish/ja", "publish/ko", "publish/zh-Hans", "publish/zh-Hant" -Recurse -Force -ErrorAction SilentlyContinue
+        shell: powershell
 
       - name: Ensure logs folder exists in publish output
         run: |
@@ -72,9 +79,10 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 600000
-          log-level: verbose
+          timeout: 900000
+          log-level: standard
           dangerous-clean-slate: false
+          dry-run: false
           exclude: |
             **/.git*
             **/*.pdb
@@ -85,12 +93,7 @@ jobs:
             **/*.md
             app.db
             logs/
-            runtimes/linux-*/**
-            runtimes/osx-*/**
-            runtimes/*-musl-*/**
-            runtimes/maccatalyst*/**
-            runtimes/win-x86/**
-            runtimes/win-arm*/**
+            runtimes/**
             cs/**
             de/**
             es/**
@@ -129,9 +132,10 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 600000
-          log-level: verbose
+          timeout: 900000
+          log-level: standard
           dangerous-clean-slate: false
+          dry-run: false
           exclude: |
             **/.git*
             **/*.pdb
@@ -142,12 +146,7 @@ jobs:
             **/*.md
             app.db
             logs/
-            runtimes/linux-*/**
-            runtimes/osx-*/**
-            runtimes/*-musl-*/**
-            runtimes/maccatalyst*/**
-            runtimes/win-x86/**
-            runtimes/win-arm*/**
+            runtimes/**
             cs/**
             de/**
             es/**
