@@ -48,6 +48,11 @@ jobs:
           echo "Files in publish:" >> publish/debug.txt
           Get-ChildItem publish -Recurse | Out-String >> publish/debug.txt
           echo "=== End Debug Info ===" >> publish/debug.txt
+          # Ensure index.html is in root for Plesk
+          if (Test-Path "publish\wwwroot\index.html") {
+            Copy-Item "publish\wwwroot\index.html" "publish\" -Force
+            Write-Host "Copied index.html to root for Plesk compatibility"
+          }
           Write-Host "Debug file created. Check /debug.txt on website"
         shell: powershell
 

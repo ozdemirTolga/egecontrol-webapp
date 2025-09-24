@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>EgeControl - Teklif Yönetimi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 40px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .status { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .btn { display: inline-block; background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        .btn:hover { background: #2980b9; }
+        .info { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 EgeControl Teklif Yönetim Sistemi</h1>
+        
+        <div class="status">
+            <strong>⚠️ Sistem Durumu:</strong> .NET Core uygulaması yapılandırılıyor...
+        </div>
+
+        <div class="info">
+            <h3>📋 Sistem Özellikleri</h3>
+            <ul>
+                <li>✅ Teklif oluşturma ve düzenleme</li>
+                <li>✅ Müşteri yönetimi</li>
+                <li>✅ PDF otomatik oluşturma</li>
+                <li>✅ Kullanıcı yetkilendirme sistemi</li>
+                <li>✅ Responsive tasarım</li>
+            </ul>
+        </div>
+
+        <p><strong>Son Güncelleme:</strong> <span id="datetime"></span></p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="/Identity/Account/Login" class="btn">🔐 Sisteme Giriş Yap</a>
+            <a href="/debug.txt" class="btn" style="background: #95a5a6;">🔍 Debug Bilgileri</a>
+        </div>
+
+        <div style="text-align: center; color: #7f8c8d; margin-top: 30px;">
+            <p>© 2025 EgeControl - Teklif Yönetim Sistemi</p>
+        </div>
+    </div>
+
+    <script>
+        // Show current date/time
+        document.getElementById('datetime').textContent = new Date().toLocaleString('tr-TR');
+        
+        // Try to check if ASP.NET Core is working
+        fetch('/api/health')
+            .then(() => {
+                document.querySelector('.status').innerHTML = '<strong>✅ Sistem Durumu:</strong> .NET Core uygulaması çalışıyor!';
+                document.querySelector('.status').style.background = '#d4edda';
+                document.querySelector('.status').style.borderColor = '#c3e6cb';
+            })
+            .catch(() => {
+                console.log('.NET Core application not responding, showing static page');
+            });
+    </script>
+</body>
+</html>
