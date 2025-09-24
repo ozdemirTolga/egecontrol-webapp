@@ -163,6 +163,31 @@ jobs:
             !**/*.min.css
             !**/*.min.js
 
+      - name: Remove app_offline.htm to bring site back online
+        run: |
+          # Create a temporary empty directory for cleanup
+          New-Item -ItemType Directory -Path "cleanup" -Force
+          Write-Host "🗑️ Attempting to remove app_offline.htm to bring site online..."
+        shell: powershell
+
+      - name: Sync without app_offline.htm (to remove it from server)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: cleanup/
+          server-dir: /httpdocs/
+          timeout: 120000
+          log-level: standard
+          dangerous-clean-slate: false
+          exclude: |
+            app_offline.htm
+        continue-on-error: true
+
       - name: Cleanup complete - app should be running now
-        run: Write-Host "✅ Deployment completed! app_offline.htm should have been removed by sync operation. Site should be online now!"
+        run: Write-Host "✅ Deployment completed! app_offline.htm removal attempted. Site should be online now!"
         shell: powershell
