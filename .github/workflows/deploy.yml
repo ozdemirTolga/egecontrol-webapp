@@ -44,7 +44,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
           security: loose
           local-dir: publish/
@@ -66,13 +66,13 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
           security: loose
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 300000
+          timeout: 600000
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
@@ -123,13 +123,13 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
           security: loose
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 300000
+          timeout: 600000
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
