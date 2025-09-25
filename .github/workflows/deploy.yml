@@ -114,7 +114,6 @@ jobs:
             **/*.xml
             **/*.md
             app.db
-            logs/
             cs/**
             de/**
             es/**
@@ -166,7 +165,6 @@ jobs:
             **/*.xml
             **/*.md
             app.db
-            logs/
             cs/**
             de/**
             es/**
