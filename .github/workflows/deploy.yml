@@ -23,10 +23,10 @@ jobs:
       - name: Restore
         run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
 
-      - name: Publish (Self-contained with runtime) - Recommended for Plesk
+      - name: Publish (Self-contained single-file) - Fewer files, more reliable FTP
         run: |
           # Self-contained publish includes .NET runtime. Avoid --no-restore so RID assets are restored automatically.
-          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --verbosity minimal --self-contained true -r win-x64 /p:PublishSingleFile=false
+          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --verbosity minimal --self-contained true -r win-x64 /p:PublishSingleFile=true /p:DebugType=none /p:DebugSymbols=false
           # Remove unnecessary files
           Remove-Item -Path 'publish\*.pdb' -Force -ErrorAction SilentlyContinue
           Remove-Item -Path 'publish\*.xml' -Force -ErrorAction SilentlyContinue
@@ -87,7 +87,7 @@ jobs:
             Write-Host "app_offline.htm not found or could not delete: $_"
           }
 
-      - name: FTP Deploy (main files) - Attempt 1
+      - name: FTP Deploy (core files first)
         id: ftp-deploy-1
         continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -101,46 +101,25 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 900000
+          timeout: 1200000
           log-level: standard
           dangerous-clean-slate: false
           dry-run: false
           exclude: |
-            **/.git*
-            **/*.pdb
-            **/*.map
-            **/*.br
-            **/*.gz
-            **/*.xml
-            **/*.md
-            app.db
-            cs/**
-            de/**
-            es/**
-            fr/**
-            it/**
-            ja/**
-            ko/**
-            zh-Hans/**
-            zh-Hant/**
-            **/bootstrap.css
-            **/bootstrap.js
-            **/bootstrap-*.css
-            **/bootstrap-*.js
-            **/jquery.js
-            **/jquery.slim.js
-            !**/*.min.css
-            !**/*.min.js
+            **/*
+            !web.config
+            !EgeControlWebApp.exe
+            !index.html
+            !alive.txt
 
-      - name: Wait before retry (if first attempt failed)
-        if: steps.ftp-deploy-1.outcome == 'failure'
+      - name: Wait before bulk upload
+        # Always wait a short moment after the core upload
         run: |
-          Write-Host "⚠️ First FTP attempt failed. Waiting 90 seconds before retry..."
-          Start-Sleep -Seconds 90
+          Write-Host 'Waiting 15 seconds before bulk upload...'
+          Start-Sleep -Seconds 15
         shell: powershell
 
-      - name: FTP Deploy (main files) - Attempt 2 (Retry)
-        if: steps.ftp-deploy-1.outcome == 'failure'
+      - name: FTP Deploy (bulk files)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -152,7 +131,7 @@ jobs:
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 900000
+          timeout: 1200000
           log-level: standard
           dangerous-clean-slate: false
           dry-run: false
