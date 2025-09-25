@@ -71,23 +71,27 @@ jobs:
           try {
             $server = "${{ secrets.FTP_SERVER }}".Trim()
             if ([string]::IsNullOrWhiteSpace($server)) { throw 'FTP_SERVER secret is empty' }
-            $uri = "ftp://$server/httpdocs/app_offline.htm"
-            Write-Host "Attempting to delete $uri via FTPS..."
-            $req = [System.Net.FtpWebRequest]::Create($uri)
-            $req.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
-            $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
-            $req.EnableSsl = $true
-            $req.KeepAlive = $false
-            $req.UsePassive = $true
-            $req.UseBinary = $true
-            $resp = $req.GetResponse()
-            Write-Host "Deleted app_offline.htm. Status: " $resp.StatusDescription
-            $resp.Close()
+            foreach ($dir in @('httpdocs','httpsdocs')) {
+              $uri = "ftp://$server/$dir/app_offline.htm"
+              Write-Host "Attempting to delete $uri via FTPS..."
+              try {
+                $req = [System.Net.FtpWebRequest]::Create($uri)
+                $req.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
+                $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
+                $req.EnableSsl = $true
+                $req.KeepAlive = $false
+                $req.UsePassive = $true
+                $req.UseBinary = $true
+                $resp = $req.GetResponse()
+                Write-Host "Deleted $dir/app_offline.htm. Status: " $resp.StatusDescription
+                $resp.Close()
+              } catch { Write-Host "No app_offline.htm in $dir or delete failed: $_" }
+            }
           } catch {
             Write-Host "app_offline.htm not found or could not delete: $_"
           }
 
-      - name: FTP Deploy (core files first)
+      - name: FTP Deploy (core files first) to httpdocs
         id: ftp-deploy-1
         continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -112,6 +116,30 @@ jobs:
             !index.html
             !alive.txt
 
+      - name: FTP Deploy (core files first) to httpsdocs (if exists)
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpsdocs/
+          state-name: .ftp-deploy-sync-state-https.json
+          timeout: 600000
+          log-level: standard
+          dangerous-clean-slate: false
+          dry-run: false
+          exclude: |
+            **/*
+            !web.config
+            !EgeControlWebApp.exe
+            !index.html
+            !alive.txt
+
       - name: Wait before bulk upload
         # Always wait a short moment after the core upload
         run: |
@@ -119,7 +147,7 @@ jobs:
           Start-Sleep -Seconds 15
         shell: powershell
 
-      - name: FTP Deploy (bulk files)
+      - name: FTP Deploy (bulk files) to httpdocs
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -132,6 +160,50 @@ jobs:
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
           timeout: 1200000
+          log-level: standard
+          dangerous-clean-slate: false
+          dry-run: false
+          exclude: |
+            **/.git*
+            **/*.pdb
+            **/*.map
+            **/*.br
+            **/*.gz
+            **/*.xml
+            **/*.md
+            app.db
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
+            **/bootstrap.css
+            **/bootstrap.js
+            **/bootstrap-*.css
+            **/bootstrap-*.js
+            **/jquery.js
+            **/jquery.slim.js
+            !**/*.min.css
+            !**/*.min.js
+
+      - name: FTP Deploy (bulk files) to httpsdocs (if exists)
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpsdocs/
+          state-name: .ftp-deploy-sync-state-https.json
+          timeout: 900000
           log-level: standard
           dangerous-clean-slate: false
           dry-run: false
