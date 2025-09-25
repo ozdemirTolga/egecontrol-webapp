@@ -25,15 +25,14 @@ jobs:
 
       - name: Publish (Self-contained with runtime) - Recommended for Plesk
         run: |
-          # Self-contained publish includes .NET runtime. Do NOT use --no-restore so RID assets are restored automatically.
+          # Self-contained publish includes .NET runtime. Avoid --no-restore so RID assets are restored automatically.
           dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --verbosity minimal --self-contained true -r win-x64 /p:PublishSingleFile=false
           # Remove unnecessary files
-          Remove-Item -Path "publish\*.pdb" -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path "publish\*.xml" -Force -ErrorAction SilentlyContinue
-          # Quick sanity checks
-          if (Test-Path -Path "publish\EgeControlWebApp.exe") { Write-Host "✅ EXE created for self-contained" } else { Write-Error "❌ Missing EgeControlWebApp.exe" }
-          if (Test-Path -Path "publish\System.Private.CoreLib.dll") { Write-Host "✅ Core runtime present" } else { Write-Host "ℹ️ CoreLib may be embedded; continuing" }
-          Write-Host "Self-contained publish completed including runtime (win-x64)"
+          Remove-Item -Path 'publish\*.pdb' -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path 'publish\*.xml' -Force -ErrorAction SilentlyContinue
+          # Quick sanity check
+          if (Test-Path -Path 'publish\EgeControlWebApp.exe') { Write-Host 'EXE created for self-contained' } else { Write-Error 'Missing EgeControlWebApp.exe' }
+          Write-Host 'Self-contained publish completed including runtime (win-x64)'
         shell: powershell
 
       - name: Ensure logs folder exists in publish output
