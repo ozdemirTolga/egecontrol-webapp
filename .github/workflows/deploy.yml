@@ -23,17 +23,13 @@ jobs:
       - name: Restore
         run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
 
-      - name: Publish (Self-contained with runtime) - Fix CoreLib error
+      - name: Publish (Framework-dependent for .NET 9.X hosting)
         run: |
-          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --verbosity quiet --self-contained true --runtime win-x64 /p:PublishSingleFile=false
-          # Remove unnecessary files immediately after publish
+          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --verbosity quiet --self-contained false
+          # Remove unnecessary files
           Remove-Item -Path "publish\*.pdb" -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "publish\*.xml" -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path "publish\cs", "publish\de", "publish\es", "publish\fr", "publish\it", "publish\ja", "publish\ko", "publish\zh-Hans", "publish\zh-Hant" -Recurse -Force -ErrorAction SilentlyContinue
-          # Verify critical runtime files exist
-          if (Test-Path -Path "publish\System.Private.CoreLib.dll") { Write-Host "✅ System.Private.CoreLib.dll found" } else { Write-Host "❌ CoreLib missing!" }
-          if (Test-Path -Path "publish\EgeControlWebApp.exe") { Write-Host "✅ EXE created for self-contained" }
-          Write-Host "Self-contained publish completed with runtime included"
+          Write-Host "Framework-dependent publish completed for .NET 9.X hosting"
         shell: powershell
 
       - name: Ensure logs folder exists in publish output
