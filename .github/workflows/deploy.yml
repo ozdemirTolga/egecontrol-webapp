@@ -73,6 +73,7 @@ jobs:
           path: publish.zip
 
       - name: Probe FTP remote layout (LIST)
+        continue-on-error: true
         shell: powershell
         run: |
           function Invoke-FtpList($path) {
@@ -90,7 +91,7 @@ jobs:
               $content = $sr.ReadToEnd()
               $sr.Close(); $resp.Close()
               Write-Host "--- LIST $path ---`n$content"
-            } catch { Write-Host "LIST failed for $path: $_" }
+            } catch { Write-Host ("LIST failed for {0}: {1}" -f $path, $_) }
           }
           foreach ($p in @('', '/', 'httpdocs', 'httpsdocs', 'httpdocs_temp')) { Invoke-FtpList $p }
 
@@ -262,7 +263,7 @@ jobs:
               $sr = New-Object System.IO.StreamReader($resp.GetResponseStream())
               $content = $sr.ReadToEnd(); $sr.Close(); $resp.Close()
               Write-Host "--- LIST $path ---`n$content"
-            } catch { Write-Host "LIST failed for $path: $_" }
+            } catch { Write-Host ("LIST failed for {0}: {1}" -f $path, $_) }
           }
           foreach ($p in @('','/','httpdocs','httpsdocs')) { Invoke-FtpList $p }
 
