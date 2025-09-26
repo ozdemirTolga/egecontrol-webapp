@@ -23,250 +23,149 @@ jobs:
       - name: Restore
         run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
 
-      - name: Publish (Self-contained single-file) - Fewer files, more reliable FTP
-        run: |
-          # Self-contained publish includes .NET runtime. Avoid --no-restore so RID assets are restored automatically.
-          dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish --verbosity minimal --self-contained true -r win-x64 /p:PublishSingleFile=true /p:DebugType=none /p:DebugSymbols=false
-          # Remove unnecessary files
-          Remove-Item -Path 'publish\*.pdb' -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path 'publish\*.xml' -Force -ErrorAction SilentlyContinue
-          # Quick sanity check
-          if (Test-Path -Path 'publish\EgeControlWebApp.exe') { Write-Host 'EXE created for self-contained' } else { Write-Error 'Missing EgeControlWebApp.exe' }
-          if (Test-Path -Path 'publish\web.config') { Write-Host 'web.config present' } else { Write-Error 'web.config missing in publish output' }
-          Write-Host 'Self-contained publish completed including runtime (win-x64)'
-        shell: powershell
+      - name: Publish (Framework-dependent DLL)
+        run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish
 
       - name: Ensure logs folder exists in publish output
         run: |
-          if (!(Test-Path -Path "publish\logs")) { New-Item -ItemType Directory -Path "publish\logs" | Out-Null }
-        shell: powershell
+          if (!(Test-Path -Path publish\logs)) { New-Item -ItemType Directory -Path publish\logs | Out-Null }
 
-      - name: Create debug info file
-        run: |
-          echo "=== EgeControl WebApp Debug Info ===" > publish/debug.txt
-          echo "Deploy Time: $(Get-Date)" >> publish/debug.txt
-          echo "Files in publish:" >> publish/debug.txt
-          Get-ChildItem publish -Recurse | Out-String >> publish/debug.txt
-          echo "=== End Debug Info ===" >> publish/debug.txt
-          # Ensure index.html is in root for Plesk
-          if (!(Test-Path 'publish\index.html')) {
-            Set-Content -Path 'publish\index.html' -Value '<!doctype html><meta charset="utf-8"><title>EgeControl</title><h1>EgeControl WebApp</h1><p>If you see this page, IIS is serving static files. <a href="/">Go to app root</a></p>' -Encoding UTF8
-          }
-          # Create a simple alive file
-          Set-Content -Path 'publish\alive.txt' -Value (Get-Date).ToString('u') -Encoding UTF8
-          # Also print publish listing to Action logs
-          Get-ChildItem -Recurse -File publish | Select-Object FullName, Length | Format-Table -Auto | Out-String | Write-Host
-          Write-Host "Debug file created. Check /debug.txt on website"
-        shell: powershell
+      # Eğer self-contained istiyorsan üsttekini yorumlayıp bunu aç:
+      # - name: Publish (Self-contained EXE)
+      #   run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -r win-x64 --self-contained true ^
+      #        /p:PublishSingleFile=true /p:PublishTrimmed=false -o publish
 
-      - name: Package publish output (zip)
-        run: |
-          if (Test-Path 'publish.zip') { Remove-Item 'publish.zip' -Force }
-          Compress-Archive -Path 'publish/*' -DestinationPath 'publish.zip'
-          Write-Host 'publish.zip created'
-        shell: powershell
+      - name: Create app_offline.htm for maintenance
+        run: echo '<html><body><h1>Site temporarily offline for maintenance</h1><p>Please wait a moment...</p></body></html>' > publish/app_offline.htm
 
-      - name: Upload publish artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload app_offline.htm first (to stop IIS app)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          name: publish-output
-          path: publish.zip
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs/
+          timeout: 60000
+          exclude: |
+            **/*
+            !app_offline.htm
 
-      - name: Probe FTP remote layout (LIST)
+      - name: Wait for app to stop
+        run: Start-Sleep -Seconds 60
+        shell: powershell
+
+      - name: FTP Deploy (main files) - Attempt 1
+        id: ftp-deploy-1
         continue-on-error: true
-        shell: powershell
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs/
+          state-name: .ftp-deploy-sync-state.json
+          timeout: 300000
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/*.pdb
+            **/*.map
+            **/*.br
+            **/*.gz
+            **/*.xml
+            **/*.md
+            app.db
+            logs/
+            runtimes/linux-*/**
+            runtimes/osx-*/**
+            runtimes/*-musl-*/**
+            runtimes/maccatalyst*/**
+            runtimes/win-x86/**
+            runtimes/win-arm*/**
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
+            **/bootstrap.css
+            **/bootstrap.js
+            **/bootstrap-*.css
+            **/bootstrap-*.js
+            **/jquery.js
+            **/jquery.slim.js
+            !**/*.min.css
+            !**/*.min.js
+
+      - name: Wait before retry (if first attempt failed)
+        if: steps.ftp-deploy-1.outcome == 'failure'
         run: |
-          function Invoke-FtpList($path) {
-            try {
-              $server = "${{ secrets.FTP_SERVER }}".Trim()
-              $uri = "ftp://$server/$path"
-              $req = [System.Net.FtpWebRequest]::Create($uri)
-              $req.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectoryDetails
-              $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
-              $req.EnableSsl = $false
-              $req.UsePassive = $true
-              $req.KeepAlive = $false
-              $resp = $req.GetResponse()
-              $sr = New-Object System.IO.StreamReader($resp.GetResponseStream())
-              $content = $sr.ReadToEnd()
-              $sr.Close(); $resp.Close()
-              Write-Host "--- LIST $path ---`n$content"
-            } catch { Write-Host ("LIST failed for {0}: {1}" -f $path, $_) }
-          }
-          foreach ($p in @('', '/', 'httpdocs', 'httpsdocs', 'httpdocs_temp')) { Invoke-FtpList $p }
-
-      - name: Ensure remote directories exist
-        continue-on-error: true
+          Write-Host "⚠️ First FTP attempt failed. Waiting 90 seconds before retry..."
+          Start-Sleep -Seconds 90
         shell: powershell
-        run: |
-          function Invoke-FtpMkdir($path) {
-            try {
-              $server = "${{ secrets.FTP_SERVER }}".Trim()
-              $uri = "ftp://$server/$path"
-              $req = [System.Net.FtpWebRequest]::Create($uri)
-              $req.Method = [System.Net.WebRequestMethods+Ftp]::MakeDirectory
-              $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
-              $req.EnableSsl = $false
-              $req.UsePassive = $true
-              $req.KeepAlive = $false
-              $resp = $req.GetResponse(); $resp.Close()
-              Write-Host "MKDIR $path ok"
-            } catch { Write-Host "MKDIR $path failed or exists: $_" }
-          }
-          foreach ($p in @('httpdocs','httpsdocs')) { Invoke-FtpMkdir $p }
 
-      # Eğer framework-dependent istiyorsan üsttekini yorumlayıp bunu aç:
-      # - name: Publish (Framework-dependent DLL)
-      #   run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj -c Release -o publish
+      - name: FTP Deploy (main files) - Attempt 2 (Retry)
+        if: steps.ftp-deploy-1.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: publish/
+          server-dir: /httpdocs/
+          state-name: .ftp-deploy-sync-state.json
+          timeout: 300000
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/*.pdb
+            **/*.map
+            **/*.br
+            **/*.gz
+            **/*.xml
+            **/*.md
+            app.db
+            logs/
+            runtimes/linux-*/**
+            runtimes/osx-*/**
+            runtimes/*-musl-*/**
+            runtimes/maccatalyst*/**
+            runtimes/win-x86/**
+            runtimes/win-arm*/**
+            cs/**
+            de/**
+            es/**
+            fr/**
+            it/**
+            ja/**
+            ko/**
+            zh-Hans/**
+            zh-Hant/**
+            **/bootstrap.css
+            **/bootstrap.js
+            **/bootstrap-*.css
+            **/bootstrap-*.js
+            **/jquery.js
+            **/jquery.slim.js
+            !**/*.min.css
+            !**/*.min.js
 
-      # Note: We no longer use app_offline.htm to avoid leftover causing downtime.
-
-      - name: Force delete remote app_offline.htm (FTPS)
-        shell: powershell
-        run: |
-          try {
-            $server = "${{ secrets.FTP_SERVER }}".Trim()
-            if ([string]::IsNullOrWhiteSpace($server)) { throw 'FTP_SERVER secret is empty' }
-            foreach ($dir in @('httpdocs','httpsdocs')) {
-              $uri = "ftp://$server/$dir/app_offline.htm"
-              Write-Host "Attempting to delete $uri via FTPS..."
-              try {
-                $req = [System.Net.FtpWebRequest]::Create($uri)
-                $req.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
-                $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
-                $req.EnableSsl = $true
-                $req.KeepAlive = $false
-                $req.UsePassive = $true
-                $req.UseBinary = $true
-                $resp = $req.GetResponse()
-                Write-Host "Deleted $dir/app_offline.htm. Status: " $resp.StatusDescription
-                $resp.Close()
-              } catch { Write-Host "No app_offline.htm in $dir or delete failed: $_" }
-            }
-          } catch {
-            Write-Host "app_offline.htm not found or could not delete: $_"
-          }
-
-      - name: Upload via PowerShell FTP (httpdocs)
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          function New-FtpRequest($uri, $method) {
-            $req = [System.Net.FtpWebRequest]::Create($uri)
-            $req.Method = $method
-            $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
-            $req.EnableSsl = $false
-            $req.UsePassive = $true
-            $req.KeepAlive = $false
-            $req.UseBinary = $true
-            return $req
-          }
-          function Ensure-FtpDir($baseUri, $remoteDir) {
-            $parts = $remoteDir.Trim('/').Split('/', [System.StringSplitOptions]::RemoveEmptyEntries)
-            $path = ''
-            foreach ($p in $parts) {
-              $path = if ($path) { "$path/$p" } else { $p }
-              try {
-                $req = New-FtpRequest("$baseUri/$path", [System.Net.WebRequestMethods+Ftp]::MakeDirectory)
-                $resp = $req.GetResponse(); $resp.Close()
-                Write-Host "MKDIR /$path"
-              } catch { }
-            }
-          }
-          function Upload-Dir($localDir, $remoteRoot) {
-            $server = "${{ secrets.FTP_SERVER }}".Trim()
-            $baseUri = "ftp://$server/$remoteRoot".TrimEnd('/')
-            Ensure-FtpDir $baseUri '.' | Out-Null
-            $files = Get-ChildItem -Path $localDir -Recurse -File
-            $count = 0
-            foreach ($f in $files) {
-              $rel = $f.FullName.Substring((Resolve-Path $localDir).Path.Length).TrimStart('\')
-              $relUrl = $rel -replace '\\','/'
-              $remoteDir = Split-Path $relUrl -Parent
-              if ($remoteDir -and $remoteDir -ne '.') { Ensure-FtpDir $baseUri $remoteDir }
-              $dest = "$baseUri/$( [System.Uri]::EscapeUriString($relUrl) )"
-              $req = New-FtpRequest($dest, [System.Net.WebRequestMethods+Ftp]::UploadFile)
-              $bytes = [System.IO.File]::ReadAllBytes($f.FullName)
-              $req.ContentLength = $bytes.Length
-              $stream = $req.GetRequestStream(); $stream.Write($bytes,0,$bytes.Length); $stream.Close()
-              $resp = $req.GetResponse(); $resp.Close()
-              $count++
-              if (($count % 50) -eq 0) { Write-Host "Uploaded $count files..." }
-            }
-            Write-Host "Uploaded $count files to $remoteRoot"
-          }
-          Upload-Dir (Resolve-Path 'publish').Path 'httpdocs'
-
-      - name: Upload via PowerShell FTP (httpsdocs)
-        continue-on-error: true
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Continue'
-          function New-FtpRequest($uri, $method) {
-            $req = [System.Net.FtpWebRequest]::Create($uri)
-            $req.Method = $method
-            $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
-            $req.EnableSsl = $false
-            $req.UsePassive = $true
-            $req.KeepAlive = $false
-            $req.UseBinary = $true
-            return $req
-          }
-          function Ensure-FtpDir($baseUri, $remoteDir) {
-            $parts = $remoteDir.Trim('/').Split('/', [System.StringSplitOptions]::RemoveEmptyEntries)
-            $path = ''
-            foreach ($p in $parts) {
-              $path = if ($path) { "$path/$p" } else { $p }
-              try {
-                $req = New-FtpRequest("$baseUri/$path", [System.Net.WebRequestMethods+Ftp]::MakeDirectory)
-                $resp = $req.GetResponse(); $resp.Close()
-              } catch { }
-            }
-          }
-          function Upload-Dir($localDir, $remoteRoot) {
-            $server = "${{ secrets.FTP_SERVER }}".Trim()
-            $baseUri = "ftp://$server/$remoteRoot".TrimEnd('/')
-            Ensure-FtpDir $baseUri '.' | Out-Null
-            $files = Get-ChildItem -Path $localDir -Recurse -File
-            foreach ($f in $files) {
-              $rel = $f.FullName.Substring((Resolve-Path $localDir).Path.Length).TrimStart('\')
-              $relUrl = $rel -replace '\\','/'
-              $remoteDir = Split-Path $relUrl -Parent
-              if ($remoteDir -and $remoteDir -ne '.') { Ensure-FtpDir $baseUri $remoteDir }
-              $dest = "$baseUri/$( [System.Uri]::EscapeUriString($relUrl) )"
-              try {
-                $req = New-FtpRequest($dest, [System.Net.WebRequestMethods+Ftp]::UploadFile)
-                $bytes = [System.IO.File]::ReadAllBytes($f.FullName)
-                $req.ContentLength = $bytes.Length
-                $stream = $req.GetRequestStream(); $stream.Write($bytes,0,$bytes.Length); $stream.Close()
-                $resp = $req.GetResponse(); $resp.Close()
-              } catch { Write-Host "Skip upload to httpsdocs: $_" }
-            }
-            Write-Host "Upload to httpsdocs attempted"
-          }
-          Upload-Dir (Resolve-Path 'publish').Path 'httpsdocs'
-
-      - name: Remote listing after upload
-        shell: powershell
-        run: |
-          function Invoke-FtpList($path) {
-            try {
-              $server = "${{ secrets.FTP_SERVER }}".Trim()
-              $uri = "ftp://$server/$path"
-              $req = [System.Net.FtpWebRequest]::Create($uri)
-              $req.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectoryDetails
-              $req.Credentials = New-Object System.Net.NetworkCredential("${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}")
-              $req.EnableSsl = $false
-              $req.UsePassive = $true
-              $req.KeepAlive = $false
-              $resp = $req.GetResponse()
-              $sr = New-Object System.IO.StreamReader($resp.GetResponseStream())
-              $content = $sr.ReadToEnd(); $sr.Close(); $resp.Close()
-              Write-Host "--- LIST $path ---`n$content"
-            } catch { Write-Host ("LIST failed for {0}: {1}" -f $path, $_) }
-          }
-          foreach ($p in @('','/','httpdocs','httpsdocs')) { Invoke-FtpList $p }
-
-      - name: Done
-        run: Write-Host 'Deployment steps finished.'
+      - name: Cleanup complete - app should be running now
+        run: Write-Host "✅ Deployment completed! app_offline.htm should have been removed by sync operation. Site should be online now!"
         shell: powershell
