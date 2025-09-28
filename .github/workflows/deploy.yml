@@ -44,12 +44,12 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
+          security: strict
           local-dir: publish/
           server-dir: /httpdocs/
-          timeout: 60000
+          timeout: 30000
           exclude: |
             **/*
             !app_offline.htm
@@ -66,14 +66,14 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
+          security: strict
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 300000
-          log-level: verbose
+          timeout: 180000
+          log-level: minimal
           dangerous-clean-slate: false
           exclude: |
             **/.git*
@@ -112,8 +112,8 @@ jobs:
       - name: Wait before retry (if first attempt failed)
         if: steps.ftp-deploy-1.outcome == 'failure'
         run: |
-          Write-Host "⚠️ First FTP attempt failed. Waiting 90 seconds before retry..."
-          Start-Sleep -Seconds 90
+          Write-Host "⚠️ First FTP attempt failed. Waiting 30 seconds before retry..."
+          Start-Sleep -Seconds 30
         shell: powershell
 
       - name: FTP Deploy (main files) - Attempt 2 (Retry)
@@ -123,14 +123,14 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
+          security: strict
           local-dir: publish/
           server-dir: /httpdocs/
           state-name: .ftp-deploy-sync-state.json
-          timeout: 300000
-          log-level: verbose
+          timeout: 120000
+          log-level: minimal
           dangerous-clean-slate: false
           exclude: |
             **/.git*
