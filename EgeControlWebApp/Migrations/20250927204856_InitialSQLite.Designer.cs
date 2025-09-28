@@ -3,7 +3,6 @@ using System;
 using EgeControlWebApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -12,90 +11,86 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EgeControlWebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250923093157_SQLServerInitialFixed")]
-    partial class SQLServerInitialFixed
+    [Migration("20250927204856_InitialSQLite")]
+    partial class InitialSQLite
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
             modelBuilder.Entity("EgeControlWebApp.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Department")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Position")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -104,8 +99,7 @@ namespace EgeControlWebApp.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+                        .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -114,32 +108,30 @@ namespace EgeControlWebApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("EmailError")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("EmailSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -150,66 +142,64 @@ namespace EgeControlWebApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ContactPerson")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Country")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("TaxNumber")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("TaxOffice")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Website")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -220,55 +210,53 @@ namespace EgeControlWebApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedByUserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("LastModifiedBy")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("LastModifiedByUserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("QuoteDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("QuoteNumber")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("SubTotal")
                         .HasPrecision(18, 2)
@@ -277,17 +265,17 @@ namespace EgeControlWebApp.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("ValidUntil")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("VatAmount")
                         .HasPrecision(18, 2)
@@ -295,7 +283,7 @@ namespace EgeControlWebApp.Migrations
 
                     b.Property<decimal>("VatRate")
                         .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -312,14 +300,12 @@ namespace EgeControlWebApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("DiscountAmount")
                         .HasPrecision(18, 2)
@@ -327,22 +313,22 @@ namespace EgeControlWebApp.Migrations
 
                     b.Property<decimal>("DiscountPercentage")
                         .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ItemName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("Quantity")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("QuoteId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("SortOrder")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Total")
                         .HasPrecision(18, 2)
@@ -351,7 +337,7 @@ namespace EgeControlWebApp.Migrations
                     b.Property<string>("Unit")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
@@ -367,26 +353,25 @@ namespace EgeControlWebApp.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
+                        .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
                 });
@@ -395,19 +380,17 @@ namespace EgeControlWebApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -420,19 +403,17 @@ namespace EgeControlWebApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -445,18 +426,18 @@ namespace EgeControlWebApp.Migrations
                 {
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderKey")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -468,10 +449,10 @@ namespace EgeControlWebApp.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -483,18 +464,18 @@ namespace EgeControlWebApp.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 

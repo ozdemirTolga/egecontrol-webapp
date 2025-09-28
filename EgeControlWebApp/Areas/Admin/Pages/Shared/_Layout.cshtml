@@ -7,6 +7,16 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        /* Prevent sidebar nav text from wrapping and keep tidy spacing */
+        .sidebar-nav .nav-link {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .sidebar-nav hr { margin: .75rem 0; }
+    </style>
 </head>
 <body>
     <header>
@@ -57,9 +67,9 @@
     
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2 bg-light">
+            <div class="col-lg-2 col-md-2 bg-light">
                 <div class="sidebar-sticky pt-3">
-                    <ul class="nav flex-column">
+                    <ul class="nav flex-column sidebar-nav">
                         <li class="nav-item">
                             <a class="nav-link active" asp-area="Admin" asp-page="/Index">
                                 <i class="fas fa-dashboard"></i> Dashboard
@@ -110,7 +120,7 @@
                     </ul>
                 </div>
             </div>
-            <main role="main" class="col-md-10 ml-sm-auto px-4">
+            <main role="main" class="col-lg-10 col-md-10 ml-sm-auto px-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">@ViewData["Title"]</h1>
                 </div>
@@ -123,5 +133,29 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        (function ($) {
+            if (!$ || !$.validator || !$.validator.methods) return;
+            var originalRange = $.validator.methods.range;
+            // Accept both comma and dot as decimal separators and ignore thousand separators
+            $.validator.methods.number = function (value, element) {
+                if (this.optional(element)) return true;
+                if (typeof value === 'string') {
+                    var normalized = value.trim()
+                        .replace(/\s/g, '')      // spaces
+                        .replace(/\./g, '')      // remove thousand dots
+                        .replace(/,/g, '.');      // comma -> dot
+                    return !isNaN(normalized) && /^-?\d*(?:\.\d+)?$/.test(normalized);
+                }
+                return true;
+            };
+            $.validator.methods.range = function (value, element, param) {
+                if (typeof value === 'string') {
+                    value = value.trim().replace(/\s/g, '').replace(/\./g, '').replace(/,/g, '.');
+                }
+                return originalRange.call(this, value, element, param);
+            };
+        })(window.jQuery);
+    </script>
 </body>
 </html>

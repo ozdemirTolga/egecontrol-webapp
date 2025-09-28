@@ -217,6 +217,7 @@
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
+                                            <th>Ürün/Hizmet</th>
                                             <th>Açıklama</th>
                                             <th>Miktar</th>
                                             <th>Birim</th>
@@ -229,6 +230,7 @@
                                         @foreach (var item in Model.Quote.QuoteItems)
                                         {
                                             <tr>
+                                                <td>@item.ItemName</td>
                                                 <td>@item.Description</td>
                                                 <td>@item.Quantity.ToString("N2")</td>
                                                 <td>@item.Unit</td>
@@ -240,15 +242,15 @@
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <th colspan="5" class="text-end">Ara Toplam:</th>
+                                            <th colspan="6" class="text-end">Ara Toplam:</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.SubTotal, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                         <tr>
-                                            <th colspan="5" class="text-end">KDV (%@Model.Quote.VatRate):</th>
+                                            <th colspan="6" class="text-end">KDV (%@Model.Quote.VatRate):</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.VatAmount, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                         <tr class="table-primary">
-                                            <th colspan="5" class="text-end">GENEL TOPLAM:</th>
+                                            <th colspan="6" class="text-end">GENEL TOPLAM:</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.TotalAmount, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                     </tfoot>

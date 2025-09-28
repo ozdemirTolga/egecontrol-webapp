@@ -41,6 +41,23 @@ namespace EgeControlWebApp.Services
             quote.CreatedAt = DateTime.Now;
             quote.QuoteNumber = await GenerateQuoteNumberAsync();
             
+            // Boş veya geçersiz kalemleri filtrele
+            if (quote.QuoteItems?.Any() == true)
+            {
+                var validItems = quote.QuoteItems
+                    .Where(item => !string.IsNullOrWhiteSpace(item.ItemName) && 
+                                   item.Quantity > 0 && 
+                                   item.UnitPrice >= 0)
+                    .ToList();
+                
+                quote.QuoteItems = validItems;
+            }
+            
+            if (quote.QuoteItems?.Any() != true)
+            {
+                throw new InvalidOperationException("En az bir geçerli teklif kalemi gereklidir.");
+            }
+            
             // Her kalemin toplamını güvenilir şekilde hesapla
             foreach (var item in quote.QuoteItems)
             {
@@ -114,7 +131,21 @@ namespace EgeControlWebApp.Services
             }
 
             // Prepare clean incoming items with computed totals
-            var cleanIncomingItems = (incoming.QuoteItems ?? new List<QuoteItem>()).Select(item =>
+            var allIncomingItems = incoming.QuoteItems ?? new List<QuoteItem>();
+            
+            // Boş veya geçersiz kalemleri filtrele
+            var validItems = allIncomingItems
+                .Where(item => !string.IsNullOrWhiteSpace(item.ItemName) && 
+                               item.Quantity > 0 && 
+                               item.UnitPrice >= 0)
+                .ToList();
+                
+            if (!validItems.Any())
+            {
+                throw new InvalidOperationException("En az bir geçerli teklif kalemi gereklidir.");
+            }
+            
+            var cleanIncomingItems = validItems.Select(item =>
             {
                 var lineSubtotal = item.Quantity * item.UnitPrice;
                 var discountAmount = lineSubtotal * (item.DiscountPercentage / 100);
@@ -122,11 +153,11 @@ namespace EgeControlWebApp.Services
                 return new QuoteItem
                 {
                     Id = item.Id,
-                    ItemName = item.ItemName,
-                    Description = item.Description,
+                    ItemName = item.ItemName.Trim(),
+                    Description = item.Description?.Trim() ?? string.Empty,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
-                    Unit = item.Unit,
+                    Unit = string.IsNullOrWhiteSpace(item.Unit) ? "Adet" : item.Unit.Trim(),
                     DiscountPercentage = item.DiscountPercentage,
                     DiscountAmount = discountAmount,
                     Total = total,

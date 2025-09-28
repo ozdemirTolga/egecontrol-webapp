@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EgeControlWebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class SQLServerInitialFixed : Migration
+    public partial class InitialSQLite : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,10 +15,10 @@ namespace EgeControlWebApp.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -29,27 +29,27 @@ namespace EgeControlWebApp.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Department = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Position = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    FirstName = table.Column<string>(type: "TEXT", nullable: false),
+                    LastName = table.Column<string>(type: "TEXT", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Department = table.Column<string>(type: "TEXT", nullable: true),
+                    Position = table.Column<string>(type: "TEXT", nullable: true),
+                    UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
+                    PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "TEXT", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,14 +60,14 @@ namespace EgeControlWebApp.Migrations
                 name: "ContactMessages",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EmailSent = table.Column<bool>(type: "bit", nullable: false),
-                    EmailError = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    Message = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EmailSent = table.Column<bool>(type: "INTEGER", nullable: false),
+                    EmailError = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,22 +78,22 @@ namespace EgeControlWebApp.Migrations
                 name: "Customers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CompanyName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ContactPerson = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TaxNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    TaxOffice = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CompanyName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    ContactPerson = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    Phone = table.Column<string>(type: "TEXT", nullable: false),
+                    Address = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    City = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Country = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Website = table.Column<string>(type: "TEXT", nullable: true),
+                    TaxNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    TaxOffice = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -104,11 +104,11 @@ namespace EgeControlWebApp.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    RoleId = table.Column<string>(type: "TEXT", nullable: false),
+                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
+                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -125,11 +125,11 @@ namespace EgeControlWebApp.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
+                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -146,10 +146,10 @@ namespace EgeControlWebApp.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    ProviderKey = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "TEXT", nullable: true),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -166,8 +166,8 @@ namespace EgeControlWebApp.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    RoleId = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -190,10 +190,10 @@ namespace EgeControlWebApp.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    Value = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -210,27 +210,27 @@ namespace EgeControlWebApp.Migrations
                 name: "Quotes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    QuoteNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    QuoteNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
                     SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    VatRate = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    VatRate = table.Column<decimal>(type: "TEXT", precision: 5, scale: 2, nullable: false),
                     VatAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    QuoteDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ValidUntil = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    Currency = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    LastModifiedBy = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    LastModifiedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    QuoteDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ValidUntil = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    Currency = table.Column<string>(type: "TEXT", maxLength: 3, nullable: false),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "TEXT", nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    LastModifiedByUserId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -257,18 +257,18 @@ namespace EgeControlWebApp.Migrations
                 name: "QuoteItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    QuoteId = table.Column<int>(type: "int", nullable: false),
-                    ItemName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    QuoteId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ItemName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    Quantity = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Unit = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    DiscountPercentage = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    Unit = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    DiscountPercentage = table.Column<decimal>(type: "TEXT", precision: 5, scale: 2, nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SortOrder = table.Column<int>(type: "int", nullable: false)
+                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -290,8 +290,7 @@ namespace EgeControlWebApp.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -317,8 +316,7 @@ namespace EgeControlWebApp.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuoteItems_QuoteId",

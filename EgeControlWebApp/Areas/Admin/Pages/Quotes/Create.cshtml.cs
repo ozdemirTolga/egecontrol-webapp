@@ -100,14 +100,37 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             // QuoteItemsList'i QuoteItems'a kopyala
             if (Quote.QuoteItemsList != null && Quote.QuoteItemsList.Any())
             {
-                // Navigation property'leri temizle ve sadece veriyi kopyala
-                var cleanItems = Quote.QuoteItemsList.Select(item => new QuoteItem
+                // Debug için gelen veriyi logla
+                Console.WriteLine($"Received {Quote.QuoteItemsList.Count} quote items:");
+                for (int i = 0; i < Quote.QuoteItemsList.Count; i++)
                 {
-                    ItemName = item.ItemName,
-                    Description = item.Description,
+                    var item = Quote.QuoteItemsList[i];
+                    Console.WriteLine($"Item {i}: Name='{item.ItemName}', Qty={item.Quantity}, Price={item.UnitPrice}");
+                }
+
+                // Boş öğeleri filtrele ve navigation property'leri temizle
+                var validItems = Quote.QuoteItemsList
+                    .Where(item => !string.IsNullOrWhiteSpace(item.ItemName) && 
+                                   item.Quantity > 0 && 
+                                   item.UnitPrice >= 0)
+                    .ToList();
+
+                Console.WriteLine($"After filtering: {validItems.Count} valid items");
+
+                if (!validItems.Any())
+                {
+                    ModelState.AddModelError(string.Empty, "En az bir geçerli teklif kalemi eklemelisiniz.");
+                    await LoadCustomersAsync();
+                    return Page();
+                }
+
+                var cleanItems = validItems.Select(item => new QuoteItem
+                {
+                    ItemName = item.ItemName.Trim(),
+                    Description = item.Description?.Trim() ?? string.Empty,
                     Quantity = NormalizeDecimal(item.Quantity),
                     UnitPrice = NormalizeDecimal(item.UnitPrice),
-                    Unit = item.Unit,
+                    Unit = string.IsNullOrWhiteSpace(item.Unit) ? "adet" : item.Unit.Trim(),
                     DiscountPercentage = NormalizeDecimal(item.DiscountPercentage),
                     DiscountAmount = item.DiscountAmount,
                     Total = item.Total,
@@ -115,7 +138,19 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                     QuoteId = 0 // Bu servis tarafından atanacak
                 }).ToList();
                 
+                Console.WriteLine($"Clean items created: {cleanItems.Count}");
+                foreach (var item in cleanItems)
+                {
+                    Console.WriteLine($"Clean item: Name='{item.ItemName}', Qty={item.Quantity}, Price={item.UnitPrice}");
+                }
+                
                 Quote.QuoteItems = cleanItems;
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "En az bir teklif kalemi eklemelisiniz.");
+                await LoadCustomersAsync();
+                return Page();
             }
 
             // Debug için model durumunu kontrol et
