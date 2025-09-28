@@ -160,7 +160,13 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
         private async Task LoadCustomerOptions()
         {
             var customers = await _customerService.GetAllCustomersAsync();
-            CustomerOptions = new SelectList(customers, "Id", "CompanyName");
+            var customerOptions = customers.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = string.IsNullOrEmpty(c.ContactPerson) ? c.CompanyName : $"{c.CompanyName} - {c.ContactPerson}"
+            }).ToList();
+            
+            CustomerOptions = new SelectList(customerOptions, "Value", "Text");
         }
     }
 }

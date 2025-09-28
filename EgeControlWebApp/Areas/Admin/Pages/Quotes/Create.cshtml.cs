@@ -189,7 +189,13 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
         private async Task LoadCustomersAsync()
         {
             var customers = await _customerService.GetAllCustomersAsync();
-            CustomerSelectList = new SelectList(customers, "Id", "CompanyName");
+            var customerOptions = customers.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = string.IsNullOrEmpty(c.ContactPerson) ? c.CompanyName : $"{c.CompanyName} - {c.ContactPerson}"
+            }).ToList();
+            
+            CustomerSelectList = new SelectList(customerOptions, "Value", "Text");
         }
 
         private static decimal NormalizeDecimal(decimal value)
