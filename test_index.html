@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGE Control - Test Sayfası</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 { color: #333; margin-bottom: 20px; }
+        p { color: #666; line-height: 1.6; margin: 10px 0; }
+        .status { 
+            background: #e8f5e8; 
+            border: 2px solid #4caf50; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 20px 0; 
+        }
+        .warning { 
+            background: #fff3cd; 
+            border: 2px solid #ffc107; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 20px 0; 
+        }
+        .timestamp { 
+            font-size: 12px; 
+            color: #999; 
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 EGE Control Web Uygulaması</h1>
+        
+        <div class="status">
+            <h3>✅ Sunucu Durumu: ÇALIŞIYOR</h3>
+            <p>IIS ve web hosting başarıyla çalışıyor.</p>
+        </div>
+        
+        <div class="warning">
+            <h3>⚠️ ASP.NET Core Uygulaması: GÜNCELLEME</h3>
+            <p>Ana uygulama şu anda güncelleniyor.</p>
+            <p>Lütfen birkaç dakika sonra tekrar deneyin.</p>
+        </div>
+        
+        <p><strong>Ne yapılıyor?</strong></p>
+        <ul style="text-align: left; color: #666;">
+            <li>ASP.NET Core Module kontrol ediliyor</li>
+            <li>Application Pool yeniden yapılandırılıyor</li>
+            <li>Self-contained deployment yükleniyor</li>
+            <li>Dosya izinleri ayarlanıyor</li>
+        </ul>
+        
+        <div class="timestamp">
+            Test Sayfası - 28 Eylül 2025, 23:42<br>
+            Sorun devam ederse: hosting@egecontrol.com
+        </div>
+    </div>
+    
+    <script>
+        // Her 30 saniyede bir otomatik yenile
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

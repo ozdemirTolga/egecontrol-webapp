@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using EgeControlWebApp.Data;
 using EgeControlWebApp.Services;
 using EgeControlWebApp.Models;
+using EgeControlWebApp.Infrastructure.Binding;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -11,45 +12,60 @@ using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure QuestPDF license
+// ---- LOGGING:  stdout'a düşsün ki IIS/ANCM görebilsin
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// QuestPDF lisansı
 QuestPDF.Settings.License = LicenseType.Community;
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// ---- CONNECTION STRINGS (güvenli okuma + fallback)
+var sqlServerConn = builder.Configuration.GetConnectionString("DefaultConnection");
+var sqliteConn = builder.Configuration.GetConnectionString("SqliteConnection");
+// SQLite dosyasını app köküne sabitleyelim (self-contained'da çalışma dizini exe klasörüdür)
+if (string.IsNullOrWhiteSpace(sqliteConn))
+{
+    var dbPath = Path.Combine(AppContext.BaseDirectory, "app.db");
+    sqliteConn = $"Data Source={dbPath}";
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    if (builder.Environment.IsProduction())
+    // 1) SQL Server varsa onu dene
+    if (!string.IsNullOrWhiteSpace(sqlServerConn))
     {
-        // Production'da SQL Server kullan
-        options.UseSqlServer(connectionString);
+        options.UseSqlServer(sqlServerConn);
     }
     else
     {
-        // Development'da SQLite kullan
-        var sqliteConnection = builder.Configuration.GetConnectionString("SqliteConnection") ?? "Data Source=app.db";
-        options.UseSqlite(sqliteConnection);
+        // 2) Yoksa kesinlikle düşme → SQLite'a geç
+        options.UseSqlite(sqliteConn!);
     }
 });
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => 
+// Prod'da dev exception filtresi gereksiz
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+}
+
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = false; // Admin için email onayını kapatıyoruz
+        options.SignIn.RequireConfirmedAccount = false;
         options.Password.RequireDigit = true;
         options.Password.RequiredLength = 6;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
         options.Password.RequireLowercase = false;
     })
-    .AddRoles<IdentityRole>() // Role desteği ekliyoruz
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Oturum süresini uzat - 12 saat
+// Cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.ExpireTimeSpan = TimeSpan.FromHours(12); // 12 saat
-    options.SlidingExpiration = true; // Kullanıcı aktif oldukça süre yenilenir
+    options.ExpireTimeSpan = TimeSpan.FromHours(12);
+    options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.LoginPath = "/Identity/Account/Login";
@@ -59,13 +75,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddRazorPages(options =>
 {
-    // Admin sayfalarını koruma altına alıyoruz
     options.Conventions.AuthorizeAreaFolder("Admin", "/", "AdminPolicy");
 })
 .AddMvcOptions(options =>
 {
-    // Virgül ve nokta ile decimal sayıları doğru algılamak için özel model binder
-    options.ModelBinderProviders.Insert(0, new SimpleDecimalModelBinderProvider());
+    options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
 });
 
 // Authorization policies
@@ -76,21 +90,16 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Services
-builder.Services.AddHttpContextAccessor(); // HttpContext erişimi için
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
-// Otomatik veritabanı yedekleme servisi
-builder.Services.AddHostedService<DatabaseBackupService>();
-
-// IIS/Production altında ANCM (AspNetCoreModuleV2) dinleme adresini atar.
-// Geliştirici makinesinde launchSettings.json kullanılır. Burada sabit URL tanımlamıyoruz.
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ---- PIPELINE
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -99,11 +108,10 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-// Localization: default to Turkish (tr-TR) so comma decimals are parsed correctly
+// Localization: TR
 var supportedCultures = new[] { new CultureInfo("tr-TR") };
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
@@ -111,7 +119,6 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures
 });
-
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -123,22 +130,37 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-// Seed admin user and roles
+// Sağlık testi: Kestrel ayakta mı?
+app.MapGet("/health", () => Results.Ok("OK"));
+
+// ---- DB init/seed (çökerse uygulamayı düşürme)
 using (var scope = app.Services.CreateScope())
 {
-    var serviceProvider = scope.ServiceProvider;
-    await SeedAdminUser(serviceProvider);
+    var sp = scope.ServiceProvider;
+    try
+    {
+        var db = sp.GetRequiredService<ApplicationDbContext>();
+        // İstiyorsan otomatik migrate (bağlantı kurulamazsa catch'e düşer)
+        await db.Database.MigrateAsync();
+
+        await SeedAdminUser(sp);
+    }
+    catch (Exception ex)
+    {
+        // Uygulama ayakta kalsın; sebebi stdout'a yaz:
+        var logger = sp.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "DB init/seed sırasında hata oluştu. Uygulama çalışmaya devam ediyor.");
+    }
 }
 
 app.Run();
 
-// Admin kullanıcı ve rol oluşturma
-async Task SeedAdminUser(IServiceProvider serviceProvider)
+// ---- Seed
+static async Task SeedAdminUser(IServiceProvider serviceProvider)
 {
     var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    // Tüm rolleri oluştur
     foreach (var role in UserRoles.AllRoles)
     {
         if (!await roleManager.RoleExistsAsync(role))
@@ -147,10 +169,9 @@ async Task SeedAdminUser(IServiceProvider serviceProvider)
         }
     }
 
-    // Admin kullanıcı oluştur
     var adminEmail = "admin@egecontrol.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    
+
     if (adminUser == null)
     {
         adminUser = new ApplicationUser
@@ -167,58 +188,9 @@ async Task SeedAdminUser(IServiceProvider serviceProvider)
         };
 
         var result = await userManager.CreateAsync(adminUser, "Admin123!");
-        
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
         }
-    }
-}
-
-// Simple decimal model binder that handles Turkish comma format
-public class SimpleDecimalModelBinder : IModelBinder
-{
-    public Task BindModelAsync(ModelBindingContext bindingContext)
-    {
-        if (bindingContext == null) throw new ArgumentNullException(nameof(bindingContext));
-
-        var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-        if (valueProviderResult == ValueProviderResult.None)
-        {
-            return Task.CompletedTask;
-        }
-
-        bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
-        var value = valueProviderResult.FirstValue;
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return Task.CompletedTask;
-        }
-
-        // Simple Turkish decimal parsing: 65,32 -> 65.32
-        var normalizedValue = value.Replace(",", ".");
-        
-        if (decimal.TryParse(normalizedValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var result))
-        {
-            bindingContext.Result = ModelBindingResult.Success(result);
-        }
-        else
-        {
-            bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, $"Geçersiz sayı: {value}");
-        }
-
-        return Task.CompletedTask;
-    }
-}
-
-public class SimpleDecimalModelBinderProvider : IModelBinderProvider
-{
-    public IModelBinder? GetBinder(ModelBinderProviderContext context)
-    {
-        if (context.Metadata.ModelType == typeof(decimal) || context.Metadata.ModelType == typeof(decimal?))
-        {
-            return new BinderTypeModelBinder(typeof(SimpleDecimalModelBinder));
-        }
-        return null;
     }
 }
