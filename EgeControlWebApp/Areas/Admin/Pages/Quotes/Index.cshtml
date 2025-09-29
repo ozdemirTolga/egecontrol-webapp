@@ -7,6 +7,21 @@
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Teklif Listesi</h1>
     @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteCreator"))
@@ -156,6 +171,15 @@
                                                 </li>
                                             </ul>
                                         </div>
+                                        
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="confirmDelete(@quote.Id, '@quote.QuoteNumber', '@(quote.Customer?.CompanyName ?? "Bilinmiyor")')" 
+                                                    title="Teklifi Sil">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -184,3 +208,50 @@
         }
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteQuoteModal" tabindex="-1" aria-labelledby="deleteQuoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteQuoteModalLabel">Teklifi Sil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning me-3"></i>
+                    <div>
+                        <h6 class="mb-2">Bu işlem geri alınamaz!</h6>
+                        <p class="mb-0">Aşağıdaki teklifi silmek istediğinizden emin misiniz?</p>
+                    </div>
+                </div>
+                <div class="bg-light p-3 rounded">
+                    <strong>Teklif No:</strong> <span id="deleteQuoteNumber"></span><br>
+                    <strong>Müşteri:</strong> <span id="deleteCustomerName"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form method="post" asp-page="Delete" style="display: inline;">
+                    <input type="hidden" name="id" id="deleteQuoteId" value="">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(quoteId, quoteNumber, customerName) {
+            document.getElementById('deleteQuoteId').value = quoteId;
+            document.getElementById('deleteQuoteNumber').textContent = quoteNumber;
+            document.getElementById('deleteCustomerName').textContent = customerName || 'Bilinmiyor';
+            
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteQuoteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

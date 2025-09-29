@@ -180,18 +180,14 @@ namespace EgeControlWebApp.Services
                                 {
                                     creatorCol.Item().PaddingTop(5).Text($" Ad Soyad: {userToShow.FirstName} {userToShow.LastName}").FontSize(10);
                                     creatorCol.Item().Text($" Email: {userToShow.Email ?? "-"}").FontSize(10);
-                                    creatorCol.Item().Text($" Departman: {userToShow.Department ?? "IT"}").FontSize(10);
-                                    creatorCol.Item().Text($" Pozisyon: {userToShow.Position ?? "System Administrator"}").FontSize(10);
-                                    creatorCol.Item().Text($" Telefon: {userToShow.PhoneNumber ?? "Belirtilmemiş"}").FontSize(10);
+                                    creatorCol.Item().Text($" Telefon: 0545 494 19 57").FontSize(10);
                                     creatorCol.Item().Text($" Oluşturma: {quote.CreatedAt:dd.MM.yyyy HH:mm}").FontSize(10);
                                 }
                                 else
                                 {
                                     creatorCol.Item().PaddingTop(5).Text($" Ad Soyad: Admin User").FontSize(10);
                                     creatorCol.Item().Text($" Email: admin@egecontrol.com").FontSize(10);
-                                    creatorCol.Item().Text($" Departman: IT").FontSize(10);
-                                    creatorCol.Item().Text($" Pozisyon: System Administrator").FontSize(10);
-                                    creatorCol.Item().Text($" Telefon: Belirtilmemiş").FontSize(10);
+                                    creatorCol.Item().Text($" Telefon: 0545 494 19 57").FontSize(10);
                                     creatorCol.Item().Text($" Oluşturma: {quote.CreatedAt:dd.MM.yyyy HH:mm}").FontSize(10);
                                 }
                             });
@@ -392,6 +388,116 @@ namespace EgeControlWebApp.Services
                 QuoteStatus.Cancelled => "İptal Edildi",
                 _ => status.ToString()
             };
+        }
+
+        public async Task<string> SaveQuotePdfAsync(Quote quote, PdfType pdfType = PdfType.Detailed)
+        {
+            try
+            {
+                // PDF'i oluştur
+                var pdfBytes = await GenerateQuotePdfAsync(quote, pdfType);
+                
+                // Dosya yolunu oluştur
+                var filePath = GetQuotePdfPath(quote, pdfType);
+                
+                // Klasörü oluştur (eğer yoksa)
+                var directory = Path.GetDirectoryName(filePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                
+                // Dosyayı kaydet
+                await File.WriteAllBytesAsync(filePath, pdfBytes);
+                
+                _logger.LogInformation("Quote PDF saved: {FilePath}", filePath);
+                return filePath;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving quote PDF for Quote {QuoteId}", quote.Id);
+                throw;
+            }
+        }
+
+        public Task<bool> DeleteQuotePdfAsync(Quote quote)
+        {
+            try
+            {
+                var detailedPath = GetQuotePdfPath(quote, PdfType.Detailed);
+                var summaryPath = GetQuotePdfPath(quote, PdfType.Summary);
+                
+                bool deleted = false;
+                
+                if (File.Exists(detailedPath))
+                {
+                    File.Delete(detailedPath);
+                    deleted = true;
+                    _logger.LogInformation("Deleted PDF: {FilePath}", detailedPath);
+                }
+                
+                if (File.Exists(summaryPath))
+                {
+                    File.Delete(summaryPath);
+                    deleted = true;
+                    _logger.LogInformation("Deleted PDF: {FilePath}", summaryPath);
+                }
+                
+                // Eğer klasör boşsa, klasörü de sil
+                var directory = Path.GetDirectoryName(detailedPath);
+                if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+                {
+                    var files = Directory.GetFiles(directory);
+                    if (files.Length == 0)
+                    {
+                        Directory.Delete(directory);
+                        _logger.LogInformation("Deleted empty directory: {Directory}", directory);
+                        
+                        // Kişi klasörü boşsa onu da sil
+                        var parentDirectory = Path.GetDirectoryName(directory);
+                        if (!string.IsNullOrEmpty(parentDirectory) && Directory.Exists(parentDirectory))
+                        {
+                            var parentFiles = Directory.GetFiles(parentDirectory);
+                            var parentDirs = Directory.GetDirectories(parentDirectory);
+                            if (parentFiles.Length == 0 && parentDirs.Length == 0)
+                            {
+                                Directory.Delete(parentDirectory);
+                                _logger.LogInformation("Deleted empty parent directory: {Directory}", parentDirectory);
+                            }
+                        }
+                    }
+                }
+                
+                return Task.FromResult(deleted);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting quote PDF for Quote {QuoteId}", quote.Id);
+                return Task.FromResult(false);
+            }
+        }
+
+        private string GetQuotePdfPath(Quote quote, PdfType pdfType)
+        {
+            // Dosya adını oluştur: TeklifNo_Detayli.pdf veya TeklifNo_Ozet.pdf
+            var fileName = $"{quote.QuoteNumber}_{(pdfType == PdfType.Detailed ? "Detayli" : "Ozet")}.pdf";
+            
+            // Geçersiz karakterleri temizle
+            fileName = string.Join("_", fileName.Split(Path.GetInvalidFileNameChars()));
+            
+            // Müşteri firma adını temizle
+            var companyName = quote.Customer?.CompanyName ?? "Bilinmeyen_Firma";
+            companyName = string.Join("_", companyName.Split(Path.GetInvalidFileNameChars()));
+            
+            // Kişi adını oluştur (ContactPerson varsa kullan, yoksa "Genel" kullan)
+            var contactPerson = quote.Customer?.ContactPerson ?? "Genel";
+            contactPerson = string.Join("_", contactPerson.Split(Path.GetInvalidFileNameChars()));
+            
+            // Tam yolu oluştur: wwwroot/teklifler/FirmaAdi/KisiAdi/TeklifNo_Tip.pdf
+            var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var fullPath = Path.Combine(webRootPath, "teklifler", companyName, contactPerson, fileName);
+            
+            return fullPath;
         }
     }
 }

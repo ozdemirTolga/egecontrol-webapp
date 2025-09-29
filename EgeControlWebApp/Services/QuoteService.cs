@@ -7,10 +7,12 @@ namespace EgeControlWebApp.Services
     public class QuoteService : IQuoteService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPdfService _pdfService;
 
-        public QuoteService(ApplicationDbContext context)
+        public QuoteService(ApplicationDbContext context, IPdfService pdfService)
         {
             _context = context;
+            _pdfService = pdfService;
         }
 
         public async Task<IEnumerable<Quote>> GetAllQuotesAsync()
@@ -39,6 +41,23 @@ namespace EgeControlWebApp.Services
             quote.CreatedAt = DateTime.Now;
             quote.QuoteNumber = await GenerateQuoteNumberAsync();
             
+            // Boş veya geçersiz kalemleri filtrele
+            if (quote.QuoteItems?.Any() == true)
+            {
+                var validItems = quote.QuoteItems
+                    .Where(item => !string.IsNullOrWhiteSpace(item.ItemName) && 
+                                   item.Quantity > 0 && 
+                                   item.UnitPrice >= 0)
+                    .ToList();
+                
+                quote.QuoteItems = validItems;
+            }
+            
+            if (quote.QuoteItems?.Any() != true)
+            {
+                throw new InvalidOperationException("En az bir geçerli teklif kalemi gereklidir.");
+            }
+            
             // Her kalemin toplamını güvenilir şekilde hesapla
             foreach (var item in quote.QuoteItems)
             {
@@ -54,6 +73,25 @@ namespace EgeControlWebApp.Services
             
             _context.Quotes.Add(quote);
             await _context.SaveChangesAsync();
+            
+            // PDF'leri otomatik kaydet
+            try
+            {
+                // Teklifi tekrar yükle (Customer bilgileri ile birlikte)
+                var savedQuote = await GetQuoteByIdAsync(quote.Id);
+                if (savedQuote != null)
+                {
+                    // Hem detaylı hem de özet PDF'leri kaydet
+                    await _pdfService.SaveQuotePdfAsync(savedQuote, PdfType.Detailed);
+                    await _pdfService.SaveQuotePdfAsync(savedQuote, PdfType.Summary);
+                }
+            }
+            catch (Exception ex)
+            {
+                // PDF kaydetme hatası teklif oluşturmayı engellemez
+                // Sadece log'a yaz
+                Console.WriteLine($"Error saving PDF for quote {quote.Id}: {ex.Message}");
+            }
             
             return quote;
         }
@@ -93,7 +131,21 @@ namespace EgeControlWebApp.Services
             }
 
             // Prepare clean incoming items with computed totals
-            var cleanIncomingItems = (incoming.QuoteItems ?? new List<QuoteItem>()).Select(item =>
+            var allIncomingItems = incoming.QuoteItems ?? new List<QuoteItem>();
+            
+            // Boş veya geçersiz kalemleri filtrele
+            var validItems = allIncomingItems
+                .Where(item => !string.IsNullOrWhiteSpace(item.ItemName) && 
+                               item.Quantity > 0 && 
+                               item.UnitPrice >= 0)
+                .ToList();
+                
+            if (!validItems.Any())
+            {
+                throw new InvalidOperationException("En az bir geçerli teklif kalemi gereklidir.");
+            }
+            
+            var cleanIncomingItems = validItems.Select(item =>
             {
                 var lineSubtotal = item.Quantity * item.UnitPrice;
                 var discountAmount = lineSubtotal * (item.DiscountPercentage / 100);
@@ -101,11 +153,11 @@ namespace EgeControlWebApp.Services
                 return new QuoteItem
                 {
                     Id = item.Id,
-                    ItemName = item.ItemName,
-                    Description = item.Description,
+                    ItemName = item.ItemName.Trim(),
+                    Description = item.Description?.Trim() ?? string.Empty,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
-                    Unit = item.Unit,
+                    Unit = string.IsNullOrWhiteSpace(item.Unit) ? "Adet" : item.Unit.Trim(),
                     DiscountPercentage = item.DiscountPercentage,
                     DiscountAmount = discountAmount,
                     Total = total,
@@ -132,6 +184,26 @@ namespace EgeControlWebApp.Services
             existing.TotalAmount = existing.SubTotal + existing.VatAmount;
 
             await _context.SaveChangesAsync();
+            
+            // PDF'leri otomatik güncelle
+            try
+            {
+                // Güncellenmiş teklifi tekrar yükle (Customer bilgileri ile birlikte)
+                var updatedQuote = await GetQuoteByIdAsync(existing.Id);
+                if (updatedQuote != null)
+                {
+                    // Eski PDF'leri sil ve yenilerini kaydet
+                    await _pdfService.DeleteQuotePdfAsync(updatedQuote);
+                    await _pdfService.SaveQuotePdfAsync(updatedQuote, PdfType.Detailed);
+                    await _pdfService.SaveQuotePdfAsync(updatedQuote, PdfType.Summary);
+                }
+            }
+            catch (Exception ex)
+            {
+                // PDF güncelleme hatası teklif güncellemesini engellemez
+                Console.WriteLine($"Error updating PDF for quote {existing.Id}: {ex.Message}");
+            }
+            
             return existing;
         }
 
@@ -139,11 +211,23 @@ namespace EgeControlWebApp.Services
         {
             var quote = await _context.Quotes
                 .Include(q => q.QuoteItems)
+                .Include(q => q.Customer)
                 .FirstOrDefaultAsync(q => q.Id == id);
                 
             if (quote == null)
             {
                 return false;
+            }
+
+            // PDF'leri sil
+            try
+            {
+                await _pdfService.DeleteQuotePdfAsync(quote);
+            }
+            catch (Exception ex)
+            {
+                // PDF silme hatası teklif silmeyi engellemez
+                Console.WriteLine($"Error deleting PDF for quote {id}: {ex.Message}");
             }
 
             _context.QuoteItems.RemoveRange(quote.QuoteItems);

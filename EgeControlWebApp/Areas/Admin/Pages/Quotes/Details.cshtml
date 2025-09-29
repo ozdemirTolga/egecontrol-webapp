@@ -27,6 +27,15 @@
                         <i class="fas fa-edit me-1"></i> Düzenle
                     </a>
                     
+                    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                    {
+                        <button type="button" class="btn btn-danger ms-2" 
+                                onclick="confirmDelete(@Model.Quote.Id, '@Model.Quote.QuoteNumber', '@(Model.Quote.Customer?.CompanyName ?? "Bilinmiyor")')" 
+                                title="Teklifi Sil">
+                            <i class="fas fa-trash me-1"></i> Sil
+                        </button>
+                    }
+                    
                     <form asp-page-handler="SaveAs" method="post" class="d-inline">
                         <input type="hidden" name="id" value="@Model.Quote.Id" />
                         <button type="submit" class="btn btn-success ms-2">
@@ -208,6 +217,7 @@
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
+                                            <th>Ürün/Hizmet</th>
                                             <th>Açıklama</th>
                                             <th>Miktar</th>
                                             <th>Birim</th>
@@ -220,6 +230,7 @@
                                         @foreach (var item in Model.Quote.QuoteItems)
                                         {
                                             <tr>
+                                                <td>@item.ItemName</td>
                                                 <td>@item.Description</td>
                                                 <td>@item.Quantity.ToString("N2")</td>
                                                 <td>@item.Unit</td>
@@ -231,15 +242,15 @@
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <th colspan="5" class="text-end">Ara Toplam:</th>
+                                            <th colspan="6" class="text-end">Ara Toplam:</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.SubTotal, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                         <tr>
-                                            <th colspan="5" class="text-end">KDV (%@Model.Quote.VatRate):</th>
+                                            <th colspan="6" class="text-end">KDV (%@Model.Quote.VatRate):</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.VatAmount, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                         <tr class="table-primary">
-                                            <th colspan="5" class="text-end">GENEL TOPLAM:</th>
+                                            <th colspan="6" class="text-end">GENEL TOPLAM:</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.TotalAmount, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                     </tfoot>
@@ -284,6 +295,50 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteQuoteModal" tabindex="-1" aria-labelledby="deleteQuoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteQuoteModalLabel">Teklifi Sil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning me-3"></i>
+                    <div>
+                        <h6 class="mb-2">Bu işlem geri alınamaz!</h6>
+                        <p class="mb-0">Aşağıdaki teklifi silmek istediğinizden emin misiniz?</p>
+                    </div>
+                </div>
+                <div class="bg-light p-3 rounded">
+                    <strong>Teklif No:</strong> <span id="deleteQuoteNumber"></span><br>
+                    <strong>Müşteri:</strong> <span id="deleteCustomerName"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form method="post" asp-page="Delete" style="display: inline;">
+                    <input type="hidden" name="id" id="deleteQuoteId" value="">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/js/email-validation.js"></script>
+    <script>
+        function confirmDelete(quoteId, quoteNumber, customerName) {
+            document.getElementById('deleteQuoteId').value = quoteId;
+            document.getElementById('deleteQuoteNumber').textContent = quoteNumber;
+            document.getElementById('deleteCustomerName').textContent = customerName || 'Bilinmiyor';
+            
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteQuoteModal'));
+            deleteModal.show();
+        }
+    </script>
 }

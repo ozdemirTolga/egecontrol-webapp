@@ -1,0 +1,128 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Quotes.DeleteModel
+@{
+    ViewData["Title"] = "Teklifi Sil";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Teklifi Sil</h1>
+    <a asp-page="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Listeye Dön
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Dikkat!
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Bu işlem geri alınamaz!</strong> Aşağıdaki teklifi silmek istediğinizden emin misiniz?
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Teklif No:</dt>
+                            <dd class="col-sm-8">@Model.Quote.QuoteNumber</dd>
+
+                            <dt class="col-sm-4">Başlık:</dt>
+                            <dd class="col-sm-8">@Model.Quote.Title</dd>
+
+                            <dt class="col-sm-4">Müşteri:</dt>
+                            <dd class="col-sm-8">@(Model.Quote.Customer?.CompanyName ?? "Bilinmiyor")</dd>
+
+                            <dt class="col-sm-4">Tarih:</dt>
+                            <dd class="col-sm-8">@Model.Quote.QuoteDate.ToString("dd.MM.yyyy")</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Tutar:</dt>
+                            <dd class="col-sm-8">
+                                <strong class="text-success">
+                                    @EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.TotalAmount, Model.Quote.Currency ?? "TRY")
+                                </strong>
+                            </dd>
+
+                            <dt class="col-sm-4">Durum:</dt>
+                            <dd class="col-sm-8">
+                                @switch (Model.Quote.Status)
+                                {
+                                    case EgeControlWebApp.Models.QuoteStatus.Draft:
+                                        <span class="badge bg-secondary">Taslak</span>
+                                        break;
+                                    case EgeControlWebApp.Models.QuoteStatus.Sent:
+                                        <span class="badge bg-primary">Gönderildi</span>
+                                        break;
+                                    case EgeControlWebApp.Models.QuoteStatus.Accepted:
+                                        <span class="badge bg-success">Onaylandı</span>
+                                        break;
+                                    case EgeControlWebApp.Models.QuoteStatus.Rejected:
+                                        <span class="badge bg-danger">Reddedildi</span>
+                                        break;
+                                    case EgeControlWebApp.Models.QuoteStatus.Cancelled:
+                                        <span class="badge bg-dark">İptal</span>
+                                        break;
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Kalem Sayısı:</dt>
+                            <dd class="col-sm-8">@Model.Quote.QuoteItems.Count() adet</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                @if (Model.Quote.QuoteItems.Any())
+                {
+                    <h6 class="mt-4">Teklif Kalemleri:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Kalem</th>
+                                    <th>Açıklama</th>
+                                    <th class="text-end">Miktar</th>
+                                    <th class="text-end">Birim Fiyat</th>
+                                    <th class="text-end">Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Quote.QuoteItems.OrderBy(qi => qi.SortOrder))
+                                {
+                                    <tr>
+                                        <td>@item.ItemName</td>
+                                        <td>@item.Description</td>
+                                        <td class="text-end">@item.Quantity @item.Unit</td>
+                                        <td class="text-end">@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(item.UnitPrice, Model.Quote.Currency ?? "TRY")</td>
+                                        <td class="text-end">@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(item.Total, Model.Quote.Currency ?? "TRY")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <a asp-page="Index" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i> İptal
+                    </a>
+                    
+                    <form method="post">
+                        <input type="hidden" asp-for="Quote.Id" />
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Evet, Bu Teklifi Sil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

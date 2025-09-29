@@ -1,0 +1,9 @@
+**
+!**/*.min.js
+!**/*.min.css
+**/*.pdb
+**/*.xml
+**/logs/**
+**/runtimes/linux-*/**
+**/runtimes/osx-*/**
+app.db

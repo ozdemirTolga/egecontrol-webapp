@@ -34,7 +34,7 @@ namespace EgeControlWebApp.Models
 
         [Display(Name = "Birim")]
         [StringLength(20)]
-        public string Unit { get; set; } = "adet";
+        public string Unit { get; set; } = "Adet";
 
         [Display(Name = "İndirim Oranı (%)")]
         [Range(0, 100, ErrorMessage = "İndirim oranı 0-100 arasında olmalıdır")]

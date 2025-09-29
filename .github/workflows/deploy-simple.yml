@@ -1,0 +1,46 @@
+name: Simple FTP Deploy
+
+on:
+  workflow_dispatch:  # Manuel tetikleme
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore ./EgeControlWebApp/EgeControlWebApp.csproj
+      
+    - name: Build
+      run: dotnet build ./EgeControlWebApp/EgeControlWebApp.csproj --no-restore -c Release
+      
+    - name: Publish
+      run: dotnet publish ./EgeControlWebApp/EgeControlWebApp.csproj --no-build -c Release -o ./publish
+      
+    - name: Create logs directory
+      run: mkdir -p ./publish/logs
+      
+    - name: Deploy via FTP
+      uses: pressidium/lftp-mirror-action@v1
+      with:
+        host: ${{ secrets.FTP_SERVER }}
+        user: ${{ secrets.FTP_USERNAME }}
+        pass: ${{ secrets.FTP_PASSWORD }}
+        onlyNewer: true
+        settings: 'set ftp:ssl-allow no; set ssl:verify-certificate no;'
+        localDir: './publish'
+        remoteDir: '/httpdocs'
+        reverse: true
+        ignoreFile: '.lftp_ignore'
+        
+    - name: Cleanup
+      run: rm -rf ./publish

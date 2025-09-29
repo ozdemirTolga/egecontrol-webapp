@@ -5,6 +5,132 @@
     ViewData["Title"] = "Yeni Teklif";
 }
 
+<style>
+    /* Quote items hizalama düzeltmeleri */
+    .quote-item .row {
+        align-items: center;
+        min-height: 0;
+    }
+
+    /* Header satırını (üst etiketler) input satırıyla hizala */
+    .quote-item .row.text-muted.small {
+        padding-top: 2px;
+        padding-bottom: 2px;
+        margin-bottom: 4px !important;
+    }
+
+    /* Tüm hücrelerde simetrik yatay boşluk; flex kullanma ki içerik sıkışmasın */
+    .quote-item .row > [class^="col-"],
+    .quote-item .row > [class*=" col-"] {
+        padding-left: .5rem;  /* g-2 eşdeğeri */
+        padding-right: .5rem;
+        /* display:flex; kaldırıldı */
+    }
+    
+    .quote-item .form-group,
+    .quote-item .mb-3 {
+        margin-bottom: 0 !important;
+    }
+    
+    /* Tüm form kontrollerini aynı yükseklikte yap */
+    .quote-item .form-control {
+        height: 38px;
+        font-size: 0.875rem;
+        text-align: center; /* tüm kutularda metni ortala */
+        margin: 0 auto; /* dar inputların sütun içinde ortalanması */
+    }
+    
+    .quote-item .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+    
+    /* Miktar ve İndirim alanları için özel stil */
+    /* Quantity input width */
+    .quote-item .quantity-input {
+        text-align: center;
+        max-width: 50px;
+        min-width: 50px;
+    }
+    
+    /* Discount input width */
+    .quote-item .discount-input {
+        text-align: center;
+        max-width: 50px;
+        min-width: 50px;
+    }
+    
+    /* İndirim alanında spinner butonları GÖRÜNSÜN diye gizleme kaldırıldı */
+    
+    /* Miktar alanları için stepper butonlarını GÖSTER */
+    .quote-item .quantity-input::-webkit-outer-spin-button,
+    .quote-item .quantity-input::-webkit-inner-spin-button {
+        -webkit-appearance: auto !important;
+        display: block !important;
+    }
+    
+    /* HERHANGI BİR + - BUTONUNU GİZLE - SADECE İNDİRİM İÇİN */
+    .quote-item .discount-stepper-btn {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Diğer butonlar */
+    .quote-item .btn-danger {
+        height: 38px;
+        margin-top: 0;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Stepper butonları tamamen gizle - eğer varsa */
+    .quote-item .stepper-btn,
+    .quote-item button[onclick*="adjust"],
+    .quote-item .btn[onclick*="adjustQuantity"],
+    .quote-item .btn[onclick*="adjustDiscount"],
+    .quote-item .input-group-text,
+    .quote-item .input-group-prepend,
+    .quote-item .input-group-append {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Input group'ları da gizle - sadece input'u göster */
+    .quote-item .stepper-group,
+    .quote-item .input-group {
+        display: block !important;
+    }
+    
+    /* Input group içindeki input'ları düzelt */
+    .quote-item .input-group .form-control {
+        border-radius: 0.375rem !important;
+    }
+
+    /* Unit Price and Total width to display currency */
+    .quote-item .unit-price {
+        max-width: 120px;
+        min-width: 120px;
+        margin: 0 auto;
+    }
+    .quote-item .item-total {
+        max-width: 150px; /* büyütüldü */
+        min-width: 150px;
+        margin: 0 auto;
+    }
+
+    /* Başlık yazı boyutunu biraz küçült ve ortala */
+    .quote-item .row.text-muted.small > [class^="col-"],
+    .quote-item .row.text-muted.small > [class*=" col-"] {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #6c757d;
+        text-align: center;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Yeni Teklif Oluştur</h1>
     <a asp-page="Index" class="btn btn-secondary">
@@ -37,7 +163,7 @@
     }
     
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-12 col-lg-10">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Teklif Bilgileri</h5>
@@ -120,7 +246,7 @@
 
             <!-- Teklif Kalemleri -->
             <div class="card mt-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center sticky-top bg-white" style="top: 0; z-index: 10;">
                     <h5 class="mb-0">Teklif Kalemleri</h5>
                     <button type="button" class="btn btn-sm btn-success" id="addItem">
                         <i class="fas fa-plus"></i> Kalem Ekle
@@ -154,7 +280,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+    <div class="col-12 col-lg-2">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Eylemler</h5>
@@ -199,81 +325,209 @@
     <script>
         let itemIndex = 0;
 
-        document.getElementById('addItem').addEventListener('click', function() {
-            addQuoteItem();
-        });
+        // Global fonksiyonlar
+        // Global number formatting helpers so addQuoteItem can call them
+        if (typeof window.formatNumberValue !== 'function') {
+            window.formatNumberValue = function(el) {
+                if (el && el.value !== undefined && el.value !== null && el.value !== '' && !isNaN(el.value)) {
+                    const num = parseFloat(el.value);
+                    if (el.classList.contains('unit-price') || el.classList.contains('price-input')) {
+                        el.value = num.toFixed(2);
+                    } else if (el.classList.contains('quantity-input')) {
+                        el.value = num.toFixed(1);
+                    } else if (el.classList.contains('discount-input')) {
+                        el.value = num.toFixed(1);
+                    }
+                }
+            };
+        }
 
-        document.getElementById('Quote_VatRate').addEventListener('input', function() {
-            document.getElementById('vat-rate').textContent = this.value;
-            calculateTotals();
-        });
+        if (typeof window.addNumberFormatting !== 'function') {
+            window.addNumberFormatting = function(input) {
+                const formatValue = function() { window.formatNumberValue(this); };
+                // Only format on blur to avoid disrupting typing
+                input.addEventListener('blur', formatValue);
+                // input.addEventListener('input', formatValue);
+            };
+        }
 
         function addQuoteItem() {
+            console.log('addQuoteItem function called!');
             const container = document.getElementById('quote-items');
-            const itemHtml = `
-                <div class="quote-item border rounded p-3 mb-3" data-index="${itemIndex}">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Ürün/Hizmet *</label>
-                            <input name="Quote.QuoteItemsList[${itemIndex}].ItemName" class="form-control" required />
-                        </div>
-                        <div class="col-md-8">
-                            <label class="form-label">Açıklama</label>
-                            <input name="Quote.QuoteItemsList[${itemIndex}].Description" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-2">
-                            <label class="form-label">Miktar *</label>
-                            <input name="Quote.QuoteItemsList[${itemIndex}].Quantity" type="number" step="0.01" value="1" class="form-control quantity" required />
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Birim</label>
-                            <input name="Quote.QuoteItemsList[${itemIndex}].Unit" value="adet" class="form-control" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Birim Fiyat *</label>
-                            <input name="Quote.QuoteItemsList[${itemIndex}].UnitPrice" type="number" step="0.01" class="form-control unit-price" required />
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">İndirim %</label>
-                            <input name="Quote.QuoteItemsList[${itemIndex}].DiscountPercentage" type="number" step="0.01" value="0" class="form-control discount" />
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Toplam</label>
-                            <input type="text" class="form-control item-total" readonly />
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="button" class="btn btn-danger btn-sm w-100 remove-item">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <input name="Quote.QuoteItemsList[${itemIndex}].SortOrder" type="hidden" value="${itemIndex}" />
-                </div>
-            `;
             
-            container.insertAdjacentHTML('beforeend', itemHtml);
+            if (!container) {
+                console.error('Quote items container not found!');
+                return;
+            }
             
-            // Event listeners ekle
-            const newItem = container.lastElementChild;
-            const removeBtn = newItem.querySelector('.remove-item');
-            const inputs = newItem.querySelectorAll('.quantity, .unit-price, .discount');
+            console.log('Adding new quote item, current index:', itemIndex);
             
-            removeBtn.addEventListener('click', function() {
-                newItem.remove();
-                calculateTotals();
-            });
+            // Create main item div
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'quote-item border rounded py-1 px-2 mb-2';
+            itemDiv.setAttribute('data-index', itemIndex);
             
-            inputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    calculateItemTotal(newItem);
+            // Create header row
+            const headerRow = document.createElement('div');
+            headerRow.className = 'row g-2 text-muted small mb-0 px-2 text-center';
+            
+            // Create header columns
+            const headers = ['Ürün/Hizmet', 'Açıklama', 'Miktar', 'Birim', 'Birim Fiyat', 'İndirim (%)', 'Toplam', 'Sil'];
+            // Reallocate widths to give more room to price and total
+            const colSizes = ['col-md-2', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-1', 'col-md-2', 'col-md-1 text-center'];
+            
+            for (let i = 0; i < headers.length; i++) {
+                const col = document.createElement('div');
+                col.className = colSizes[i];
+                col.textContent = headers[i];
+                headerRow.appendChild(col);
+            }
+            
+            // Create input row
+            const inputRow = document.createElement('div');
+            inputRow.className = 'row g-2 align-items-center px-2';
+            
+            // Create input fields
+            const inputs = [
+                {type: 'text', name: 'ItemName', placeholder: 'Ürün/Hizmet *', value: ''},
+                {type: 'text', name: 'Description', placeholder: 'Açıklama', value: ''},
+                {type: 'text', name: 'Quantity', placeholder: 'Miktar', value: '1,0', classes: 'quantity quantity-input'},
+                {type: 'text', name: 'Unit', placeholder: 'Birim', value: 'Adet'},
+                {type: 'text', name: 'UnitPrice', placeholder: 'Birim Fiyat', value: '0,00', classes: 'unit-price'},
+                {type: 'text', name: 'DiscountPercentage', placeholder: 'İndirim %', value: '0,0', classes: 'discount discount-input'},
+                {type: 'text', placeholder: 'Toplam', value: '₺0,00', readonly: true, classes: 'item-total'}
+            ];
+            
+            for (let i = 0; i < inputs.length; i++) {
+                const col = document.createElement('div');
+                col.className = colSizes[i];
+                
+                const input = document.createElement('input');
+                input.type = inputs[i].type;
+                if (inputs[i].name) {
+                    input.name = 'Quote.QuoteItemsList[' + itemIndex + '].' + inputs[i].name;
+                }
+                input.className = 'form-control text-center' + (inputs[i].classes ? ' ' + inputs[i].classes : '');
+                input.placeholder = inputs[i].placeholder;
+                input.value = inputs[i].value;
+                if (inputs[i].readonly) input.readOnly = true;
+                
+                col.appendChild(input);
+                inputRow.appendChild(col);
+            }
+            
+            // Create delete button column
+            const deleteCol = document.createElement('div');
+            deleteCol.className = 'col-md-1 d-grid';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'btn btn-danger btn-sm w-100 remove-item';
+            deleteBtn.title = 'Kalemi Sil';
+            deleteBtn.textContent = '×';
+            
+            deleteCol.appendChild(deleteBtn);
+            inputRow.appendChild(deleteCol);
+            
+            // Create hidden input
+            const hiddenInput = document.createElement('input');
+            hiddenInput.name = 'Quote.QuoteItemsList[' + itemIndex + '].SortOrder';
+            hiddenInput.type = 'hidden';
+            hiddenInput.value = itemIndex;
+            
+            // Assemble everything
+            itemDiv.appendChild(headerRow);
+            itemDiv.appendChild(inputRow);
+            itemDiv.appendChild(hiddenInput);
+            
+            container.appendChild(itemDiv);
+            
+            const newItem = itemDiv;
+            console.log('New item element:', newItem, 'tagName:', newItem.tagName);
+            
+            const removeBtn = newItem?.querySelector('.remove-item');
+            const numericInputs = newItem?.querySelectorAll('.quantity, .unit-price, .discount');
+            
+            console.log('Setting up events for new item:', { newItem, removeBtn, numericInputs });
+            
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    newItem.remove();
+                    reindexItems();
                     calculateTotals();
                 });
-            });
+            } else {
+                console.error('Remove button not found in new item');
+            }
+            
+            if (numericInputs) {
+                numericInputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        calculateItemTotal(newItem);
+                        calculateTotals();
+                    });
+                    input.addEventListener('change', function() {
+                        calculateItemTotal(newItem);
+                        calculateTotals();
+                    });
+                });
+            }
+            
+            // İlk hesaplama
+            if (newItem) {
+                calculateItemTotal(newItem);
+                calculateTotals();
+                
+                // Yeni eklenen input'lara format koruması ekle ve anında formatla
+                newItem.querySelectorAll('.quantity, .unit-price, .discount').forEach(input => {
+                    if (window.addNumberFormatting) { window.addNumberFormatting(input); }
+                    if (window.formatNumberValue) { window.formatNumberValue(input); }
+                });
+            }
             
             itemIndex++;
+        }
+
+        function reindexItems() {
+            const items = document.querySelectorAll('.quote-item');
+            items.forEach((item, index) => {
+                const inputs = item.querySelectorAll('input[name*="QuoteItemsList"]');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name && name.includes('QuoteItemsList[')) {
+                        const newName = name.replace(/QuoteItemsList\[\d+\]/, `QuoteItemsList[${index}]`);
+                        input.setAttribute('name', newName);
+                    }
+                });
+            });
+            itemIndex = items.length;
+        }
+
+        // Normalize numeric inputs (commas/dots) before submit so the first save passes
+        function normalizeNumericInputsForSubmit(root) {
+            const inputs = (root || document).querySelectorAll('.quantity-input, .unit-price, .price-input, .discount-input');
+            inputs.forEach(inp => {
+                if (!inp || typeof inp.value !== 'string') return;
+                let v = inp.value.trim();
+                if (!v) return;
+                // Remove spaces
+                v = v.replace(/\s/g, '');
+                // If contains both dot and comma: assume 1.234,56 → drop dots (thousands), comma→dot
+                if (v.includes('.') && v.includes(',')) {
+                    v = v.replace(/\./g, '').replace(/,/g, '.');
+                } else if (v.includes(',')) {
+                    // Only comma → decimal separator
+                    v = v.replace(/,/g, '.');
+                } else {
+                    // Only dots: if last dot has >2 digits after, treat as thousand and remove
+                    const lastDot = v.lastIndexOf('.');
+                    if (lastDot > -1) {
+                        const frac = v.slice(lastDot + 1);
+                        if (frac.length > 2) v = v.replace(/\./g, '');
+                    }
+                }
+                inp.value = v;
+            });
         }
 
         function toNumber(val) {
@@ -309,41 +563,87 @@
         }
 
         function calculateItemTotal(itemElement) {
-            const quantity = toNumber(itemElement.querySelector('.quantity').value);
-            const unitPrice = toNumber(itemElement.querySelector('.unit-price').value);
-            const discount = toNumber(itemElement.querySelector('.discount').value);
+            if (!itemElement) {
+                console.error('calculateItemTotal: itemElement is null');
+                return;
+            }
+            
+            const quantityInput = itemElement.querySelector('.quantity');
+            const unitPriceInput = itemElement.querySelector('.unit-price');
+            const discountInput = itemElement.querySelector('.discount');
+            
+            if (!quantityInput || !unitPriceInput || !discountInput) {
+                console.error('calculateItemTotal: Required input elements not found', {
+                    quantityInput, unitPriceInput, discountInput
+                });
+                return;
+            }
+            
+            const quantity = toNumber(quantityInput.value);
+            const unitPrice = toNumber(unitPriceInput.value);
+            let discount = toNumber(discountInput.value);
+            
+            console.log('Calculating item total:', { quantity, unitPrice, discount });
             
             const subtotal = quantity * unitPrice;
             const discountAmount = subtotal * (discount / 100);
             const total = subtotal - discountAmount;
             
-            itemElement.querySelector('.item-total').value = formatCurrency(total);
+            console.log('Item calculation result:', { subtotal, discountAmount, total });
+            
+            const totalField = itemElement.querySelector('.item-total');
+            if (totalField) {
+                totalField.value = formatCurrency(total);
+            }
         }
 
-    function calculateTotals() {
+        function calculateTotals() {
+            console.log('Calculating totals...');
             let subtotal = 0;
-            
-            document.querySelectorAll('.quote-item').forEach(item => {
-        const quantity = toNumber(item.querySelector('.quantity').value);
-        const unitPrice = toNumber(item.querySelector('.unit-price').value);
-        const discount = toNumber(item.querySelector('.discount').value);
-                
+
+            document.querySelectorAll('.quote-item').forEach((item, index) => {
+                const quantityInput = item.querySelector('.quantity');
+                const unitPriceInput = item.querySelector('.unit-price');
+                const discountInput = item.querySelector('.discount');
+
+                if (!quantityInput || !unitPriceInput || !discountInput) {
+                    return;
+                }
+
+                const quantity = toNumber(quantityInput.value);
+                const unitPrice = toNumber(unitPriceInput.value);
+                const discount = toNumber(discountInput.value);
+
+                console.log(`Item ${index}:`, { quantity, unitPrice, discount });
+
                 const itemSubtotal = quantity * unitPrice;
                 const discountAmount = itemSubtotal * (discount / 100);
-                subtotal += itemSubtotal - discountAmount;
+                const itemTotal = itemSubtotal - discountAmount;
+
+                subtotal += itemTotal;
+
+                console.log(`Item ${index} totals:`, { itemSubtotal, discountAmount, itemTotal, runningSubtotal: subtotal });
             });
-            
-        const vatRate = toNumber(document.getElementById('Quote_VatRate').value);
+
+            const vatRateInput = document.getElementById('Quote_VatRate');
+            const vatRate = vatRateInput ? toNumber(vatRateInput.value) : 20;
             const vatAmount = subtotal * (vatRate / 100);
             const grandTotal = subtotal + vatAmount;
-            
-            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
-            document.getElementById('vat-amount').textContent = formatCurrency(vatAmount);
-            document.getElementById('grand-total').textContent = formatCurrency(grandTotal);
+
+            console.log('Final totals:', { subtotal, vatRate, vatAmount, grandTotal });
+
+            const subtotalEl = document.getElementById('subtotal');
+            const vatAmountEl = document.getElementById('vat-amount');
+            const grandTotalEl = document.getElementById('grand-total');
+
+            if (subtotalEl) subtotalEl.textContent = formatCurrency(subtotal);
+            if (vatAmountEl) vatAmountEl.textContent = formatCurrency(vatAmount);
+            if (grandTotalEl) grandTotalEl.textContent = formatCurrency(grandTotal);
         }
 
         function formatCurrency(amount) {
-            const currency = document.getElementById('currencySelect').value || 'EUR';
+            const currencySelect = document.getElementById('currencySelect');
+            const currency = currencySelect ? currencySelect.value : 'EUR';
             
             // Para birimi sembol pozisyonlarını doğru şekilde göstermek için
             switch(currency) {
@@ -357,22 +657,280 @@
             }
         }
 
-    // İlk item'ı ekle
-        addQuoteItem();
-
-        // Para birimi değiştiğinde totalleri güncelle
-        document.getElementById('currencySelect').addEventListener('change', function() {
-            calculateTotals();
-            // Tüm item totallerini de güncelle
-            document.querySelectorAll('.quote-item').forEach(item => {
+        // Mevcut item'ları işle (sayfa yüklendiğinde)
+        function initializeExistingItems() {
+            const existingItems = document.querySelectorAll('.quote-item');
+            console.log('Initializing existing items:', existingItems.length);
+            
+            existingItems.forEach((item, index) => {
+                console.log(`Setting up events for existing item ${index}`);
+                
+                const removeBtn = item.querySelector('.remove-item');
+                const inputs = item.querySelectorAll('.quantity, .unit-price, .discount');
+                
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function() {
+                        item.remove();
+                        reindexItems();
+                        calculateTotals();
+                    });
+                }
+                
+                inputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        console.log('Input event triggered for existing item');
+                        calculateItemTotal(item);
+                        calculateTotals();
+                    });
+                    input.addEventListener('change', function() {
+                        console.log('Change event triggered for existing item');
+                        calculateItemTotal(item);
+                        calculateTotals();
+                    });
+                });
+                
+                // İlk hesaplama
                 calculateItemTotal(item);
             });
-        });
+            
+            // Genel toplam hesaplama
+            calculateTotals();
+        }
 
-        // Form submit edilmeden önce currency değerini kontrol et
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const currency = document.getElementById('currencySelect').value;
-            console.log('Form submit - Currency değeri:', currency);
+        // DOM yüklendiğinde çalıştır
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
+            const addItemBtn = document.getElementById('addItem');
+            const vatRateInput = document.getElementById('Quote_VatRate');
+            
+            console.log('addItemBtn found:', addItemBtn); // Debug log
+            
+            if (addItemBtn) {
+                addItemBtn.addEventListener('click', function() {
+                    console.log('Add item clicked');
+                    addQuoteItem();
+                });
+                console.log('Add item button event listener attached');
+            } else {
+                console.error('Add item button not found!');
+            }
+
+            if (vatRateInput) {
+                vatRateInput.addEventListener('input', function() {
+                    console.log('VAT rate changed to:', this.value);
+                    document.getElementById('vat-rate').textContent = this.value;
+                    calculateTotals();
+                });
+                console.log('VAT rate input event listener attached');
+            } else {
+                console.error('VAT rate input not found!');
+            }
+
+        // Sayfa yüklendiğinde mevcut item'ları başlat
+        if (document.querySelectorAll('.quote-item').length > 0) {
+            console.log('Page has existing items, initializing...');
+            initializeExistingItems();
+        } else {
+            console.log('No existing items, adding first item...');
+            // İlk item'ı ekle
+            addQuoteItem();
+        }
+
+        // Para birimi değiştiğinde totalleri güncelle
+        const currencySelect = document.getElementById('currencySelect');
+        if (currencySelect) {
+            currencySelect.addEventListener('change', function() {
+                calculateTotals();
+                // Tüm item totallerini de güncelle
+                document.querySelectorAll('.quote-item').forEach(item => {
+                    calculateItemTotal(item);
+                });
+            });
+        }
+        }); // DOMContentLoaded kapatma
+
+        // Boş item'ları temizle
+        function removeEmptyItems() {
+            const items = document.querySelectorAll('.quote-item');
+            let removedCount = 0;
+            
+            items.forEach(item => {
+                const itemName = item.querySelector('input[name*="ItemName"]');
+                const quantity = item.querySelector('input[name*="Quantity"]');
+                const unitPrice = item.querySelector('input[name*="UnitPrice"]');
+                
+                // Item adı boşsa veya miktar/birim fiyat sıfır veya negatifse bu item'ı boş kabul et
+                const itemNameEmpty = !itemName?.value?.trim();
+                const quantityInvalid = !quantity?.value || parseFloat(quantity.value) <= 0;
+                const unitPriceInvalid = !unitPrice?.value || parseFloat(unitPrice.value) < 0;
+                
+                const isEmpty = itemNameEmpty || (quantityInvalid && unitPriceInvalid);
+                
+                if (isEmpty) {
+                    console.log('Removing empty/invalid item:', {
+                        itemName: itemName?.value,
+                        quantity: quantity?.value,
+                        unitPrice: unitPrice?.value,
+                        isEmpty,
+                        element: item
+                    });
+                    item.remove();
+                    removedCount++;
+                } else {
+                    // Dolu item'larda required attribute'ları ekle
+                    if (itemName) itemName.setAttribute('required', 'required');
+                    if (quantity) quantity.setAttribute('required', 'required');
+                    if (unitPrice) unitPrice.setAttribute('required', 'required');
+                }
+            });
+            
+            if (removedCount > 0) {
+                console.log(`Removed ${removedCount} empty items`);
+                reindexItems(); // Item'ları yeniden indexle
+                calculateTotals(); // Toplamları güncelle
+            }
+            
+            return removedCount;
+        }
+
+        // Form submit öncesi validation temizleme
+        function cleanupBeforeSubmit() {
+            console.log('Cleaning up before submit...');
+            
+            // Tüm item'lardaki required attribute'ları geçici olarak kaldır
+            document.querySelectorAll('.quote-item input[required]').forEach(input => {
+                input.removeAttribute('required');
+            });
+            
+            // Boş item'ları sil
+            const removedCount = removeEmptyItems();
+            
+            // Kalan item'ları kontrol et ve gerekli validation'ları ekle
+            const remainingItems = document.querySelectorAll('.quote-item');
+            
+            if (remainingItems.length === 0) {
+                alert('En az bir teklif kalemi girmelisiniz!');
+                addQuoteItem(); // Yeni bir boş item ekle
+                return false;
+            }
+            
+            // Kalan item'larda en az birinin dolu olduğunu kontrol et
+            let hasValidItem = false;
+            remainingItems.forEach(item => {
+                const itemName = item.querySelector('input[name*="ItemName"]');
+                const unitPrice = item.querySelector('input[name*="UnitPrice"]');
+                
+                // Consider item valid if it has a name
+                if (itemName?.value?.trim()) {
+                    hasValidItem = true;
+                    // Re-add required only to name and unit price
+                    itemName.setAttribute('required', 'required');
+                    if (unitPrice) unitPrice.setAttribute('required', 'required');
+                }
+            });
+            
+            if (!hasValidItem) {
+                alert('En az bir teklif kaleminde ürün adı ve birim fiyat girmelisiniz!');
+                return false;
+            }
+            
+            console.log(`Form submitting with ${remainingItems.length} valid items`);
+            return true;
+        }
+
+        // Form submit event listener
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('Form submit triggered...');
+                
+                // Validation temizleme ve kontrol
+                if (!cleanupBeforeSubmit()) {
+                    e.preventDefault();
+                    return false;
+                }
+                // Normalize numeric inputs before actual submit
+                normalizeNumericInputsForSubmit(document);
+                
+                const currency = document.getElementById('currencySelect').value;
+                console.log('Form submit - Currency değeri:', currency);
+                
+                // Form başarıyla submit edilecek
+                return true;
+            });
+        }
+
+        // Number input format helpers are defined earlier globally
+
+        // Otomatik kalem ekleme - sayfa sonuna yaklaşınca (global event)
+        let autoAddTriggered = false;
+        
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            // Sayfa sonuna %90 yaklaşıldığında ve henüz tetiklenmemişse
+            if ((scrollTop + windowHeight) / documentHeight > 0.9 && !autoAddTriggered) {
+                const items = document.querySelectorAll('.quote-item');
+                const lastItem = items[items.length - 1];
+                
+                // Son kalemin dolu olup olmadığını kontrol et
+                if (lastItem) {
+                    const itemName = lastItem.querySelector('input[name*="ItemName"]');
+                    const description = lastItem.querySelector('input[name*="Description"]');
+                    
+                    if (itemName && (itemName.value.trim() !== '' || description.value.trim() !== '')) {
+                        addQuoteItem();
+                        autoAddTriggered = true;
+                        
+                        // 2 saniye sonra tekrar tetiklenebilir hale getir
+                        setTimeout(() => {
+                            autoAddTriggered = false;
+                        }, 2000);
+                    }
+                }
+            }
         });
+        
+        // NAZİK: SADECE İNDİRİM BUTONLARINI GİZLE, MİKTAR BUTONLARI KALSIN
+        function destroyAllStepperButtons() {
+            // Sadece indirim ile ilgili stepper butonları gizle
+            const allButtons = document.querySelectorAll('button');
+            allButtons.forEach(btn => {
+                const text = btn.textContent || btn.innerHTML;
+                if (text.includes('+') || text.includes('−') || text.includes('-')) {
+                    // Sadece indirim ile ilgili butonları gizle
+                    if (btn.onclick && btn.onclick.toString().includes('Discount')) {
+                        btn.style.display = 'none';
+                        btn.style.visibility = 'hidden';
+                    }
+                }
+            });
+        }
+        
+        // Sayfa yüklendiğinde çalıştır
+        destroyAllStepperButtons();
+        
+        // Her yeni item eklendiğinde de çalıştır
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    setTimeout(() => {
+                        destroyAllStepperButtons();
+                    }, 100);
+                }
+            });
+        });
+        
+        // Quote items container'ı gözlemle
+        const quoteItemsContainer = document.getElementById('quote-items');
+        if (quoteItemsContainer) {
+            observer.observe(quoteItemsContainer, {
+                childList: true,
+                subtree: true
+            });
+        }
     </script>
 }

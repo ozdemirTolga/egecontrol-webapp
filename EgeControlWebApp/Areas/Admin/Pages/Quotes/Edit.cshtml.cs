@@ -91,14 +91,28 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             // Map QuoteItemsList to a clean QuoteItems collection
             if (Quote.QuoteItemsList != null && Quote.QuoteItemsList.Any())
             {
-                var cleanItems = Quote.QuoteItemsList.Select(item => new QuoteItem
+                // Boş veya geçersiz kalemleri filtrele
+                var validItems = Quote.QuoteItemsList
+                    .Where(item => !string.IsNullOrWhiteSpace(item.ItemName) && 
+                                   item.Quantity > 0 && 
+                                   item.UnitPrice >= 0)
+                    .ToList();
+
+                if (!validItems.Any())
+                {
+                    ModelState.AddModelError(string.Empty, "En az bir geçerli teklif kalemi eklemelisiniz.");
+                    await LoadCustomerOptions();
+                    return Page();
+                }
+
+                var cleanItems = validItems.Select(item => new QuoteItem
                 {
                     Id = item.Id,
-                    ItemName = item.ItemName,
-                    Description = item.Description,
+                    ItemName = item.ItemName.Trim(),
+                    Description = item.Description?.Trim() ?? string.Empty,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
-                    Unit = item.Unit,
+                    Unit = string.IsNullOrWhiteSpace(item.Unit) ? "Adet" : item.Unit.Trim(),
                     DiscountPercentage = item.DiscountPercentage,
                     DiscountAmount = item.DiscountAmount,
                     Total = item.Total,
@@ -106,6 +120,12 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                     QuoteId = Quote.Id
                 }).ToList();
                 Quote.QuoteItems = cleanItems;
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "En az bir teklif kalemi eklemelisiniz.");
+                await LoadCustomerOptions();
+                return Page();
             }
 
             try
@@ -140,7 +160,13 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
         private async Task LoadCustomerOptions()
         {
             var customers = await _customerService.GetAllCustomersAsync();
-            CustomerOptions = new SelectList(customers, "Id", "CompanyName");
+            var customerOptions = customers.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = string.IsNullOrEmpty(c.ContactPerson) ? c.CompanyName : $"{c.CompanyName} - {c.ContactPerson}"
+            }).ToList();
+            
+            CustomerOptions = new SelectList(customerOptions, "Value", "Text");
         }
     }
 }

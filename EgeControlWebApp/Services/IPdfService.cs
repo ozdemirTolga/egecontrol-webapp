@@ -12,5 +12,7 @@ namespace EgeControlWebApp.Services
     {
         Task<byte[]> GenerateQuotePdfAsync(Quote quote, PdfType pdfType = PdfType.Detailed);
         Task<byte[]> GenerateCustomerListPdfAsync(IEnumerable<Customer> customers);
+        Task<string> SaveQuotePdfAsync(Quote quote, PdfType pdfType = PdfType.Detailed);
+        Task<bool> DeleteQuotePdfAsync(Quote quote);
     }
 }
