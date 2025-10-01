@@ -108,7 +108,8 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
-    app.UseHsts();
+    // HTTPS varsa HSTS kullan (SSL sertifikası yoksa bu satırı yoruma al)
+    // app.UseHsts();
 }
 
 // Localization: TR
@@ -120,7 +121,8 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = supportedCultures
 });
 
-app.UseHttpsRedirection();
+// HTTPS yönlendirmesi (SSL sertifikası yoksa bu satırı yoruma al)
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
