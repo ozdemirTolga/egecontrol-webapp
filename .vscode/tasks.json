@@ -1,0 +1,127 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "🚀 Deploy to Production",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}\\deploy.ps1"
+			],
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"clear": true
+			}
+		},
+		{
+			"label": "build-webapp",
+			"type": "shell",
+			"command": "dotnet build .\\EgeControlWebApp\\EgeControlWebApp.csproj",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "dotnet-build-release",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"EgeControlWebApp/EgeControlWebApp.csproj",
+				"-c",
+				"Release"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "dotnet-clean",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				"EgeControlWebApp/EgeControlWebApp.csproj",
+				"-c",
+				"Release"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "dotnet-build-release-2",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"EgeControlWebApp/EgeControlWebApp.csproj",
+				"-c",
+				"Release",
+				"-v",
+				"m"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "dotnet-build-release-fix",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				".\\EgeControlWebApp\\EgeControlWebApp.csproj",
+				"-c",
+				"Release"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "dotnet-clean-release",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				".\\EgeControlWebApp\\EgeControlWebApp.csproj",
+				"-c",
+				"Release"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "dotnet-build-release-try2",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				".\\EgeControlWebApp\\EgeControlWebApp.csproj",
+				"-c",
+				"Release"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		}
+	]
+}
