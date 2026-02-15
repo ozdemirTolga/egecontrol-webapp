@@ -141,7 +141,8 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                     new EmailAttachment(fileName, "application/pdf", pdfBytes)
                 };
 
-                await _emailService.SendAsync(recipient, subject, body, attachments);
+                // BCC olarak kendi adresimize de gönder
+                await _emailService.SendAsync(recipient, subject, body, attachments, cc: null, bcc: "tolga.ozdemir@live.com");
                 
                 // E-posta başarıyla gönderildikten sonra durumu "Gönderildi" olarak güncelle
                 quote.Status = QuoteStatus.Sent;
@@ -299,6 +300,7 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                     ValidUntil = DateTime.Now.AddDays(30),
                     Title = originalQuote.Title + " (Kopya)",
                     Description = originalQuote.Description,
+                    Notes = originalQuote.Notes,
                     VatRate = originalQuote.VatRate,
                     Currency = originalQuote.Currency,
                     Status = QuoteStatus.Draft, // Kopyalanan teklif de taslak olarak başlar
@@ -356,22 +358,25 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
         private async Task<string> GenerateNewQuoteNumberAsync()
         {
             var currentYear = DateTime.Now.Year;
+            var currentMonth = DateTime.Now.Month;
+            
             var lastQuote = await _context.Quotes
-                .Where(q => q.QuoteNumber.StartsWith($"TEK-{currentYear}"))
-                .OrderByDescending(q => q.QuoteNumber)
+                .Where(q => q.CreatedAt.Year == currentYear && q.CreatedAt.Month == currentMonth)
+                .OrderByDescending(q => q.CreatedAt)
                 .FirstOrDefaultAsync();
 
             int nextNumber = 1;
-            if (lastQuote != null)
+            if (lastQuote != null && !string.IsNullOrWhiteSpace(lastQuote.QuoteNumber))
             {
-                var lastNumberPart = lastQuote.QuoteNumber.Split('-').LastOrDefault();
-                if (int.TryParse(lastNumberPart, out int lastNumber))
+                var parts = lastQuote.QuoteNumber.Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var lastPart = parts.Length > 0 ? parts[^1] : null;
+                if (!string.IsNullOrEmpty(lastPart) && int.TryParse(lastPart, out int lastNumber))
                 {
                     nextNumber = lastNumber + 1;
                 }
             }
 
-            return $"TEK-{currentYear}-{nextNumber:D4}";
+            return $"EGE-{currentYear:D4}-{currentMonth:00}-{nextNumber:000}";
         }
     }
 }

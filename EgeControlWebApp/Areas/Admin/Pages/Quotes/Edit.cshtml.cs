@@ -57,6 +57,16 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
             Quote = quote;
             // Convert QuoteItems to List for indexing support
             Quote.QuoteItemsList = Quote.QuoteItems.ToList();
+            
+            // Türkçe formatında fiyatları normalize et (Display için)
+            // VatRate: kendisi zaten decimal, HTML helper kendi formatında gösterir
+            // Quote items fiyatlarını da normalize et
+            foreach (var item in Quote.QuoteItemsList)
+            {
+                // Model binding sırasında zaten normalized olacak, ama View'da display için
+                // asp-for kendisi kültüre göre format eder
+            }
+            
             await LoadCustomerOptions();
             return Page();
         }
@@ -77,6 +87,7 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 
             // Clean navigation-related validation noise
             ModelState.Remove("Quote.Customer");
+            
             var keysToRemove = ModelState.Keys
                 .Where(k => k.Contains(".Quote") || k.Contains("Customer"))
                 .ToList();
@@ -84,6 +95,14 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 
             if (!ModelState.IsValid)
             {
+                await LoadCustomerOptions();
+                return Page();
+            }
+
+            // VatRate manual validation (model bound'dan sonra)
+            if (Quote.VatRate < 0 || Quote.VatRate > 100)
+            {
+                ModelState.AddModelError("Quote.VatRate", "KDV oranı 0-100 arasında olmalıdır");
                 await LoadCustomerOptions();
                 return Page();
             }

@@ -32,7 +32,7 @@ namespace EgeControlWebApp.Models
         public decimal SubTotal { get; set; }
 
         [Display(Name = "KDV Oranı (%)")]
-        [Range(0, 100, ErrorMessage = "KDV oranı 0-100 arasında olmalıdır")]
+        // [Range(0, 100, ErrorMessage = "KDV oranı 0-100 arasında olmalıdır")] // Validation gerçek değerlerde yapılacak
         public decimal VatRate { get; set; } = 20; // Varsayılan %20 KDV
 
         [Display(Name = "KDV Tutarı")]

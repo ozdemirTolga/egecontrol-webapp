@@ -155,7 +155,7 @@
                                     <div class="col-md-3">
                                         <div class="mb-3">
                                             <label asp-for="Quote.VatRate" class="form-label">KDV Oranı (%)</label>
-                                            <input asp-for="Quote.VatRate" type="number" step="0.01" class="form-control" />
+                                            <input asp-for="Quote.VatRate" type="text" class="form-control" />
                                             <span asp-validation-for="Quote.VatRate" class="text-danger"></span>
                                         </div>
                                     </div>
@@ -350,25 +350,26 @@
 
     // Normalize numeric inputs (commas/dots) before submit so the first save passes
     function normalizeNumericInputsForSubmit(root) {
+        // Quote items numeric inputs
         const inputs = (root || document).querySelectorAll('.quantity-input, .price-input, .discount-input');
         inputs.forEach(inp => {
             if (!inp || typeof inp.value !== 'string') return;
             let v = inp.value.trim();
             if (!v) return;
-            v = v.replace(/\s/g, '');
-            if (v.includes('.') && v.includes(',')) {
-                v = v.replace(/\./g, '').replace(/,/g, '.');
-            } else if (v.includes(',')) {
-                v = v.replace(/,/g, '.');
-            } else {
-                const lastDot = v.lastIndexOf('.');
-                if (lastDot > -1) {
-                    const frac = v.slice(lastDot + 1);
-                    if (frac.length > 2) v = v.replace(/\./g, '');
-                }
-            }
-            inp.value = v;
+            const normalized = v.replace(/,/g, '.');
+            inp.value = normalized;
         });
+        
+        // VatRate field'ını da normalize et
+        const vatRateInput = (root || document).querySelector('input[name="Quote.VatRate"]');
+        if (vatRateInput && vatRateInput.value) {
+            let v = vatRateInput.value.trim();
+            if (v) {
+                const normalized = v.replace(/,/g, '.');
+                vatRateInput.value = normalized;
+                console.log(`[VatRate Normalized] Before: "${v}" -> After: "${normalized}"`);
+            }
+        }
     }
 
         function addQuoteItem() {
@@ -461,10 +462,21 @@
             const priceInput = container.querySelector('.price-input');
             const discountInput = container.querySelector('.discount-input');
             
+            const handleChange = () => {
+                console.log('[attachCalculationEvents] Change detected');
+                // Formats numbers (virgül ile)
+                if (quantityInput) formatNumberValue(quantityInput);
+                if (priceInput) formatNumberValue(priceInput);
+                if (discountInput) formatNumberValue(discountInput);
+                // Calculate totals
+                calculateItemTotal({ target: quantityInput });
+            };
+            
             [quantityInput, priceInput, discountInput].forEach(input => {
                 if (input) {
-                    input.addEventListener('input', calculateItemTotal);
-                    input.addEventListener('change', calculateItemTotal);
+                    input.addEventListener('input', handleChange);
+                    input.addEventListener('change', handleChange);
+                    input.addEventListener('blur', handleChange);
                 }
             });
         }
@@ -504,78 +516,187 @@
         function formatCurrency(amount) {
             const currency = document.getElementById('currencySelect').value || 'EUR';
             
+            // Türkçe formatıyla virgül ayırıcısı kullanarak göster
+            const formatted = new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+            
             switch(currency) {
                 case 'USD':
-                    return `$${amount.toFixed(2)}`;
+                    return `$${formatted}`;
                 case 'TRY':
-                    return `${amount.toFixed(2)} ₺`;
+                    return `${formatted} ₺`;
                 case 'EUR':
                 default:
-                    return `${amount.toFixed(2)} €`;
+                    return `${formatted} €`;
             }
         }
 
         function calculateItemTotal(event) {
+            if (!event || !event.target) return;
+            
             const item = event.target.closest('.quote-item');
-            const quantity = toNumber(item.querySelector('.quantity-input').value);
-            const unitPrice = toNumber(item.querySelector('.price-input').value);
-            let discount = toNumber(item.querySelector('.discount-input').value);
+            if (!item) return;
+            
+            const quantityInput = item.querySelector('.quantity-input');
+            const priceInput = item.querySelector('.price-input');
+            const discountInput = item.querySelector('.discount-input');
+            const totalDisplay = item.querySelector('.total-display');
+            
+            if (!quantityInput || !priceInput || !discountInput || !totalDisplay) return;
+            
+            const quantity = toNumber(quantityInput.value);
+            const unitPrice = toNumber(priceInput.value);
+            let discount = toNumber(discountInput.value);
             
             const subtotal = quantity * unitPrice;
             const discountAmount = subtotal * (discount / 100);
             const total = subtotal - discountAmount;
             
-            item.querySelector('.total-display').value = formatCurrency(total);
+            totalDisplay.value = formatCurrency(total);
             
             calculateTotals();
         }
 
     function calculateTotals() {
-            let subTotal = 0;
-            document.querySelectorAll('.quote-item').forEach(item => {
-        const quantity = toNumber(item.querySelector('.quantity-input').value);
-        const unitPrice = toNumber(item.querySelector('.price-input').value);
-        const discount = toNumber(item.querySelector('.discount-input').value);
+            try {
+                console.log('[calculateTotals] Starting...');
+                let subTotal = 0;
+                const items = document.querySelectorAll('.quote-item');
+                console.log('[calculateTotals] Found items:', items.length);
                 
-                const itemSubtotal = quantity * unitPrice;
-                const discountAmount = itemSubtotal * (discount / 100);
-                const itemTotal = itemSubtotal - discountAmount;
+                items.forEach((item, idx) => {
+                    try {
+                        const quantityInput = item.querySelector('.quantity-input');
+                        const priceInput = item.querySelector('.price-input');
+                        const discountInput = item.querySelector('.discount-input');
+                        
+                        if (!quantityInput || !priceInput || !discountInput) {
+                            console.log(`[calculateTotals] Item ${idx}: Missing inputs`, {quantityInput, priceInput, discountInput});
+                            return;
+                        }
+                        
+                        const quantity = toNumber(quantityInput.value);
+                        const unitPrice = toNumber(priceInput.value);
+                        const discount = toNumber(discountInput.value);
+                        
+                        console.log(`[calculateTotals] Item ${idx}:`, { quantity, unitPrice, discount });
+                        
+                        const itemSubtotal = quantity * unitPrice;
+                        const discountAmount = itemSubtotal * (discount / 100);
+                        const itemTotal = itemSubtotal - discountAmount;
+                        
+                        subTotal += itemTotal;
+                    } catch (e) {
+                        console.error(`[calculateTotals] Error in item ${idx}:`, e);
+                    }
+                });
                 
-                subTotal += itemTotal;
-            });
-            
-            const vatRate = toNumber(document.querySelector('input[name="Quote.VatRate"]').value);
-            const vatAmount = subTotal * (vatRate / 100);
-            const totalAmount = subTotal + vatAmount;
-            
-            document.getElementById('subTotal').textContent = formatCurrency(subTotal);
-            document.getElementById('vatAmount').textContent = formatCurrency(vatAmount);
-            document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+                const vatRateInput = document.querySelector('input[name="Quote.VatRate"]');
+                if (!vatRateInput) {
+                    console.error('[calculateTotals] VatRate input not found');
+                    return;
+                }
+                
+                const vatRate = toNumber(vatRateInput.value);
+                const vatAmount = subTotal * (vatRate / 100);
+                const totalAmount = subTotal + vatAmount;
+                
+                console.log('[calculateTotals] Totals:', { subTotal, vatRate, vatAmount, totalAmount });
+                
+                const subTotalEl = document.getElementById('subTotal');
+                const vatAmountEl = document.getElementById('vatAmount');
+                const totalAmountEl = document.getElementById('totalAmount');
+                
+                console.log('[calculateTotals] Elements:', { subTotalEl, vatAmountEl, totalAmountEl });
+                
+                if (subTotalEl) {
+                    const formatted = formatCurrency(subTotal);
+                    console.log('[calculateTotals] SubTotal formatted:', formatted);
+                    subTotalEl.textContent = formatted;
+                }
+                if (vatAmountEl) {
+                    const formatted = formatCurrency(vatAmount);
+                    console.log('[calculateTotals] VatAmount formatted:', formatted);
+                    vatAmountEl.textContent = formatted;
+                }
+                if (totalAmountEl) {
+                    const formatted = formatCurrency(totalAmount);
+                    console.log('[calculateTotals] TotalAmount formatted:', formatted);
+                    totalAmountEl.textContent = formatted;
+                }
+                
+                console.log('[calculateTotals] Finished successfully');
+            } catch (e) {
+                console.error('[calculateTotals] Fatal error:', e);
+            }
         }
 
         // Initialize calculation events for existing items
     document.addEventListener('DOMContentLoaded', function() {
+            // VatRate'i hemen normalize et (sayfaya yüklenen değeri düzelt) - virgülle format et
+            const vatRateInput = document.querySelector('input[name="Quote.VatRate"]');
+            if (vatRateInput && vatRateInput.value) {
+                const num = parseFloat(vatRateInput.value);
+                if (!isNaN(num)) {
+                    vatRateInput.value = num.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+                }
+                
+                // VatRate input'da değişim olunca immediately normalize et (virgülü noktaya çevir - backend için)
+                vatRateInput.addEventListener('change', function() {
+                    this.value = this.value.replace(/,/g, '.');
+                });
+                
+                vatRateInput.addEventListener('blur', function() {
+                    this.value = this.value.replace(/,/g, '.');
+                });
+            }
+            
             document.querySelectorAll('.quote-item').forEach(item => {
                 attachCalculationEvents(item);
             });
             
             // VAT rate change event
-            document.querySelector('input[name="Quote.VatRate"]').addEventListener('input', calculateTotals);
+            if (document.querySelector('input[name="Quote.VatRate"]')) {
+                document.querySelector('input[name="Quote.VatRate"]').addEventListener('input', calculateTotals);
+            }
             
             // Para birimi değiştiğinde totalleri güncelle
             document.getElementById('currencySelect').addEventListener('change', function() {
                 calculateTotals();
                 // Tüm item totallerini de güncelle
                 document.querySelectorAll('.quote-item').forEach(item => {
-                    const event = { target: item.querySelector('.quantity-input') };
-                    calculateItemTotal(event);
+                    try {
+                        const quantity = toNumber(item.querySelector('.quantity-input').value);
+                        const unitPrice = toNumber(item.querySelector('.price-input').value);
+                        const discount = toNumber(item.querySelector('.discount-input').value);
+                        const subtotal = quantity * unitPrice;
+                        const discountAmount = subtotal * (discount / 100);
+                        const total = subtotal - discountAmount;
+                        const totalDisplay = item.querySelector('.total-display');
+                        if (totalDisplay) totalDisplay.value = formatCurrency(total);
+                    } catch (e) {
+                        console.error('[calculateTotalOnCurrencyChange] Error:', e);
+                    }
                 });
             });
             
             // Initial calculation for all items
             document.querySelectorAll('.quote-item').forEach(item => {
-                const event = { target: item.querySelector('.quantity-input') };
-                calculateItemTotal(event);
+                try {
+                    const quantity = toNumber(item.querySelector('.quantity-input').value);
+                    const unitPrice = toNumber(item.querySelector('.price-input').value);
+                    const discount = toNumber(item.querySelector('.discount-input').value);
+                    const subtotal = quantity * unitPrice;
+                    const discountAmount = subtotal * (discount / 100);
+                    const total = subtotal - discountAmount;
+                    const totalDisplay = item.querySelector('.total-display');
+                    if (totalDisplay) totalDisplay.value = formatCurrency(total);
+                    console.log('[Initial calculation] Item:', { quantity, unitPrice, discount, total });
+                } catch (e) {
+                    console.error('[Initial calculation] Error:', e);
+                }
             });
             calculateTotals();
 
@@ -633,11 +754,15 @@
             function formatNumberValue(el) {
                 if (el && el.value !== undefined && el.value !== null && el.value !== '' && !isNaN(el.value)) {
                     const num = parseFloat(el.value);
+                    let formatted = '';
                     if (el.classList.contains('price-input')) {
-                        el.value = num.toFixed(2);
+                        formatted = num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     } else if (el.classList.contains('quantity-input')) {
-                        el.value = num.toFixed(1);
+                        formatted = num.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                    } else {
+                        formatted = num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     }
+                    el.value = formatted;
                 }
             }
 
@@ -654,21 +779,6 @@
             document.querySelectorAll('.quantity-input, .price-input, .discount-input').forEach(el => formatNumberValue(el));
 
         });
-        
-        // Item indexlerini güncelle
-        function reindexItems() {
-            const items = document.querySelectorAll('.quote-item');
-            items.forEach((item, index) => {
-                const inputs = item.querySelectorAll('input[name*="QuoteItemsList"]');
-                inputs.forEach(input => {
-                    const name = input.getAttribute('name');
-                    if (name && name.includes('QuoteItemsList[')) {
-                        const newName = name.replace(/QuoteItemsList\[\d+\]/, `QuoteItemsList[${index}]`);
-                        input.setAttribute('name', newName);
-                    }
-                });
-            });
-        }
         
         // Boş item'ları temizle
         function removeEmptyItems() {
@@ -766,8 +876,22 @@
                     e.preventDefault();
                     return false;
                 }
+                
+                // KRITIK: VatRate'i normalize et (validation'dan önce!)
+                const vatInput = document.querySelector('input[name="Quote.VatRate"]');
+                if (vatInput && vatInput.value) {
+                    const normalized = vatInput.value.trim().replace(/,/g, '.');
+                    vatInput.value = normalized;
+                    console.log(`[CRITICAL] VatRate normalized before submit: "${normalized}"`);
+                }
+                
+                // Recalculate totals to ensure VatAmount is correct
+                calculateTotals();
+                
                 // Normalize numeric inputs before actual submit
                 normalizeNumericInputsForSubmit(document);
+                
+                console.log(`[Form Submit] Final VatRate value: "${vatInput?.value}"`);
             });
         }
         

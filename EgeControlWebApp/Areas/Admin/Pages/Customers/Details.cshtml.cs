@@ -21,7 +21,7 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Customers
         public List<Quote> Quotes { get; set; } = new();
         public int TotalQuotes { get; set; }
         public int AcceptedQuotes { get; set; }
-        public decimal TotalQuoteValue { get; set; }
+        public Dictionary<string, decimal> TotalQuoteValueByCurrency { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -46,7 +46,11 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Customers
             // Calculate statistics
             TotalQuotes = Quotes.Count;
             AcceptedQuotes = Quotes.Count(q => q.Status == QuoteStatus.Accepted);
-            TotalQuoteValue = Quotes.Sum(q => q.TotalAmount);
+            
+            // Calculate total by currency
+            TotalQuoteValueByCurrency = Quotes
+                .GroupBy(q => q.Currency ?? "TRY")
+                .ToDictionary(g => g.Key, g => g.Sum(q => q.TotalAmount));
 
             return Page();
         }

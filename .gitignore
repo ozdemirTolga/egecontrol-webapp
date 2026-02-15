@@ -143,3 +143,10 @@ hosting-self-contained*/
 publish/
 *.PublishSettings
 *.zip
+
+# --- Application data (do not commit) ---
+*.db
+*.db-shm
+*.db-wal
+**/wwwroot/teklifler/**
+*.rar

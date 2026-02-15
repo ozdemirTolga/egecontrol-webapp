@@ -97,6 +97,14 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 Quote.CreatedByUserId = user.Id;
             }
 
+            // VatRate manual validation (model bound'dan sonra)
+            if (Quote.VatRate < 0 || Quote.VatRate > 100)
+            {
+                ModelState.AddModelError("Quote.VatRate", "KDV oranı 0-100 arasında olmalıdır");
+                await LoadCustomersAsync();
+                return Page();
+            }
+
             // QuoteItemsList'i QuoteItems'a kopyala
             if (Quote.QuoteItemsList != null && Quote.QuoteItemsList.Any())
             {

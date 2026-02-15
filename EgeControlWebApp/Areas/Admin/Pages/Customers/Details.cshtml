@@ -106,8 +106,16 @@
                             </div>
                             <hr>
                             <div class="text-center">
-                                <h4 class="text-info">@Model.TotalQuoteValue.ToString("C")</h4>
-                                <small class="text-muted">Toplam Teklif Tutarı</small>
+                                <h5 class="text-info mb-3">Toplam Teklif Tutarı</h5>
+                                @if (Model.TotalQuoteValueByCurrency.Any())
+                                {
+                                    @foreach (var kvp in Model.TotalQuoteValueByCurrency)
+                                    {
+                                        <div class="mb-2">
+                                            <strong>@kvp.Value.ToString("N2")</strong> <span class="badge bg-secondary">@kvp.Key</span>
+                                        </div>
+                                    }
+                                }
                             </div>
                         </div>
                     </div>
@@ -150,7 +158,7 @@
                                             <td>@quote.Title</td>
                                             <td>@quote.CreatedAt.ToString("dd.MM.yyyy")</td>
                                             <td>@quote.ValidUntil.ToString("dd.MM.yyyy")</td>
-                                            <td>@quote.TotalAmount.ToString("C")</td>
+                                            <td>@quote.TotalAmount.ToString("N2") <span class="badge bg-secondary">@(quote.Currency ?? "TRY")</span></td>
                                             <td>
                                                 @if (quote.Status == QuoteStatus.Draft)
                                                 {

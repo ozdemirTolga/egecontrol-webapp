@@ -213,7 +213,7 @@
                             <div class="form-group mb-3">
                                 <label asp-for="Quote.VatRate" class="form-label"></label>
                                 <div class="input-group">
-                                    <input asp-for="Quote.VatRate" class="form-control" type="number" step="0.01" />
+                                    <input asp-for="Quote.VatRate" class="form-control" type="text" />
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <span asp-validation-for="Quote.VatRate" class="text-danger"></span>
@@ -331,13 +331,17 @@
             window.formatNumberValue = function(el) {
                 if (el && el.value !== undefined && el.value !== null && el.value !== '' && !isNaN(el.value)) {
                     const num = parseFloat(el.value);
+                    let formatted = '';
                     if (el.classList.contains('unit-price') || el.classList.contains('price-input')) {
-                        el.value = num.toFixed(2);
+                        formatted = num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     } else if (el.classList.contains('quantity-input')) {
-                        el.value = num.toFixed(1);
+                        formatted = num.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
                     } else if (el.classList.contains('discount-input')) {
-                        el.value = num.toFixed(1);
+                        formatted = num.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                    } else {
+                        formatted = num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     }
+                    el.value = formatted;
                 }
             };
         }
@@ -645,15 +649,21 @@
             const currencySelect = document.getElementById('currencySelect');
             const currency = currencySelect ? currencySelect.value : 'EUR';
             
+            // Türkçe formatıyla virgül ayırıcısı kullanarak göster
+            const formatted = new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+            
             // Para birimi sembol pozisyonlarını doğru şekilde göstermek için
             switch(currency) {
                 case 'USD':
-                    return `$${amount.toFixed(2)}`;
+                    return `$${formatted}`;
                 case 'TRY':
-                    return `${amount.toFixed(2)} ₺`;
+                    return `${formatted} ₺`;
                 case 'EUR':
                 default:
-                    return `${amount.toFixed(2)} €`;
+                    return `${formatted} €`;
             }
         }
 
@@ -717,11 +727,30 @@
             }
 
             if (vatRateInput) {
+                // VatRate'i hemen virgülle format et
+                if (vatRateInput.value) {
+                    const num = parseFloat(vatRateInput.value.replace(',', '.'));
+                    if (!isNaN(num)) {
+                        vatRateInput.value = num.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+                    }
+                }
+                
                 vatRateInput.addEventListener('input', function() {
                     console.log('VAT rate changed to:', this.value);
                     document.getElementById('vat-rate').textContent = this.value;
                     calculateTotals();
                 });
+                
+                // Virgüllü format'ı noktalı'ya convert et
+                vatRateInput.addEventListener('change', function() {
+                    this.value = this.value.replace(/,/g, '.');
+                    console.log('VAT rate normalized to:', this.value);
+                });
+                
+                vatRateInput.addEventListener('blur', function() {
+                    this.value = this.value.replace(/,/g, '.');
+                });
+                
                 console.log('VAT rate input event listener attached');
             } else {
                 console.error('VAT rate input not found!');
@@ -850,8 +879,22 @@
                     e.preventDefault();
                     return false;
                 }
+                
+                // KRITIK: VatRate'i normalize et (validation'dan önce!)
+                const vatInput = document.querySelector('input[name="Quote.VatRate"]');
+                if (vatInput && vatInput.value) {
+                    const normalized = vatInput.value.trim().replace(/,/g, '.');
+                    vatInput.value = normalized;
+                    console.log(`[CRITICAL] VatRate normalized before submit: "${normalized}"`);
+                }
+                
+                // Recalculate totals to ensure VatAmount is correct
+                calculateTotals();
+                
                 // Normalize numeric inputs before actual submit
                 normalizeNumericInputsForSubmit(document);
+                
+                console.log(`[Form Submit] Final VatRate value: "${vatInput?.value}"`);
                 
                 const currency = document.getElementById('currencySelect').value;
                 console.log('Form submit - Currency değeri:', currency);
