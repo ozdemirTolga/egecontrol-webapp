@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 using EgeControlWebApp.Data;
 using EgeControlWebApp.Services;
 using EgeControlWebApp.Models;
@@ -61,16 +62,31 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// DataProtection: Anahtarları diske kaydet (app pool recycle'da cookie'ler geçersiz olmasın)
+var keysDir = Path.Combine(AppContext.BaseDirectory, "DataProtection-Keys");
+Directory.CreateDirectory(keysDir);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysDir))
+    .SetApplicationName("EgeControlWebApp")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
+
 // Cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.ExpireTimeSpan = TimeSpan.FromHours(12);
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.IsEssential = true;
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
+// Anti-forgery cookie ayarları
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.IsEssential = true;
 });
 
 builder.Services.AddRazorPages(options =>

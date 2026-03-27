@@ -333,6 +333,14 @@
                     }
                     
                     <form method="post">
+                        <!-- Anti-spam: honeypot (gizli alan - botlar doldurur, insanlar görmez) -->
+                        <div style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;overflow:hidden;" aria-hidden="true" tabindex="-1">
+                            <label for="Website">Website</label>
+                            <input type="text" name="Website" id="Website" autocomplete="off" tabindex="-1" />
+                        </div>
+                        <!-- Anti-spam: timestamp token -->
+                        <input type="hidden" name="FormToken" value="@Model.FormToken" />
+                        
                         <div class="mb-3">
                             <input asp-for="Contact.Name" type="text" class="form-control" placeholder="Adınız">
                             <span asp-validation-for="Contact.Name" class="text-danger"></span>
