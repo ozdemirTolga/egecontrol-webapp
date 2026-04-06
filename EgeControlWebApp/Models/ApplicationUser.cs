@@ -11,5 +11,9 @@ namespace EgeControlWebApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string? Department { get; set; }
         public string? Position { get; set; }
+        /// <summary>
+        /// SMTP şifresi - kullanıcı kendi mail hesabıyla teklif gönderir
+        /// </summary>
+        public string? SmtpPassword { get; set; }
     }
 }

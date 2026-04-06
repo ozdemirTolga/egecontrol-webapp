@@ -1,0 +1,79 @@
+@page "{id:int}"
+@model EgeControlWebApp.Areas.Admin.Pages.Gallery.EditModel
+@{
+    ViewData["Title"] = "Galeri - Düzenle";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-edit me-2"></i>Düzenle</h1>
+    <a asp-page="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    @if (Model.Item.MediaType == "video")
+                    {
+                        <video class="w-100 rounded" style="max-height: 400px;" controls muted>
+                            <source src="~/gallery/@Model.Item.FileName" />
+                        </video>
+                    }
+                    else
+                    {
+                        <img src="~/gallery/@Model.Item.FileName" class="img-fluid rounded" style="max-height: 400px;" />
+                    }
+                </div>
+
+                <form method="post">
+                    <input type="hidden" asp-for="Item.Id" />
+                    <input type="hidden" asp-for="Item.FileName" />
+                    <input type="hidden" asp-for="Item.MediaType" />
+                    <input type="hidden" asp-for="Item.FileSize" />
+                    <input type="hidden" asp-for="Item.CreatedAt" />
+                    <input type="hidden" asp-for="Item.UploadedByUserId" />
+                    <input type="hidden" asp-for="Item.UploadedByUserName" />
+                    <input type="hidden" asp-for="Item.IsActive" />
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Item.Title" class="form-label fw-bold"></label>
+                        <input asp-for="Item.Title" class="form-control" />
+                        <span asp-validation-for="Item.Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Item.Description" class="form-label fw-bold"></label>
+                        <textarea asp-for="Item.Description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Item.Category" class="form-label fw-bold"></label>
+                            <input asp-for="Item.Category" class="form-control" list="categoryList" />
+                            <datalist id="categoryList">
+                                @foreach (var cat in Model.ExistingCategories)
+                                {
+                                    <option value="@cat" />
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Item.SortOrder" class="form-label fw-bold">Sıra No</label>
+                            <input asp-for="Item.SortOrder" class="form-control" type="number" />
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

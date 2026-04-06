@@ -1,0 +1,67 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.SiteSettingsModel
+@{
+    ViewData["Title"] = "Site Ayarları";
+}
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Ana Sayfa İstatistikleri</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted mb-4">Ana sayfada görüntülenen istatistik sayılarını buradan düzenleyebilirsiniz.</p>
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-project-diagram fa-2x text-primary mb-2"></i>
+                            <label asp-for="StatProjects" class="form-label fw-bold d-block">Tamamlanan Proje</label>
+                            <input asp-for="StatProjects" class="form-control form-control-lg text-center" type="number" min="0" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-smile fa-2x text-success mb-2"></i>
+                            <label asp-for="StatCustomers" class="form-label fw-bold d-block">Mutlu Müşteri</label>
+                            <input asp-for="StatCustomers" class="form-control form-control-lg text-center" type="number" min="0" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-award fa-2x text-warning mb-2"></i>
+                            <label asp-for="StatExperience" class="form-label fw-bold d-block">Yıllık Deneyim</label>
+                            <input asp-for="StatExperience" class="form-control form-control-lg text-center" type="number" min="0" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-headset fa-2x text-info mb-2"></i>
+                            <label asp-for="StatSupport" class="form-label fw-bold d-block">Saat Teknik Destek</label>
+                            <input asp-for="StatSupport" class="form-control form-control-lg text-center" type="number" min="0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i>Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

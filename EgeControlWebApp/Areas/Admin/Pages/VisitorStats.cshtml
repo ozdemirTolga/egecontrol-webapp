@@ -1,0 +1,114 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.VisitorStatsModel
+@{
+    ViewData["Title"] = "Ziyaretçi İstatistikleri";
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 bg-primary text-white">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-calendar-day fa-2x mb-2"></i>
+                <h2 class="mb-0">@Model.TodayCount</h2>
+                <p class="mb-0">Bugünkü Ziyaretçi</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 bg-success text-white">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h2 class="mb-0">@Model.TotalCount</h2>
+                <p class="mb-0">Toplam Ziyaret</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 bg-info text-white">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                <h2 class="mb-0">@(Model.DailyStats.Count > 0 ? (Model.TotalCount / Math.Max(Model.DailyStats.Count, 1)) : 0)</h2>
+                <p class="mb-0">Günlük Ortalama</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Chart -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Son 30 Gün</h5>
+    </div>
+    <div class="card-body">
+        @if (Model.DailyStats.Any())
+        {
+            var maxCount = Model.DailyStats.Max(s => s.Count);
+            <div class="table-responsive">
+                <div style="display: flex; align-items: flex-end; gap: 3px; height: 200px; padding: 0 10px;">
+                    @foreach (var stat in Model.DailyStats)
+                    {
+                        var heightPct = maxCount > 0 ? (int)(stat.Count * 100.0 / maxCount) : 0;
+                        heightPct = Math.Max(heightPct, 2);
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 20px;">
+                            <span style="font-size: 10px; color: #666; margin-bottom: 2px;">@stat.Count</span>
+                            <div style="width: 100%; height: @(heightPct)%; background: linear-gradient(to top, #2563eb, #06b6d4); border-radius: 3px 3px 0 0; min-height: 4px;"
+                                 title="@stat.Date.ToString("dd.MM.yyyy"): @stat.Count ziyaret"></div>
+                            <span style="font-size: 9px; color: #999; margin-top: 2px; writing-mode: vertical-lr; transform: rotate(180deg); max-height: 50px; overflow: hidden;">
+                                @stat.Date.ToString("dd.MM")
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted text-center py-4">Henüz ziyaretçi verisi bulunmuyor.</p>
+        }
+    </div>
+</div>
+
+<!-- Top Pages -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>En Çok Ziyaret Edilen Sayfalar</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.TopPages.Any())
+        {
+            var topMax = Model.TopPages.First().Count;
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Sayfa</th>
+                        <th>Ziyaret</th>
+                        <th style="width: 40%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var rank = 0; }
+                    @foreach (var pg in Model.TopPages)
+                    {
+                        rank++;
+                        var barWidth = topMax > 0 ? (int)(pg.Count * 100.0 / topMax) : 0;
+                        <tr>
+                            <td>@rank</td>
+                            <td><code>@pg.PagePath</code></td>
+                            <td><strong>@pg.Count</strong></td>
+                            <td>
+                                <div style="background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: @(barWidth)%; height: 20px; background: linear-gradient(to right, #2563eb, #06b6d4); border-radius: 4px;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted text-center py-4">Henüz sayfa verisi bulunmuyor.</p>
+        }
+    </div>
+</div>

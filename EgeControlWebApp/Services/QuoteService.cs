@@ -26,6 +26,18 @@ namespace EgeControlWebApp.Services
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Quote>> GetQuotesByUserIdAsync(string userId)
+        {
+            return await _context.Quotes
+                .Include(q => q.Customer)
+                .Include(q => q.QuoteItems)
+                .Include(q => q.CreatedByUser)
+                .Include(q => q.LastModifiedByUser)
+                .Where(q => q.CreatedByUserId == userId)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<Quote?> GetQuoteByIdAsync(int id)
         {
             return await _context.Quotes
@@ -296,6 +308,26 @@ namespace EgeControlWebApp.Services
                 .Where(q => q.QuoteNumber.ToLower().Contains(searchTerm) ||
                            q.Title.ToLower().Contains(searchTerm) ||
                            (q.Customer != null && q.Customer.CompanyName.ToLower().Contains(searchTerm)))
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Quote>> SearchQuotesByUserIdAsync(string searchTerm, string userId)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await GetQuotesByUserIdAsync(userId);
+            }
+
+            searchTerm = searchTerm.ToLower();
+
+            return await _context.Quotes
+                .Include(q => q.Customer)
+                .Include(q => q.QuoteItems)
+                .Where(q => q.CreatedByUserId == userId &&
+                           (q.QuoteNumber.ToLower().Contains(searchTerm) ||
+                            q.Title.ToLower().Contains(searchTerm) ||
+                            (q.Customer != null && q.Customer.CompanyName.ToLower().Contains(searchTerm))))
                 .OrderByDescending(q => q.CreatedAt)
                 .ToListAsync();
         }

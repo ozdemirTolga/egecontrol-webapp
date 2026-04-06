@@ -120,18 +120,19 @@ namespace EgeControlWebApp.Services
                 firstError = ex;
             }
 
-            // Fallback: 587 TLS başarısızsa 465 implicit SSL dene
-        if (_settings.EnableSsl && _settings.Port == 587)
+            // Fallback: 587 STARTTLS başarısızsa, 25 (SSL'siz) dene
+            // Not: Port 465 implicit SSL gerektirir, SmtpClient bunu desteklemez
+        if (_settings.Port == 587)
             {
                 try
                 {
-            await SendWithSettingsAsync(message, _settings.Host, 465, true, _settings.User, _settings.Password);
+            await SendWithSettingsAsync(message, _settings.Host, 25, false, _settings.User, _settings.Password);
                     return;
                 }
                 catch (Exception secondEx)
                 {
                     var details = $"Birincil deneme H:{_settings.Host} P:{_settings.Port} SSL:{_settings.EnableSsl} hata: {firstError?.Message}. " +
-                                  $"Geri dönüş denemesi H:{_settings.Host} P:465 SSL:true hata: {secondEx.Message}.";
+                                  $"Geri dönüş denemesi H:{_settings.Host} P:25 SSL:false hata: {secondEx.Message}.";
                     throw new Exception($"SMTP gönderimi başarısız oldu. {details}", secondEx);
                 }
             }
@@ -143,32 +144,24 @@ namespace EgeControlWebApp.Services
             }
         }
 
-        // SSL sertifika doğrulaması için güvenli callback metodu
+        // SSL sertifika doğrulaması
         private static bool ValidateServerCertificate(
             object sender,
             X509Certificate? certificate,
             X509Chain? chain,
             SslPolicyErrors sslPolicyErrors)
         {
-            // Development ortamında tüm sertifikaları kabul et
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-            {
-                return true;
-            }
-
-            // Production ortamında sadece RemoteCertificateNameMismatch hatalarını göz ardı et
-            // Diğer SSL hataları (expired, self-signed vs.) için false döndür
             if (sslPolicyErrors == SslPolicyErrors.None)
-            {
                 return true;
-            }
 
+            // Shared hosting ortamlarında sertifika hostname uyuşmazlığı yaygındır
+            // (mail.egecontrol.com yerine sunucunun kendi hostname'i olabilir)
             if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
             {
-                return true; // Host name mismatch hatalarını göz ardı et
+                return true;
             }
 
-            return false; // Diğer tüm SSL hataları için false
+            return false;
         }
 
         private static async Task SendWithSettingsAsync(MailMessage message, string host, int port, bool enableSsl, string user, string password)
@@ -186,6 +179,89 @@ namespace EgeControlWebApp.Services
             };
 
             await client.SendMailAsync(message);
+        }
+
+        public async Task SendAsUserAsync(SenderInfo sender, string to, string subject, string htmlBody, IEnumerable<EmailAttachment>? attachments = null, string? cc = null, string? bcc = null)
+        {
+            if (string.IsNullOrWhiteSpace(sender.Email))
+                throw new ArgumentException("Gönderen e-posta adresi boş olamaz.");
+            if (string.IsNullOrWhiteSpace(sender.SmtpPassword))
+                throw new ArgumentException("SMTP şifresi ayarlanmamış. Lütfen Mail Ayarları sayfasından şifrenizi girin.");
+            if (string.IsNullOrWhiteSpace(to))
+                throw new ArgumentException("E-posta alıcısı adresi boş olamaz.", nameof(to));
+
+            using var message = new MailMessage();
+            message.From = new MailAddress(sender.Email, sender.DisplayName);
+
+            try
+            {
+                message.To.Add(new MailAddress(to.Trim()));
+            }
+            catch (FormatException ex)
+            {
+                throw new ArgumentException("Geçersiz e-posta adresi.", nameof(to), ex);
+            }
+
+            if (!string.IsNullOrWhiteSpace(cc))
+            {
+                foreach (var addr in cc.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    message.CC.Add(new MailAddress(addr.Trim()));
+            }
+            if (!string.IsNullOrWhiteSpace(bcc))
+            {
+                foreach (var addr in bcc.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    message.Bcc.Add(new MailAddress(addr.Trim()));
+            }
+
+            message.SubjectEncoding = System.Text.Encoding.UTF8;
+            message.BodyEncoding = System.Text.Encoding.UTF8;
+            message.HeadersEncoding = System.Text.Encoding.UTF8;
+            message.Subject = subject;
+            message.Body = htmlBody;
+            message.IsBodyHtml = true;
+
+            if (attachments != null)
+            {
+                foreach (var att in attachments)
+                {
+                    var stream = new MemoryStream(att.Content);
+                    var a = new Attachment(stream, att.ContentType) { Name = att.FileName, ContentId = att.FileName };
+                    message.Attachments.Add(a);
+                }
+            }
+
+            // Kullanıcının kendi e-posta adresi ve şifresiyle gönder
+            Exception? firstError = null;
+            try
+            {
+                await SendWithSettingsAsync(message, _settings.Host, _settings.Port, _settings.EnableSsl, sender.Email, sender.SmtpPassword);
+                return;
+            }
+            catch (Exception ex)
+            {
+                firstError = ex;
+            }
+
+            // Fallback: port 25
+            if (_settings.Port == 587)
+            {
+                try
+                {
+                    await SendWithSettingsAsync(message, _settings.Host, 25, false, sender.Email, sender.SmtpPassword);
+                    return;
+                }
+                catch (Exception secondEx)
+                {
+                    var details = $"Birincil deneme H:{_settings.Host} P:{_settings.Port} SSL:{_settings.EnableSsl} hata: {firstError?.Message}. " +
+                                  $"Geri dönüş denemesi H:{_settings.Host} P:25 SSL:false hata: {secondEx.Message}.";
+                    throw new Exception($"SMTP gönderimi başarısız oldu. {details}", secondEx);
+                }
+            }
+
+            if (firstError != null)
+            {
+                throw new Exception($"SMTP gönderimi başarısız oldu (H:{_settings.Host} P:{_settings.Port} SSL:{_settings.EnableSsl}). {firstError.Message}", firstError);
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ using EgeControlWebApp.Services;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Customers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,SatisTemsilcisi")]
     public class CustomerEditModel : PageModel
     {
         private readonly ICustomerService _customerService;

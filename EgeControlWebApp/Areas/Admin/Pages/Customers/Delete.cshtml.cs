@@ -7,7 +7,7 @@ using EgeControlWebApp.Models;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Customers
 {
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Admin")]
     public class DeleteModel : PageModel
     {
         private readonly ApplicationDbContext _context;

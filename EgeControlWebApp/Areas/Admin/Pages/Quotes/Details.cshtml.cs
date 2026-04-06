@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using EgeControlWebApp.Data;
 using EgeControlWebApp.Models;
 using EgeControlWebApp.Services;
@@ -10,18 +11,22 @@ using Microsoft.Extensions.Options;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 {
-    [Authorize(Roles = "Admin,Manager,QuoteCreator,QuoteEditor,QuoteSender,Viewer")]
+    [Authorize(Roles = "Admin,SatisTemsilcisi")]
     public class DetailsModel : PageModel
     {
         private readonly ApplicationDbContext _context;
         private readonly IPdfService _pdfService;
-    private readonly IEmailService _emailService;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public DetailsModel(ApplicationDbContext context, IPdfService pdfService, IEmailService emailService)
+        public DetailsModel(ApplicationDbContext context, IPdfService pdfService, IEmailService emailService, IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _pdfService = pdfService;
             _emailService = emailService;
+            _configuration = configuration;
+            _userManager = userManager;
         }
 
         public Quote Quote { get; set; } = default!;
@@ -141,19 +146,36 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                     new EmailAttachment(fileName, "application/pdf", pdfBytes)
                 };
 
-                // BCC olarak kendi adresimize de gönder
-                await _emailService.SendAsync(recipient, subject, body, attachments, cc: null, bcc: "tolga.ozdemir@live.com");
+                // Giriş yapan kullanıcının bilgileriyle gönder
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
+                {
+                    TempData["ErrorMessage"] = "Kullanıcı bilgileri bulunamadı.";
+                    return RedirectToPage(new { id });
+                }
+
+                if (string.IsNullOrWhiteSpace(currentUser.SmtpPassword))
+                {
+                    TempData["ErrorMessage"] = "SMTP şifreniz ayarlanmamış. Lütfen sol menüdeki 'Mail Ayarları' sayfasından e-posta şifrenizi girin.";
+                    return RedirectToPage(new { id });
+                }
+
+                var senderInfo = new SenderInfo
+                {
+                    Email = currentUser.Email!,
+                    DisplayName = currentUser.FullName,
+                    SmtpPassword = currentUser.SmtpPassword
+                };
+
+                // BCC olarak yapılandırmadan okunan adrese gönder
+                var bccAddress = _configuration["Smtp:BccAddress"];
+                await _emailService.SendAsUserAsync(senderInfo, recipient, subject, body, attachments, cc: null, bcc: bccAddress);
                 
                 // E-posta başarıyla gönderildikten sonra durumu "Gönderildi" olarak güncelle
                 quote.Status = QuoteStatus.Sent;
                 quote.UpdatedAt = DateTime.UtcNow;
-                quote.LastModifiedBy = User.Identity?.Name ?? "System";
-                var currentUserName = User.Identity?.Name ?? "";
-                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == currentUserName);
-                if (currentUser != null)
-                {
-                    quote.LastModifiedByUserId = currentUser.Id;
-                }
+                quote.LastModifiedBy = currentUser.UserName ?? "System";
+                quote.LastModifiedByUserId = currentUser.Id;
                 await _context.SaveChangesAsync();
                 
                 // If pickup directory is enabled, inform where the email was saved

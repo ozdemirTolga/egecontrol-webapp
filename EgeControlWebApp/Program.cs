@@ -13,6 +13,12 @@ using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Allow large file uploads (100 MB) for gallery
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 104_857_600;
+});
+
 // ---- LOGGING:  stdout'a düşsün ki IIS/ANCM görebilsin
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -73,7 +79,7 @@ builder.Services.AddDataProtection()
 // Cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.ExpireTimeSpan = TimeSpan.FromHours(2);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
@@ -102,7 +108,7 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminPolicy", policy =>
-        policy.RequireRole("Admin", "Manager", "QuoteCreator", "QuoteEditor", "QuoteSender", "Viewer"));
+        policy.RequireRole("Admin", "SatisTemsilcisi"));
 });
 
 // Services
@@ -111,7 +117,19 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+// SMTP credentials: environment variable override (güvenlik için)
+builder.Services.PostConfigure<SmtpSettings>(settings =>
+{
+    var envUser = Environment.GetEnvironmentVariable("SMTP_USER");
+    var envPass = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+    if (!string.IsNullOrEmpty(envUser)) settings.User = envUser;
+    if (!string.IsNullOrEmpty(envPass)) settings.Password = envPass;
+});
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IGalleryService, GalleryService>();
+builder.Services.AddScoped<ISiteSettingsService, SiteSettingsService>();
+builder.Services.AddScoped<IVisitorService, VisitorService>();
+builder.Services.AddSingleton<RateLimitingService>();
 
 var app = builder.Build();
 
@@ -124,8 +142,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
-    // HTTPS varsa HSTS kullan (SSL sertifikası yoksa bu satırı yoruma al)
-    // app.UseHsts();
+    app.UseHsts();
 }
 
 // Localization: TR
@@ -137,14 +154,42 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = supportedCultures
 });
 
-// HTTPS yönlendirmesi (SSL sertifikası yoksa bu satırı yoruma al)
-// app.UseHttpsRedirection();
+// HTTPS yönlendirmesi
+app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Güvenlik header'ları
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+    await next();
+});
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Ziyaretçi takip middleware
+app.Use(async (context, next) =>
+{
+    await next();
+    // Only log successful page responses (not API, not errors, not static files)
+    if (context.Response.StatusCode == 200 
+        && context.Response.ContentType?.Contains("text/html") == true)
+    {
+        try
+        {
+            using var scope = context.RequestServices.CreateScope();
+            var visitorService = scope.ServiceProvider.GetRequiredService<IVisitorService>();
+            await visitorService.LogVisitAsync(context);
+        }
+        catch { /* don't break the request */ }
+    }
+});
 
 app.MapRazorPages();
 
@@ -160,6 +205,10 @@ using (var scope = app.Services.CreateScope())
         var db = sp.GetRequiredService<ApplicationDbContext>();
         // İstiyorsan otomatik migrate (bağlantı kurulamazsa catch'e düşer)
         await db.Database.MigrateAsync();
+
+        // Seed site settings defaults
+        var settingsService = sp.GetRequiredService<ISiteSettingsService>();
+        await settingsService.EnsureDefaultsAsync();
 
         await SeedAdminUser(sp);
     }
@@ -184,6 +233,37 @@ static async Task SeedAdminUser(IServiceProvider serviceProvider)
         if (!await roleManager.RoleExistsAsync(role))
         {
             await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // Eski rollerdeki kullanıcıları SatisTemsilcisi rolüne taşı
+    string[] oldRoles = { "Manager", "QuoteCreator", "QuoteEditor", "QuoteSender", "Viewer" };
+    foreach (var user in userManager.Users.ToList())
+    {
+        var roles = await userManager.GetRolesAsync(user);
+        var hasOldRole = roles.Any(r => oldRoles.Contains(r));
+        var hasNewRole = roles.Contains(UserRoles.Admin) || roles.Contains(UserRoles.SatisTemsilcisi);
+
+        if (hasOldRole && !hasNewRole)
+        {
+            await userManager.AddToRoleAsync(user, UserRoles.SatisTemsilcisi);
+        }
+
+        // Eski rolleri kaldır
+        var toRemove = roles.Where(r => oldRoles.Contains(r)).ToList();
+        if (toRemove.Any())
+        {
+            await userManager.RemoveFromRolesAsync(user, toRemove);
+        }
+    }
+
+    // Eski rolleri veritabanından sil
+    foreach (var oldRole in oldRoles)
+    {
+        var role = await roleManager.FindByNameAsync(oldRole);
+        if (role != null)
+        {
+            await roleManager.DeleteAsync(role);
         }
     }
 

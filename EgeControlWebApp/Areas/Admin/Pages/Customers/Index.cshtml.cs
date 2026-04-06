@@ -5,7 +5,7 @@ using EgeControlWebApp.Models;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Customers
 {
-    [Authorize(Roles = "Admin,Manager,QuoteCreator,QuoteEditor,QuoteSender,Viewer")]
+    [Authorize(Roles = "Admin,SatisTemsilcisi")]
     public class IndexModel : PageModel
     {
         private readonly ICustomerService _customerService;

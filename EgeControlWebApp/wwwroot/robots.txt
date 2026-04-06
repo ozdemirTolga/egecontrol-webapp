@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /Admin/
+Disallow: /Identity/
+Disallow: /Error
+Disallow: /bin/
+Disallow: /obj/
+
+# Sitemap
+Sitemap: https://www.egecontrol.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1

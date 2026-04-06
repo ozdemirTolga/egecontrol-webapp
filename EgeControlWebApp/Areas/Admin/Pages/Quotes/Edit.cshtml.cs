@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 {
-    [Authorize(Roles = "Admin,Manager,QuoteEditor,QuoteCreator")]
+    [Authorize(Roles = "Admin,SatisTemsilcisi")]
     public class EditModel : PageModel
     {
         private readonly IQuoteService _quoteService;
@@ -43,10 +43,9 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                 return NotFound();
             }
 
-            // Check authorization - QuoteCreator can only edit their own quotes
-            // Admin, Manager, QuoteEditor can edit all quotes
+            // Check authorization - SatisTemsilcisi can only edit their own quotes
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (User.IsInRole("QuoteCreator") && !User.IsInRole("Admin") && !User.IsInRole("Manager") && !User.IsInRole("QuoteEditor"))
+            if (User.IsInRole("SatisTemsilcisi") && !User.IsInRole("Admin"))
             {
                 if (quote.CreatedByUserId != currentUserId)
                 {
@@ -73,10 +72,9 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // Check authorization - QuoteCreator can only edit their own quotes
-            // Admin, Manager, QuoteEditor can edit all quotes
+            // Check authorization - SatisTemsilcisi can only edit their own quotes
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (User.IsInRole("QuoteCreator") && !User.IsInRole("Admin") && !User.IsInRole("Manager") && !User.IsInRole("QuoteEditor"))
+            if (User.IsInRole("SatisTemsilcisi") && !User.IsInRole("Admin"))
             {
                 var existingQuote = await _quoteService.GetQuoteByIdAsync(Quote.Id);
                 if (existingQuote == null || existingQuote.CreatedByUserId != currentUserId)

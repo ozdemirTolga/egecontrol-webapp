@@ -91,13 +91,13 @@ namespace EgeControlWebApp.Services
 
                 var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                 var backupPath = Path.Combine(backupDir, $"sqlserver_backup_{timestamp}.bak");
+                var fullPath = Path.GetFullPath(backupPath);
                 
-                // SQL Server backup komutu
-                var sql = $"BACKUP DATABASE [egecontr1_] TO DISK = '{Path.GetFullPath(backupPath)}'";
-                
+                // SQL Server backup komutu - parametreli
                 try
                 {
-                    await context.Database.ExecuteSqlRawAsync(sql);
+                    await context.Database.ExecuteSqlRawAsync(
+                        "BACKUP DATABASE [egecontr1_] TO DISK = {0}", fullPath);
                     _logger.LogInformation("SQL Server yedeği oluşturuldu: {BackupPath}", backupPath);
                 }
                 catch (Exception ex)

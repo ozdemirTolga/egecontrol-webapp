@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120">
+  <defs>
+    <linearGradient id="gmtGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1565C0"/>
+      <stop offset="100%" style="stop-color:#0D47A1"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="120" fill="white" rx="6"/>
+  <!-- GMT logo mark - stylized lightning bolt for energy/power -->
+  <path d="M35,20 L55,20 L42,52 L60,52 L28,95 L38,58 L22,58 Z" fill="url(#gmtGrad)"/>
+  <text x="75" y="70" font-family="'Arial Black', 'Segoe UI Black', Arial, sans-serif" font-weight="900" font-size="56" fill="#0D47A1" letter-spacing="6">GMT</text>
+  <text x="76" y="92" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="12" fill="#757575" letter-spacing="3">KOMPANZASYON</text>
+</svg>

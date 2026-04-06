@@ -2,6 +2,7 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Ege Otomasyon - Endüstriyel Otomasyon Çözümleri";
+    ViewData["MetaDescription"] = "Ege Otomasyon - İzmir merkezli endüstriyel otomasyon firması. PLC programlama, SCADA sistemleri, robotik otomasyon, HMI panel tasarımı, servo motor sürücü ve teknik destek hizmetleri.";
 }
 
 <!-- Hero Section -->
@@ -10,6 +11,7 @@
         <div class="row align-items-center min-vh-100">
             <div class="col-lg-6">
                 <div class="hero-content">
+                    <span class="section-badge">Endüstriyel Otomasyon</span>
                     <h1 class="hero-title">
                         <span class="text-primary">Endüstriyel</span><br>
                         <span class="text-dark">Otomasyon</span><br>
@@ -20,52 +22,106 @@
                         PLC programlama, SCADA sistemleri, robotik otomasyon ve daha fazlası...
                     </p>
                     <div class="hero-buttons">
-                        <a href="#services" class="btn btn-primary btn-lg me-3">Hizmetlerimiz</a>
-                        <a href="#contact" class="btn btn-outline-primary btn-lg">İletişim</a>
+                        <a href="#services" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-cogs me-2"></i>Hizmetlerimiz
+                        </a>
+                        <a href="#contact" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-envelope me-2"></i>İletişim
+                        </a>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="hero-animation">
-                    <!-- Animated Factory Icon -->
-                    <div class="factory-animation">
-                        <svg width="400" height="300" viewBox="0 0 400 300" class="factory-svg">
-                            <!-- Factory Building -->
-                            <rect x="50" y="150" width="100" height="100" fill="#2563eb" opacity="0.8" class="animate-fade-in">
-                                <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                            </rect>
-                            <rect x="170" y="120" width="80" height="130" fill="#1d4ed8" opacity="0.8" class="animate-fade-in">
-                                <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/>
-                            </rect>
-                            <rect x="270" y="140" width="70" height="110" fill="#3b82f6" opacity="0.8" class="animate-fade-in">
-                                <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" repeatCount="indefinite"/>
-                            </rect>
-                            
-                            <!-- Smokestacks -->
-                            <rect x="80" y="100" width="15" height="50" fill="#6b7280"/>
-                            <rect x="190" y="80" width="15" height="40" fill="#6b7280"/>
-                            <rect x="290" y="90" width="15" height="50" fill="#6b7280"/>
-                            
-                            <!-- Animated Smoke -->
-                            <circle cx="87" cy="95" r="3" fill="#e5e7eb" opacity="0.7">
-                                <animate attributeName="cy" values="95;70;45" dur="2s" repeatCount="indefinite"/>
-                                <animate attributeName="opacity" values="0.7;0.3;0" dur="2s" repeatCount="indefinite"/>
+                    <svg width="500" height="400" viewBox="0 0 500 400" class="factory-svg">
+                        <!-- Background Grid -->
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.15" />
+                                <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:0.05" />
+                            </linearGradient>
+                            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.9" />
+                                <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:0.9" />
+                            </linearGradient>
+                        </defs>
+                        
+                        <!-- Circuit Board Pattern -->
+                        <rect x="40" y="40" width="420" height="320" rx="20" fill="url(#grad1)" />
+                        
+                        <!-- Factory Buildings -->
+                        <rect x="80" y="180" width="90" height="120" rx="4" fill="#2563eb" opacity="0.85">
+                            <animate attributeName="opacity" values="0.7;0.95;0.7" dur="3s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="180" y="150" width="70" height="150" rx="4" fill="#1d4ed8" opacity="0.85">
+                            <animate attributeName="opacity" values="0.8;1;0.8" dur="2.5s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="260" y="170" width="80" height="130" rx="4" fill="#3b82f6" opacity="0.85">
+                            <animate attributeName="opacity" values="0.75;0.95;0.75" dur="2.8s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="350" y="190" width="60" height="110" rx="4" fill="#06b6d4" opacity="0.85">
+                            <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2.2s" repeatCount="indefinite"/>
+                        </rect>
+                        
+                        <!-- Smokestacks -->
+                        <rect x="100" y="130" width="12" height="50" rx="2" fill="#475569"/>
+                        <rect x="200" y="110" width="12" height="40" rx="2" fill="#475569"/>
+                        <rect x="290" y="120" width="12" height="50" rx="2" fill="#475569"/>
+                        
+                        <!-- Smoke Particles -->
+                        <circle r="4" fill="#94a3b8" opacity="0.5">
+                            <animate attributeName="cx" values="106;98;110" dur="3s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="125;90;55" dur="3s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.5;0.2;0" dur="3s" repeatCount="indefinite"/>
+                            <animate attributeName="r" values="4;8;12" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle r="3" fill="#94a3b8" opacity="0.4">
+                            <animate attributeName="cx" values="206;200;212" dur="2.5s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="105;75;45" dur="2.5s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.4;0.15;0" dur="2.5s" repeatCount="indefinite"/>
+                            <animate attributeName="r" values="3;6;10" dur="2.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle r="3.5" fill="#94a3b8" opacity="0.45">
+                            <animate attributeName="cx" values="296;290;302" dur="2.8s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="115;80;50" dur="2.8s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.45;0.15;0" dur="2.8s" repeatCount="indefinite"/>
+                            <animate attributeName="r" values="3.5;7;11" dur="2.8s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Conveyor Belt -->
+                        <rect x="60" y="300" width="380" height="8" rx="4" fill="url(#grad2)" opacity="0.3"/>
+                        <circle r="5" fill="#f59e0b">
+                            <animate attributeName="cx" values="80;420;80" dur="5s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="304;304;304" dur="5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle r="5" fill="#10b981">
+                            <animate attributeName="cx" values="200;420;80;200" dur="5s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="304;304;304;304" dur="5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle r="5" fill="#06b6d4">
+                            <animate attributeName="cx" values="340;420;80;340" dur="5s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="304;304;304;304" dur="5s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Connection Lines (circuit style) -->
+                        <line x1="170" y1="240" x2="180" y2="240" stroke="#2563eb" stroke-width="2" opacity="0.3">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/>
+                        </line>
+                        <line x1="250" y1="220" x2="260" y2="220" stroke="#06b6d4" stroke-width="2" opacity="0.3">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.8s" repeatCount="indefinite"/>
+                        </line>
+                        <line x1="340" y1="230" x2="350" y2="230" stroke="#2563eb" stroke-width="2" opacity="0.3">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.3s" repeatCount="indefinite"/>
+                        </line>
+                        
+                        <!-- Gear Icon -->
+                        <g transform="translate(390, 80)">
+                            <circle cx="0" cy="0" r="18" fill="none" stroke="#2563eb" stroke-width="2" opacity="0.3"/>
+                            <circle cx="0" cy="0" r="6" fill="#2563eb" opacity="0.4">
+                                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="8s" repeatCount="indefinite"/>
                             </circle>
-                            <circle cx="197" cy="75" r="3" fill="#e5e7eb" opacity="0.7">
-                                <animate attributeName="cy" values="75;50;25" dur="1.8s" repeatCount="indefinite"/>
-                                <animate attributeName="opacity" values="0.7;0.3;0" dur="1.8s" repeatCount="indefinite"/>
-                            </circle>
-                            
-                            <!-- Conveyor Belt -->
-                            <rect x="30" y="250" width="320" height="10" fill="#374151"/>
-                            <circle cx="60" cy="260" r="3" fill="#f59e0b" class="conveyor-item">
-                                <animate attributeName="cx" values="60;340;60" dur="4s" repeatCount="indefinite"/>
-                            </circle>
-                            <circle cx="120" cy="260" r="3" fill="#10b981" class="conveyor-item">
-                                <animate attributeName="cx" values="120;340;60" dur="4s" begin="1s" repeatCount="indefinite"/>
-                            </circle>
-                        </svg>
-                    </div>
+                        </g>
+                    </svg>
                 </div>
             </div>
         </div>
@@ -73,15 +129,16 @@
 </div>
 
 <!-- Services Section -->
-<section id="services" class="py-5 bg-light">
+<section id="services" class="services-section section-padding">
     <div class="container">
         <div class="row">
-            <div class="col-12 text-center mb-5">
+            <div class="col-12 text-center mb-5 reveal">
+                <span class="section-badge">Ne Yapıyoruz</span>
                 <h2 class="section-title">Hizmetlerimiz</h2>
                 <p class="section-subtitle">Endüstriyel otomasyon alanında sunduğumuz profesyonel çözümler</p>
             </div>
         </div>
-        <div class="row g-4">
+        <div class="row g-4 reveal-stagger">
             <!-- PLC Programming -->
             <div class="col-md-6 col-lg-4">
                 <div class="service-card">
@@ -198,30 +255,34 @@
 </section>
 
 <!-- Statistics Section -->
-<section class="py-5 bg-primary text-white">
+<section class="stats-section section-padding">
     <div class="container">
-        <div class="row text-center">
+        <div class="row text-center reveal-stagger">
             <div class="col-md-3 col-6 mb-4">
                 <div class="stat-item">
-                    <h3 class="stat-number" data-target="50">0</h3>
+                    <div class="stat-icon"><i class="fas fa-project-diagram"></i></div>
+                    <h3 class="stat-number" data-target="@Model.StatProjects">0</h3>
                     <p class="stat-label">Tamamlanan Proje</p>
                 </div>
             </div>
             <div class="col-md-3 col-6 mb-4">
                 <div class="stat-item">
-                    <h3 class="stat-number" data-target="50">0</h3>
+                    <div class="stat-icon"><i class="fas fa-smile"></i></div>
+                    <h3 class="stat-number" data-target="@Model.StatCustomers">0</h3>
                     <p class="stat-label">Mutlu Müşteri</p>
                 </div>
             </div>
             <div class="col-md-3 col-6 mb-4">
                 <div class="stat-item">
-                    <h3 class="stat-number" data-target="20">0</h3>
+                    <div class="stat-icon"><i class="fas fa-award"></i></div>
+                    <h3 class="stat-number" data-target="@Model.StatExperience">0</h3>
                     <p class="stat-label">Yıllık Deneyim</p>
                 </div>
             </div>
             <div class="col-md-3 col-6 mb-4">
                 <div class="stat-item">
-                    <h3 class="stat-number" data-target="24">0</h3>
+                    <div class="stat-icon"><i class="fas fa-headset"></i></div>
+                    <h3 class="stat-number" data-target="@Model.StatSupport">0</h3>
                     <p class="stat-label">Saat Teknik Destek</p>
                 </div>
             </div>
@@ -230,16 +291,17 @@
 </section>
 
 <!-- Technologies Section -->
-<section class="py-5">
+<section class="tech-section section-padding">
     <div class="container">
         <div class="row">
-            <div class="col-12 text-center mb-5">
+            <div class="col-12 text-center mb-5 reveal">
+                <span class="section-badge">Güvenilir Markalar</span>
                 <h2 class="section-title">Kullandığımız Teknolojiler</h2>
                 <p class="section-subtitle">Sektörün lideri markalarıyla çalışıyoruz</p>
             </div>
         </div>
-        <div class="row align-items-center justify-content-center">
-            <!-- Row 1: Siemens, ABB, Allen Bradley -->
+        <div class="row align-items-center justify-content-center reveal-stagger">
+            <!-- Row 1: Siemens, ABB, Allen Bradley, Schneider, Omron, Delta -->
             <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
                 <div class="tech-logo-img">
                     <img class="brand-img size-lg" alt="Siemens"
@@ -264,7 +326,6 @@
                          onerror="if(this.dataset.stage!=='1'){this.dataset.stage='1';this.src=this.dataset.fallback;}else{this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-ab\'\x3e\x3cspan class=\'brand-name\'\x3eALLEN BRADLEY\x3c/span\x3e\x3c/div\x3e'}" />
                 </div>
             </div>
-            <!-- Row 2: Schneider, Omron, Delta, Inovance -->
             <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
                 <div class="tech-logo-img">
                     <img class="brand-img size-xl size-2x" alt="Schneider Electric"
@@ -283,12 +344,13 @@
             </div>
             <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
                 <div class="tech-logo-img">
-                    <img class="brand-img " alt="Delta"
+                    <img class="brand-img" alt="Delta"
                          src="~/images/brands/Delta.svg"
-                         data-fallback="https://www.deltaww.com/content/dam/delta-www/global/about%20delta/brand%20logo%20images/Delta_Logo_Insight.png"
+                         data-fallback="https://upload.wikimedia.org/wikipedia/commons/e/eb/Delta_Electronics_Logo.svg"
                          onerror="if(this.dataset.stage!=='1'){this.dataset.stage='1';this.src=this.dataset.fallback;}else{this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-delta\'\x3e\x3cspan class=\'brand-name\'\x3eDELTA\x3c/span\x3e\x3c/div\x3e'}" />
                 </div>
             </div>
+            <!-- Row 2: Inovance, KUKA, FANUC, Danfoss, Lenze, GMT -->
             <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
                 <div class="tech-logo-img">
                     <img class="brand-img size-2x" alt="Inovance"
@@ -297,32 +359,110 @@
                          onerror="if(this.dataset.stage!=='1'){this.dataset.stage='1';this.src='~/images/brands/inovance.png';}else if(this.dataset.stage!=='2'){this.dataset.stage='2';this.src=this.dataset.fallback;}else{this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-inovance\'\x3e\x3cspan class=\'brand-name\'\x3eINOVANCE\x3c/span\x3e\x3c/div\x3e'}" />
                 </div>
             </div>
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="KUKA"
+                         src="~/images/brands/kuka.png"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-kuka\'\x3e\x3cspan class=\'brand-name\'\x3eKUKA\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="FANUC"
+                         src="~/images/brands/fanuc.png"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-fanuc\'\x3e\x3cspan class=\'brand-name\'\x3eFANUC\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="Danfoss"
+                         src="~/images/brands/danfoss.png"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-danfoss\'\x3e\x3cspan class=\'brand-name\'\x3eDANFOSS\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="Lenze"
+                         src="~/images/brands/lenze.svg"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-lenze\'\x3e\x3cspan class=\'brand-name\'\x3eLENZE\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="GMT"
+                         src="~/images/brands/gmt.svg"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-gmt\'\x3e\x3cspan class=\'brand-name\'\x3eGMT\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
+            <!-- Row 3: Banner, SICK, Datalogic -->
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="Banner Engineering"
+                         src="~/images/brands/banner.svg"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-banner\'\x3e\x3cspan class=\'brand-name\'\x3eBANNER\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="SICK"
+                         src="~/images/brands/sick.png"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-sick\'\x3e\x3cspan class=\'brand-name\'\x3eSICK\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4">
+                <div class="tech-logo-img">
+                    <img class="brand-img" alt="Datalogic"
+                         src="~/images/brands/datalogic.png"
+                         onerror="this.parentElement.outerHTML='\x3cdiv class=\'tech-logo tech-datalogic\'\x3e\x3cspan class=\'brand-name\'\x3eDATALOGIC\x3c/span\x3e\x3c/div\x3e'" />
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- Contact Section -->
-<section id="contact" class="py-5 bg-dark text-white">
+<section id="contact" class="contact-section section-padding">
     <div class="container">
         <div class="row">
-            <div class="col-lg-6">
-                <h2 class="mb-4">İletişime Geçin</h2>
-                <p class="mb-4">Projeleriniz için profesyonel otomasyon çözümleri arıyorsanız, size yardımcı olmaktan memnuniyet duyarız.</p>
-                <div class="contact-info">
-                    <div class="contact-item mb-3">
-                        <strong>📧 Email:</strong> info@egecontrol.com
+            <div class="col-12 text-center mb-5 reveal">
+                <span class="section-badge" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9);">Bize Ulaşın</span>
+                <h2 class="section-title" style="color: white;">İletişime Geçin</h2>
+                <p class="section-subtitle" style="color: var(--gray-400);">Projeleriniz için profesyonel otomasyon çözümleri arıyorsanız, size yardımcı olmaktan memnuniyet duyarız.</p>
+            </div>
+        </div>
+        <div class="row align-items-start">
+            <div class="col-lg-5 reveal-left">
+                <div class="contact-info-card">
+                    <div class="contact-info-icon">
+                        <i class="fas fa-envelope"></i>
                     </div>
-                    <div class="contact-item mb-3">
-                        <strong>📞 Telefon:</strong> +90 545 494 19 57
+                    <div class="contact-info-text">
+                        <h6>Email</h6>
+                        <p>info@egecontrol.com</p>
                     </div>
-                    <div class="contact-item">
-                        <strong>📍 Adres:</strong> Bolu, Türkiye
+                </div>
+                <div class="contact-info-card">
+                    <div class="contact-info-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-info-text">
+                        <h6>Telefon</h6>
+                        <p>+90 545 494 19 57</p>
+                    </div>
+                </div>
+                <div class="contact-info-card">
+                    <div class="contact-info-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-info-text">
+                        <h6>Adres</h6>
+                        <p>Bolu, Türkiye</p>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="contact-form">
-                    <h4 class="mb-4">Hızlı İletişim</h4>
+            <div class="col-lg-7 reveal-right">
+                <div class="contact-form-wrapper">
+                    <h4 class="mb-4" style="font-weight: 700;">Hızlı İletişim</h4>
                     
                     @if (!string.IsNullOrEmpty(TempData["StatusMessage"] as string))
                     {
@@ -353,9 +493,9 @@
                             <textarea asp-for="Contact.Message" class="form-control" rows="4" placeholder="Mesajınız"></textarea>
                             <span asp-validation-for="Contact.Message" class="text-danger"></span>
                         </div>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-submit">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            Mesaj Gönder
+                            <i class="fas fa-paper-plane me-2"></i>Mesaj Gönder
                         </button>
                     </form>
                 </div>
@@ -365,43 +505,11 @@
 </section>
 
 <style>
-/* Hero Section Styles */
-.hero-section {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-}
-
-.hero-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 1.5rem;
-}
-
-.hero-subtitle {
-    font-size: 1.25rem;
-    color: #64748b;
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-
-.hero-buttons .btn {
-    padding: 12px 30px;
-    font-weight: 600;
-    border-radius: 8px;
-}
-
-/* Factory Animation */
+/* Factory Animation Enhancements */
 .factory-svg {
     max-width: 100%;
     height: auto;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
-}
-
-.animate-fade-in {
-    animation: fadeIn 2s ease-in-out;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.08));
 }
 
 @@keyframes fadeIn {
@@ -409,227 +517,9 @@
     100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Service Cards */
-.service-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    height: 100%;
-}
-
-.service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-}
-
-.service-icon {
-    color: #2563eb;
-    margin-bottom: 1rem;
-}
-
-.service-card h4 {
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #1e293b;
-}
-
-/* Section Styles */
-.section-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 1rem;
-}
-
-.section-subtitle {
-    font-size: 1.1rem;
-    color: #64748b;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-/* Statistics */
-.stat-item {
-    padding: 1rem;
-}
-
-.stat-number {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    font-size: 1rem;
-    margin-bottom: 0;
-    opacity: 0.9;
-}
-
-/* Technology Logos */
-.tech-logo {
-    padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tech-logo-img {
-    padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tech-logo:hover {
-    transform: scale(1.05);
-}
-
-.tech-logo-img:hover {
-    transform: scale(1.05);
-}
-
-.brand-img {
-    max-height: 50px;
-    max-width: 120px;
-    object-fit: contain;
-}
-
-.brand-img.size-lg {
-    max-height: 64px;
-    max-width: 160px;
-}
-
-.brand-img.size-xl {
-    max-height: 72px;
-    max-width: 200px;
-}
-
-.brand-img.size-xxl {
-    max-height: 84px;
-    max-width: 240px;
-}
-
-.brand-img.size-2x {
-    transform: scale(2);
-    transform-origin: center;
-}
-
-.brand-bg-white {
-    background: #fff;
-    padding: 6px;
-    border-radius: 4px;
-}
-
-.brand-svg {
-    width: 100px;
-    height: 40px;
-}
-
-.brand-text {
-    font-family: 'Arial', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    fill: white;
-}
-
-.brand-text-large {
-    font-family: 'Arial', sans-serif;
-    font-weight: 700;
-    font-size: 18px;
-    fill: white;
-}
-
-.brand-text-small {
-    font-family: 'Arial', sans-serif;
-    font-weight: 700;
-    font-size: 10px;
-    fill: white;
-}
-
-/* Brand specific colors */
-.tech-siemens {
-    background: linear-gradient(135deg, #009639, #00b04f);
-}
-
-.tech-abb {
-    background: linear-gradient(135deg, #FF0000, #cc0000);
-}
-
-.tech-br {
-    background: linear-gradient(135deg, #FF6600, #e55a00);
-}
-
-.tech-ab {
-    background: linear-gradient(135deg, #007ACC, #005fa0);
-}
-
-.tech-schneider {
-    background: linear-gradient(135deg, #00AA00, #008800);
-}
-
-.tech-omron {
-    background: linear-gradient(135deg, #FF9900, #e68700);
-}
-
-.tech-delta {
-    background: linear-gradient(135deg, #E60012, #b8000e);
-}
-
-.tech-inovance {
-    background: linear-gradient(135deg, #0066CC, #004da0);
-}
-
-/* Contact Section */
-.contact-item {
-    font-size: 1.1rem;
-    line-height: 1.6;
-}
-
-.contact-form .form-control {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: white;
-    padding: 12px 16px;
-    border-radius: 8px;
-}
-
-.contact-form .form-control::placeholder {
-    color: rgba(255,255,255,0.7);
-}
-
-.contact-form .form-control:focus {
-    background: rgba(255,255,255,0.15);
-    border-color: #2563eb;
-    color: white;
-    box-shadow: 0 0 0 0.2rem rgba(37,99,235,0.25);
-}
-
-/* Responsive Design */
+/* Responsive */
 @@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.5rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.1rem;
-    }
-    
-    .section-title {
-        font-size: 2rem;
-    }
+    .factory-svg { display: none; }
 }
 </style>
 
@@ -637,36 +527,95 @@
 // Counter Animation
 function animateCounters() {
     const counters = document.querySelectorAll('.stat-number');
-    const speed = 200;
-
     counters.forEach(counter => {
         const target = +counter.getAttribute('data-target');
-        const count = +counter.innerText;
-        const increment = target / speed;
-
-        if (count < target) {
-            counter.innerText = Math.ceil(count + increment);
-            setTimeout(() => animateCounters(), 1);
-        } else {
-            counter.innerText = target;
+        const duration = 2000;
+        const start = performance.now();
+        
+        function update(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // Ease out cubic
+            const eased = 1 - Math.pow(1 - progress, 3);
+            counter.innerText = Math.round(target * eased);
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                counter.innerText = target;
+            }
         }
+        requestAnimationFrame(update);
     });
 }
 
-// Trigger animation when section is visible
-const observer = new IntersectionObserver((entries) => {
+// Scroll Reveal
+function setupReveal() {
+    const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-stagger');
+    
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+    
+    revealElements.forEach(el => revealObserver.observe(el));
+}
+
+// Navbar scroll effect
+function setupNavbar() {
+    const nav = document.getElementById('mainNav');
+    if (!nav) return;
+    
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+    }, { passive: true });
+}
+
+// Scroll to top button
+function setupScrollTop() {
+    const btn = document.getElementById('scrollTop');
+    if (!btn) return;
+    
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    }, { passive: true });
+    
+    btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// Counter trigger on stats visible
+const statsObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             animateCounters();
-            observer.unobserve(entry.target);
+            statsObserver.unobserve(entry.target);
         }
     });
-});
+}, { threshold: 0.3 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const statsSection = document.querySelector('.bg-primary');
+    // Setup all enhancements
+    setupReveal();
+    setupNavbar();
+    setupScrollTop();
+    
+    // Observe stats section
+    const statsSection = document.querySelector('.stats-section');
     if (statsSection) {
-        observer.observe(statsSection);
+        statsObserver.observe(statsSection);
     }
     
     // Form submission handling
@@ -675,13 +624,23 @@ document.addEventListener('DOMContentLoaded', () => {
         contactForm.addEventListener('submit', function(e) {
             const submitBtn = this.querySelector('button[type="submit"]');
             const spinner = submitBtn.querySelector('.spinner-border');
-            
             if (spinner) {
                 spinner.classList.remove('d-none');
                 submitBtn.disabled = true;
             }
         });
     }
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
 });
 </script>
 

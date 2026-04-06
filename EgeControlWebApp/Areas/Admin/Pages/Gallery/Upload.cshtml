@@ -1,0 +1,102 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Gallery.UploadModel
+@{
+    ViewData["Title"] = "Galeri - Yeni Yükle";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-cloud-upload-alt me-2"></i>Fotoğraf / Video Yükle</h1>
+    <a asp-page="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="uploadForm">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Dosya Seçin <span class="text-danger">*</span></label>
+                        <input type="file" name="file" class="form-control form-control-lg" accept="image/*,video/*"
+                               capture="environment" required id="fileInput" />
+                        <small class="text-muted">JPG, PNG, GIF, WEBP, MP4, WEBM, MOV - Maks. 100 MB</small>
+                        <div id="filePreview" class="mt-2" style="display:none;">
+                            <img id="imgPreview" class="img-fluid rounded" style="max-height: 300px; display:none;" />
+                            <video id="vidPreview" class="w-100 rounded" style="max-height: 300px; display:none;" controls muted></video>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Item.Title" class="form-label fw-bold"></label>
+                        <input asp-for="Item.Title" class="form-control" placeholder="Örn: PLC Pano Montajı" />
+                        <span asp-validation-for="Item.Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Item.Description" class="form-label fw-bold"></label>
+                        <textarea asp-for="Item.Description" class="form-control" rows="3"
+                                  placeholder="İş hakkında kısa açıklama..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Item.Category" class="form-label fw-bold"></label>
+                            <input asp-for="Item.Category" class="form-control" list="categoryList"
+                                   placeholder="Örn: PLC, SCADA, Robotik" />
+                            <datalist id="categoryList">
+                                @foreach (var cat in Model.ExistingCategories)
+                                {
+                                    <option value="@cat" />
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Item.SortOrder" class="form-label fw-bold">Sıra No</label>
+                            <input asp-for="Item.SortOrder" class="form-control" type="number" value="0" />
+                            <small class="text-muted">Küçük sayı önce gösterilir</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="fas fa-upload"></i> Yükle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var preview = document.getElementById('filePreview');
+        var img = document.getElementById('imgPreview');
+        var vid = document.getElementById('vidPreview');
+        preview.style.display = 'block';
+        if (file.type.startsWith('image/')) {
+            img.style.display = 'block'; vid.style.display = 'none';
+            img.src = URL.createObjectURL(file);
+        } else if (file.type.startsWith('video/')) {
+            vid.style.display = 'block'; img.style.display = 'none';
+            vid.src = URL.createObjectURL(file);
+        }
+        // Auto-fill title from filename if empty
+        var titleInput = document.querySelector('[name="Item.Title"]');
+        if (!titleInput.value) {
+            titleInput.value = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+        }
+    });
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yükleniyor...';
+    });
+</script>
+}

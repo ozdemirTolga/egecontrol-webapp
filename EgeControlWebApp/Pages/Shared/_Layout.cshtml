@@ -1,77 +1,163 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ege Otomasyon</title>
-    <script type="importmap"></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " - " : "")Ege Otomasyon | Endüstriyel Otomasyon Çözümleri</title>
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "Ege Otomasyon - Endüstriyel otomasyon çözümleri. PLC programlama, SCADA sistemleri, robotik otomasyon, HMI geliştirme ve teknik destek hizmetleri. İzmir, Türkiye.")" />
+    <meta name="keywords" content="endüstriyel otomasyon, PLC programlama, SCADA, robotik otomasyon, HMI, Siemens, ABB, otomasyon çözümleri, Ege Otomasyon, İzmir" />
+    <meta name="author" content="Ege Otomasyon" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.egecontrol.com@(Context.Request.Path == "/" ? "" : Context.Request.Path)" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ege Otomasyon" />
+    <meta property="og:title" content="@(ViewData["Title"] ?? "Ege Otomasyon") - Endüstriyel Otomasyon Çözümleri" />
+    <meta property="og:description" content="@(ViewData["MetaDescription"] ?? "Endüstriyel otomasyon çözümleri. PLC programlama, SCADA sistemleri, robotik otomasyon.")" />
+    <meta property="og:url" content="https://www.egecontrol.com@(Context.Request.Path)" />
+    <meta property="og:image" content="https://www.egecontrol.com/images/Logo.png" />
+    <meta property="og:locale" content="tr_TR" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@(ViewData["Title"] ?? "Ege Otomasyon") - Endüstriyel Otomasyon" />
+    <meta name="twitter:description" content="@(ViewData["MetaDescription"] ?? "Endüstriyel otomasyon çözümleri. PLC, SCADA, robotik.")" />
+    <meta name="twitter:image" content="https://www.egecontrol.com/images/Logo.png" />
+    
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "Organization",
+        "name": "Ege Otomasyon",
+        "url": "https://www.egecontrol.com",
+        "logo": "https://www.egecontrol.com/images/Logo.png",
+        "description": "Endüstriyel otomasyon çözümleri - PLC programlama, SCADA sistemleri, robotik otomasyon",
+        "address": {
+            "@@type": "PostalAddress",
+            "addressLocality": "İzmir",
+            "addressCountry": "TR"
+        },
+        "sameAs": [],
+        "contactPoint": {
+            "@@type": "ContactPoint",
+            "contactType": "customer service",
+            "availableLanguage": ["Turkish", "English"]
+        }
+    }
+    </script>
+    
+    @if (ViewData["StructuredData"] != null)
+    {
+        @Html.Raw(ViewData["StructuredData"])
+    }
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="apple-touch-icon" href="~/images/Logo.png" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/modern.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EgeControlWebApp.styles.css" asp-append-version="true" />
-        <style>
-            /* Quote items: keep validation message in single line */
-            .quote-item .text-danger { white-space: nowrap; }
-        </style>
+    <style>
+        /* Quote items: keep validation message in single line */
+        .quote-item .text-danger { white-space: nowrap; }
+    </style>
 </head>
 <body>
     <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-2">
+        <nav class="navbar navbar-expand-lg navbar-modern" id="mainNav">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" asp-area="" asp-page="/Index">
                     <img src="~/images/Logo.png" alt="Ege Otomasyon" class="site-logo me-2" />
-                    <span class="brand-text text-dark">Ege Otomasyon</span>
+                    <span class="brand-text">Ege Otomasyon</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse" id="navbarContent">
+                    <ul class="navbar-nav ms-auto align-items-center gap-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Ana Sayfa</a>
+                            <a class="nav-link" asp-area="" asp-page="/Index">
+                                <i class="fas fa-home me-1"></i> Ana Sayfa
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/#services">Hizmetler</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Gallery">
+                                <i class="fas fa-images me-1"></i> Galeri
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/#contact">İletişim</a>
                         </li>
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Admin
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-cog me-1"></i> Admin
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                                    <li><a class="dropdown-item" asp-area="Admin" asp-page="/Index">Dashboard</a></li>
-                                    <li><a class="dropdown-item" asp-area="Admin" asp-page="/Customers/Index">Müşteriler</a></li>
-                                    <li><a class="dropdown-item" asp-area="Admin" asp-page="/Quotes/Index">Teklifler</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" asp-area="Admin" asp-page="/Index"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</a></li>
+                                    <li><a class="dropdown-item" asp-area="Admin" asp-page="/Customers/Index"><i class="fas fa-users me-2 text-primary"></i>Müşteriler</a></li>
+                                    <li><a class="dropdown-item" asp-area="Admin" asp-page="/Quotes/Index"><i class="fas fa-file-invoice me-2 text-primary"></i>Teklifler</a></li>
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" asp-area="Admin" asp-page="/Users/Index">Kullanıcı Yönetimi</a></li>
+                                        <li><a class="dropdown-item" asp-area="Admin" asp-page="/Users/Index"><i class="fas fa-user-shield me-2 text-primary"></i>Kullanıcı Yönetimi</a></li>
                                     }
                                 </ul>
                             </li>
                         }
                     </ul>
-                    <partial name="_LoginPartial" />
+                    <div class="ms-lg-3">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
+    
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div>
-                &copy; 2025 - Ege Otomasyon - <a asp-area="" asp-page="/Privacy">Privacy</a>
-            </div>
-            <div class="small">
-                <i class="fas fa-code-branch me-1"></i>
-                v2.1.0
+    <footer class="footer-modern">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="~/images/Logo.png" alt="Ege Otomasyon" style="height: 28px; width: auto;" />
+                    <span>&copy; 2025 Ege Otomasyon</span>
+                </div>
+                <div class="d-flex align-items-center gap-3 small">
+                    <a asp-area="" asp-page="/Privacy">Gizlilik Politikası</a>
+                    <span class="text-muted">|</span>
+                    <span><i class="fas fa-code-branch me-1"></i>v2.1.0</span>
+                </div>
             </div>
         </div>
     </footer>
+
+    <!-- Scroll to Top -->
+    <button class="scroll-top" id="scrollTop" aria-label="Yukarı çık">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

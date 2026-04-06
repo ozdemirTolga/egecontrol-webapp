@@ -15,6 +15,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Quote> Quotes { get; set; } = default!;
     public DbSet<QuoteItem> QuoteItems { get; set; } = default!;
     public DbSet<ContactMessage> ContactMessages { get; set; } = default!;
+    public DbSet<GalleryItem> GalleryItems { get; set; } = default!;
+    public DbSet<SiteSetting> SiteSettings { get; set; } = default!;
+    public DbSet<VisitorLog> VisitorLogs { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

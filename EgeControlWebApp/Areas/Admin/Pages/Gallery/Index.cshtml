@@ -1,0 +1,85 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.Gallery.IndexModel
+@{
+    ViewData["Title"] = "Galeri Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-images me-2"></i>Galeri Yönetimi</h1>
+    <a asp-page="Upload" class="btn btn-primary">
+        <i class="fas fa-cloud-upload-alt"></i> Yeni Yükle
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3">
+    @if (Model.Items.Any())
+    {
+        @foreach (var item in Model.Items)
+        {
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm @(item.IsActive ? "" : "opacity-50")">
+                    @if (item.MediaType == "video")
+                    {
+                        <div class="ratio ratio-16x9">
+                            <video class="card-img-top" preload="metadata" muted>
+                                <source src="~/gallery/@item.FileName" />
+                            </video>
+                        </div>
+                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger"><i class="fas fa-video"></i></span>
+                    }
+                    else
+                    {
+                        <img src="~/gallery/@item.FileName" class="card-img-top" alt="@item.Title"
+                             style="height: 200px; object-fit: cover;" loading="lazy" />
+                    }
+                    <div class="card-body p-2">
+                        <h6 class="card-title mb-1">@item.Title</h6>
+                        @if (!string.IsNullOrEmpty(item.Category))
+                        {
+                            <span class="badge bg-secondary mb-1">@item.Category</span>
+                        }
+                        <small class="text-muted d-block">@item.CreatedAt.ToString("dd.MM.yyyy") - @(item.FileSize / 1024) KB</small>
+                        @if (!string.IsNullOrEmpty(item.UploadedByUserName))
+                        {
+                            <small class="text-muted d-block"><i class="fas fa-user"></i> @item.UploadedByUserName</small>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent p-2 d-flex gap-1">
+                        <a asp-page="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning flex-fill">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" asp-page-handler="ToggleActive" asp-route-id="@item.Id" class="flex-fill">
+                            <button type="submit" class="btn btn-sm @(item.IsActive ? "btn-outline-secondary" : "btn-outline-success") w-100">
+                                <i class="fas @(item.IsActive ? "fa-eye-slash" : "fa-eye")"></i>
+                            </button>
+                        </form>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id"
+                              onsubmit="return confirm('Bu öğeyi silmek istediğinize emin misiniz?')" class="flex-fill">
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-images fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Galeriye henüz içerik eklenmemiş</h5>
+            <a asp-page="Upload" class="btn btn-primary mt-2">
+                <i class="fas fa-cloud-upload-alt"></i> İlk Fotoğrafı Yükle
+            </a>
+        </div>
+    }
+</div>

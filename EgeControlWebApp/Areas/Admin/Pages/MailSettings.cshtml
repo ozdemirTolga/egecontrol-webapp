@@ -1,0 +1,122 @@
+@page
+@model EgeControlWebApp.Areas.Admin.Pages.MailSettingsModel
+@{
+    ViewData["Title"] = "Mail Ayarları";
+}
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    var alertClass = Model.StatusMessage.Contains("başarı") ? "alert-success" : "alert-warning";
+    <div class="alert @alertClass alert-dismissible fade show" role="alert">
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-envelope-open-text"></i> E-posta Gönderim Ayarları</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Teklif gönderirken kendi e-posta adresiniz kullanılır. SMTP şifrenizi aşağıya girin.
+                </p>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Gönderen E-posta</label>
+                    <input type="text" class="form-control" value="@Model.UserEmail" disabled />
+                    <div class="form-text">Bu adres, kullanıcı hesabınızdaki e-posta adresidir.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Gönderen Ad</label>
+                    <input type="text" class="form-control" value="@Model.UserFullName" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">SMTP Sunucu</label>
+                    <input type="text" class="form-control" value="@Model.SmtpHost" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Durum</label>
+                    <div>
+                        @if (Model.HasSmtpPassword)
+                        {
+                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Şifre kayıtlı</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Şifre girilmemiş</span>
+                        }
+                    </div>
+                </div>
+
+                <hr />
+
+                <form method="post" asp-page-handler="Save">
+                    <div class="mb-3">
+                        <label asp-for="SmtpPassword" class="form-label fw-bold">SMTP Şifresi</label>
+                        <div class="input-group">
+                            <input type="password" asp-for="SmtpPassword" class="form-control" id="smtpPasswordInput"
+                                   placeholder="E-posta hesabınızın şifresini girin" />
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Plesk panelinde tanımlı e-posta hesabınızın şifresi.</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Şifreyi Kaydet
+                        </button>
+                    </div>
+                </form>
+
+                @if (Model.HasSmtpPassword)
+                {
+                    <hr />
+                    <form method="post" asp-page-handler="Test">
+                        <button type="submit" class="btn btn-outline-success">
+                            <i class="fas fa-paper-plane"></i> Test E-postası Gönder
+                        </button>
+                        <span class="text-muted ms-2">Kendinize test maili gönderir.</span>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="fas fa-info-circle"></i> Bilgi</h6>
+            </div>
+            <div class="card-body">
+                <p class="small">Teklif gönderirken e-postalar <strong>kendi adınız ve e-posta adresinizle</strong> gönderilir.</p>
+                <p class="small">Şifreniz sunucuda güvenli şekilde saklanır ve sadece e-posta gönderimi için kullanılır.</p>
+                <p class="small mb-0">Şifrenizi bilmiyorsanız Plesk panelinden e-posta hesabınızın şifresini sıfırlayabilirsiniz.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function togglePassword() {
+        var input = document.getElementById('smtpPasswordInput');
+        var icon = document.getElementById('toggleIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+}

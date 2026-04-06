@@ -85,16 +85,18 @@
                                 <i class="fas fa-file-invoice"></i> Teklifler
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-page="/Gallery/Index">
+                                <i class="fas fa-images"></i> Galeri
+                            </a>
+                        </li>
                         <hr>
-                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="Admin" asp-page="/Customers/Create">
-                                    <i class="fas fa-user-plus"></i> Yeni Müşteri
-                                </a>
-                            </li>
-                        }
-                        @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteCreator"))
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-page="/Customers/Create">
+                                <i class="fas fa-user-plus"></i> Yeni Müşteri
+                            </a>
+                        </li>
+                        @if (User.IsInRole("Admin") || User.IsInRole("SatisTemsilcisi"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="Admin" asp-page="/Quotes/Create">
@@ -111,6 +113,22 @@
                                 </a>
                             </li>
                         }
+                        <hr>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-page="/MailSettings">
+                                <i class="fas fa-envelope-open-text"></i> Mail Ayarları
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-page="/SiteSettings">
+                                <i class="fas fa-sliders-h"></i> Site Ayarları
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-page="/VisitorStats">
+                                <i class="fas fa-chart-line"></i> Ziyaretçi İstatistikleri
+                            </a>
+                        </li>
                         <hr>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Index">

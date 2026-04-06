@@ -9,7 +9,7 @@ using EgeControlWebApp.Models;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 {
-    [Authorize(Roles = "Admin,Manager,QuoteCreator")]
+    [Authorize(Roles = "Admin,SatisTemsilcisi")]
     public class CreateModel : PageModel
     {
         private readonly IQuoteService _quoteService;

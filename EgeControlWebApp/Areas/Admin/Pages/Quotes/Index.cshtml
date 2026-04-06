@@ -24,7 +24,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Teklif Listesi</h1>
-    @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteCreator"))
+    @if (User.IsInRole("Admin") || User.IsInRole("SatisTemsilcisi"))
     {
         <a asp-page="Create" class="btn btn-success">
             <i class="fas fa-plus"></i> Yeni Teklif
@@ -145,8 +145,8 @@
                                         <a asp-page="./Details" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-info">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteEditor") || 
-                                            (User.IsInRole("QuoteCreator") && quote.CreatedByUserId == currentUserId))
+                                        @if (User.IsInRole("Admin") || 
+                                            (User.IsInRole("SatisTemsilcisi") && quote.CreatedByUserId == currentUserId))
                                         {
                                             <a asp-page="Edit" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-warning">
                                                 <i class="fas fa-edit"></i>
@@ -172,7 +172,7 @@
                                             </ul>
                                         </div>
                                         
-                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                                        @if (User.IsInRole("Admin"))
                                         {
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
                                                     onclick="confirmDelete(@quote.Id, '@quote.QuoteNumber', '@(quote.Customer?.CompanyName ?? "Bilinmiyor")')" 
@@ -193,7 +193,7 @@
             <div class="text-center py-5">
                 <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">Henüz teklif bulunmamaktadır</h5>
-                @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("QuoteCreator"))
+                @if (User.IsInRole("Admin") || User.IsInRole("SatisTemsilcisi"))
                 {
                     <p class="text-muted">İlk teklifinizi oluşturmak için aşağıdaki butona tıklayın.</p>
                     <a asp-page="Create" class="btn btn-success">

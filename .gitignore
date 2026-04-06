@@ -150,3 +150,14 @@ publish/
 *.db-wal
 **/wwwroot/teklifler/**
 *.rar
+
+# --- Credentials (do not commit) ---
+web.config.production
+**/DataProtection-Keys/
+redeploy.ps1
+upload_seo.ps1
+ftp_upload.ps1
+deploy.ps1
+cookies.txt
+login.html
+app.db

@@ -7,7 +7,7 @@ using EgeControlWebApp.Services;
 
 namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
 {
-    [Authorize(Roles = "Admin,Manager,QuoteCreator,QuoteEditor,QuoteSender,Viewer")]
+    [Authorize(Roles = "Admin,SatisTemsilcisi")]
     public class DownloadPdfModel : PageModel
     {
         private readonly ApplicationDbContext _context;

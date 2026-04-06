@@ -27,7 +27,7 @@
                         <i class="fas fa-edit me-1"></i> Düzenle
                     </a>
                     
-                    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                    @if (User.IsInRole("Admin"))
                     {
                         <button type="button" class="btn btn-danger ms-2" 
                                 onclick="confirmDelete(@Model.Quote.Id, '@Model.Quote.QuoteNumber', '@(Model.Quote.Customer?.CompanyName ?? "Bilinmiyor")')" 

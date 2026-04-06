@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
+  <rect width="200" height="80" fill="white" rx="4"/>
+  <text x="100" y="52" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="38" fill="#FFD300" text-anchor="middle" letter-spacing="3" stroke="#000" stroke-width="0.5">FANUC</text>
+</svg>

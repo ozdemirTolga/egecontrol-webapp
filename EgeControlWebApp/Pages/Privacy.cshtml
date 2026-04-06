@@ -1,8 +1,80 @@
 ﻿@page
 @model PrivacyModel
 @{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Gizlilik Politikası";
+    ViewData["MetaDescription"] = "Ege Otomasyon gizlilik politikası ve kişisel verilerin korunması hakkında bilgilendirme.";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container py-5">
+    <h1 class="mb-4">Gizlilik Politikası</h1>
+    <p class="text-muted mb-4">Son güncelleme: @DateTime.Now.ToString("dd.MM.yyyy")</p>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">1. Genel Bilgi</h2>
+            <p>Ege Otomasyon olarak, web sitemizi ziyaret eden kullanıcılarımızın gizliliğine önem veriyoruz. Bu gizlilik politikası, kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklamaktadır.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">2. Toplanan Veriler</h2>
+            <p>Web sitemiz üzerinden aşağıdaki bilgiler toplanabilir:</p>
+            <ul>
+                <li>İletişim formu aracılığıyla gönderilen ad, e-posta adresi, telefon numarası ve mesaj içeriği</li>
+                <li>Teklif talebi için girilen firma bilgileri ve proje detayları</li>
+                <li>Web sitesi kullanım verileri (çerezler, IP adresi, tarayıcı bilgileri)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">3. Verilerin Kullanım Amacı</h2>
+            <p>Toplanan veriler aşağıdaki amaçlarla kullanılmaktadır:</p>
+            <ul>
+                <li>İletişim taleplerinize yanıt vermek</li>
+                <li>Teklif hazırlamak ve hizmet sunmak</li>
+                <li>Web sitesi deneyimini iyileştirmek</li>
+                <li>Yasal yükümlülükleri yerine getirmek</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">4. Verilerin Korunması</h2>
+            <p>Kişisel verileriniz, SSL şifreleme teknolojisi ile korunmaktadır. Verileriniz üçüncü şahıslarla paylaşılmamakta ve yalnızca belirtilen amaçlar doğrultusunda işlenmektedir.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">5. Çerezler</h2>
+            <p>Web sitemiz, kullanıcı deneyimini geliştirmek amacıyla çerezler kullanmaktadır. Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz; ancak bu durumda bazı site özellikleri düzgün çalışmayabilir.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">6. Haklarınız</h2>
+            <p>6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında aşağıdaki haklara sahipsiniz:</p>
+            <ul>
+                <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+                <li>İşlenmiş ise bilgi talep etme</li>
+                <li>Verilerin düzeltilmesini veya silinmesini isteme</li>
+                <li>Verilerin aktarıldığı üçüncü kişileri öğrenme</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">7. İletişim</h2>
+            <p>Gizlilik politikamız hakkında sorularınız için bizimle iletişime geçebilirsiniz:</p>
+            <p><strong>Ege Otomasyon</strong><br />
+            E-posta: <a href="mailto:info@@egecontrol.com">info@@egecontrol.com</a><br />
+            Web: <a href="https://www.egecontrol.com">www.egecontrol.com</a></p>
+        </div>
+    </div>
+</div>
