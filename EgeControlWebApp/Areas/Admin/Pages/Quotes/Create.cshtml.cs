@@ -143,7 +143,8 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                     DiscountAmount = item.DiscountAmount,
                     Total = item.Total,
                     SortOrder = item.SortOrder,
-                    QuoteId = 0 // Bu servis tarafından atanacak
+                    DeliveryTerm = item.DeliveryTerm?.Trim(),
+                    QuoteId = 0
                 }).ToList();
                 
                 Console.WriteLine($"Clean items created: {cleanItems.Count}");

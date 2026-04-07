@@ -134,6 +134,7 @@ namespace EgeControlWebApp.Areas.Admin.Pages.Quotes
                     DiscountAmount = item.DiscountAmount,
                     Total = item.Total,
                     SortOrder = item.SortOrder,
+                    DeliveryTerm = item.DeliveryTerm?.Trim(),
                     QuoteId = Quote.Id
                 }).ToList();
                 Quote.QuoteItems = cleanItems;
