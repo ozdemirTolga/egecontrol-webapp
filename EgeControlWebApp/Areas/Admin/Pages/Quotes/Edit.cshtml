@@ -215,7 +215,7 @@
                                         <div class="quote-item border rounded py-1 px-2 mb-2">
                                             <input type="hidden" asp-for="Quote.QuoteItemsList[i].Id" />
                                             <input type="hidden" asp-for="Quote.QuoteItemsList[i].QuoteId" />
-                                            <div class="d-flex text-muted small mb-0 px-2 text-center">
+                                            <div class="d-flex text-muted small mb-0 px-2 text-center" style="gap: 4px;">
                                                 <div class="qi-name">Ürün/Hizmet</div>
                                                 <div class="qi-desc">Açıklama</div>
                                                 <div class="qi-qty">Miktar</div>
@@ -388,7 +388,7 @@
             newItem.innerHTML = `
                 <input type="hidden" name="Quote.QuoteItemsList[${itemIndex}].Id" value="0" />
                 <input type="hidden" name="Quote.QuoteItemsList[${itemIndex}].QuoteId" value="@Model.Quote.Id" />
-                <div class="d-flex text-muted small mb-0 px-2 text-center">
+                <div class="d-flex text-muted small mb-0 px-2 text-center" style="gap: 4px;">
                     <div class="qi-name">Ürün/Hizmet</div>
                     <div class="qi-desc">Açıklama</div>
                     <div class="qi-qty">Miktar</div>

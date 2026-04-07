@@ -22,12 +22,12 @@ html {
 }
 
 /* Teklif kalemi satır kolon genişlikleri */
-.qi-name  { width: 16%; min-width: 16%; max-width: 16%; padding: 0 6px; box-sizing: border-box; }
-.qi-desc  { width: 10%; min-width: 10%; max-width: 10%; padding: 0 6px; box-sizing: border-box; }
-.qi-qty   { width: 7%;  min-width: 7%;  max-width: 7%;  padding: 0 6px; box-sizing: border-box; }
-.qi-unit  { width: 7%;  min-width: 7%;  max-width: 7%;  padding: 0 6px; box-sizing: border-box; }
-.qi-price { width: 12%; min-width: 12%; max-width: 12%; padding: 0 6px; box-sizing: border-box; }
-.qi-disc  { width: 10%; min-width: 10%; max-width: 10%; padding: 0 6px; box-sizing: border-box; }
-.qi-total { width: 13%; min-width: 13%; max-width: 13%; padding: 0 6px; box-sizing: border-box; }
-.qi-term  { width: 14%; min-width: 14%; max-width: 14%; padding: 0 6px; box-sizing: border-box; }
-.qi-del   { width: 5%;  min-width: 5%;  max-width: 5%;  padding: 0 6px; box-sizing: border-box; text-align: center; }
+.qi-name  { width: 16%; min-width: 16%; max-width: 16%; flex: 0 0 16%; padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-desc  { width: 10%; min-width: 10%; max-width: 10%; flex: 0 0 10%; padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-qty   { width: 7%;  min-width: 7%;  max-width: 7%;  flex: 0 0 7%;  padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-unit  { width: 7%;  min-width: 7%;  max-width: 7%;  flex: 0 0 7%;  padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-price { width: 12%; min-width: 12%; max-width: 12%; flex: 0 0 12%; padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-disc  { width: 10%; min-width: 10%; max-width: 10%; flex: 0 0 10%; padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-total { width: 13%; min-width: 13%; max-width: 13%; flex: 0 0 13%; padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-term  { width: 14%; min-width: 14%; max-width: 14%; flex: 0 0 14%; padding: 0 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qi-del   { width: 5%;  min-width: 5%;  max-width: 5%;  flex: 0 0 5%;  padding: 0 6px; box-sizing: border-box; overflow: hidden; text-align: center; }
