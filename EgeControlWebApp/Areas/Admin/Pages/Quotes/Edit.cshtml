@@ -215,45 +215,45 @@
                                         <div class="quote-item border rounded py-1 px-2 mb-2">
                                             <input type="hidden" asp-for="Quote.QuoteItemsList[i].Id" />
                                             <input type="hidden" asp-for="Quote.QuoteItemsList[i].QuoteId" />
-                                            <div class="row g-2 text-muted small mb-0 px-2 text-center">
-                                                <div class="col-md-2">Ürün/Hizmet</div>
-                                                <div class="col-md-1">Açıklama</div>
-                                                <div class="col-md-1">Miktar</div>
-                                                <div class="col-md-1">Birim</div>
-                                                <div class="col-md-1">Birim Fiyat</div>
-                                                <div class="col-md-1">İndirim (%)</div>
-                                                <div class="col-md-2">Toplam</div>
-                                                <div class="col-md-2">Termin</div>
-                                                <div class="col-md-1 text-center">Sil</div>
+                                            <div class="d-flex text-muted small mb-0 px-2 text-center">
+                                                <div class="qi-name">Ürün/Hizmet</div>
+                                                <div class="qi-desc">Açıklama</div>
+                                                <div class="qi-qty">Miktar</div>
+                                                <div class="qi-unit">Birim</div>
+                                                <div class="qi-price">Birim Fiyat</div>
+                                                <div class="qi-disc">İndirim (%)</div>
+                                                <div class="qi-total">Toplam</div>
+                                                <div class="qi-term">Termin</div>
+                                                <div class="qi-del">Sil</div>
                                             </div>
-                                            <div class="row g-2 align-items-center px-2">
-                                                <div class="col-md-2">
+                                            <div class="d-flex align-items-center px-2" style="gap: 4px;">
+                                                <div class="qi-name">
                                                     <input asp-for="Quote.QuoteItemsList[i].ItemName" class="form-control text-center" placeholder="Ürün/Hizmet" />
                                                     <span asp-validation-for="Quote.QuoteItemsList[i].ItemName" class="text-danger"></span>
                                                 </div>
-                                                <div class="col-md-1">
+                                                <div class="qi-desc">
                                                     <input asp-for="Quote.QuoteItemsList[i].Description" class="form-control text-center" placeholder="Açıklama" />
                                                     <span asp-validation-for="Quote.QuoteItemsList[i].Description" class="text-danger"></span>
                                                 </div>
-                                                <div class="col-md-1">
+                                                <div class="qi-qty">
                                                     <input asp-for="Quote.QuoteItemsList[i].Quantity" type="text" class="form-control quantity-input text-center" placeholder="Miktar" />
                                                 </div>
-                                                <div class="col-md-1">
+                                                <div class="qi-unit">
                                                     <input asp-for="Quote.QuoteItemsList[i].Unit" class="form-control text-center" placeholder="Birim" />
                                                 </div>
-                                                <div class="col-md-1">
+                                                <div class="qi-price">
                                                     <input asp-for="Quote.QuoteItemsList[i].UnitPrice" type="text" class="form-control price-input text-center" placeholder="Birim Fiyat" />
                                                 </div>
-                                                <div class="col-md-1">
+                                                <div class="qi-disc">
                                                     <input asp-for="Quote.QuoteItemsList[i].DiscountPercentage" type="text" class="form-control discount-input text-center" placeholder="İndirim %" />
                                                 </div>
-                                                <div class="col-md-2">
+                                                <div class="qi-total">
                                                     <input type="text" class="form-control total-display text-center" readonly placeholder="Toplam" />
                                                 </div>
-                                                <div class="col-md-2">
+                                                <div class="qi-term">
                                                     <input asp-for="Quote.QuoteItemsList[i].DeliveryTerm" class="form-control text-center" placeholder="Termin" />
                                                 </div>
-                                                <div class="col-md-1 d-grid">
+                                                <div class="qi-del d-grid">
                                                     <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeQuoteItem(this)" title="Kalemi Sil">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
@@ -388,47 +388,47 @@
             newItem.innerHTML = `
                 <input type="hidden" name="Quote.QuoteItemsList[${itemIndex}].Id" value="0" />
                 <input type="hidden" name="Quote.QuoteItemsList[${itemIndex}].QuoteId" value="@Model.Quote.Id" />
-                <div class="row g-2 text-muted small mb-0 px-2 text-center">
-                    <div class="col-md-2">Ürün/Hizmet</div>
-                    <div class="col-md-1">Açıklama</div>
-                    <div class="col-md-1">Miktar</div>
-                    <div class="col-md-1">Birim</div>
-                    <div class="col-md-1">Birim Fiyat</div>
-                    <div class="col-md-1">İndirim (%)</div>
-                    <div class="col-md-2">Toplam</div>
-                    <div class="col-md-2">Termin</div>
-                    <div class="col-md-1 text-center">Sil</div>
+                <div class="d-flex text-muted small mb-0 px-2 text-center">
+                    <div class="qi-name">Ürün/Hizmet</div>
+                    <div class="qi-desc">Açıklama</div>
+                    <div class="qi-qty">Miktar</div>
+                    <div class="qi-unit">Birim</div>
+                    <div class="qi-price">Birim Fiyat</div>
+                    <div class="qi-disc">İndirim (%)</div>
+                    <div class="qi-total">Toplam</div>
+                    <div class="qi-term">Termin</div>
+                    <div class="qi-del">Sil</div>
                 </div>
-                <div class="row g-2 align-items-center px-2">
-                    <div class="col-md-2">
+                <div class="d-flex align-items-center px-2" style="gap: 4px;">
+                    <div class="qi-name">
                         <div class="mb-3">
                             <input name="Quote.QuoteItemsList[${itemIndex}].ItemName" class="form-control text-center" placeholder="Ürün/Hizmet" />
                         </div>
                     </div>
-                    <div class="col-md-1">
+                    <div class="qi-desc">
                         <div class="mb-3">
                             <input name="Quote.QuoteItemsList[${itemIndex}].Description" class="form-control text-center" placeholder="Açıklama" />
                         </div>
                     </div>
-                        <div class="col-md-1">
-                            <input name="Quote.QuoteItemsList[${itemIndex}].Quantity" type="text" class="form-control quantity-input text-center" placeholder="Miktar" value="1,0" />
+                    <div class="qi-qty">
+                        <input name="Quote.QuoteItemsList[${itemIndex}].Quantity" type="text" class="form-control quantity-input text-center" placeholder="Miktar" value="1,0" />
                     </div>
-                    <div class="col-md-1">
+                    <div class="qi-unit">
                         <input name="Quote.QuoteItemsList[${itemIndex}].Unit" class="form-control text-center" value="Adet" placeholder="Birim" />
                     </div>
-                        <div class="col-md-1">
-                            <input name="Quote.QuoteItemsList[${itemIndex}].UnitPrice" type="text" class="form-control price-input text-center" placeholder="Birim Fiyat" value="0,00" />
+                    <div class="qi-price">
+                        <input name="Quote.QuoteItemsList[${itemIndex}].UnitPrice" type="text" class="form-control price-input text-center" placeholder="Birim Fiyat" value="0,00" />
                     </div>
-                        <div class="col-md-1">
-                            <input name="Quote.QuoteItemsList[${itemIndex}].DiscountPercentage" type="text" class="form-control discount-input text-center" placeholder="İndirim %" value="0,0" />
+                    <div class="qi-disc">
+                        <input name="Quote.QuoteItemsList[${itemIndex}].DiscountPercentage" type="text" class="form-control discount-input text-center" placeholder="İndirim %" value="0,0" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="qi-total">
                         <input type="text" class="form-control total-display text-center" readonly value="₺0,00" placeholder="Toplam" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="qi-term">
                         <input name="Quote.QuoteItemsList[${itemIndex}].DeliveryTerm" class="form-control text-center" placeholder="Termin" />
                     </div>
-                    <div class="col-md-1 d-grid">
+                    <div class="qi-del d-grid">
                         <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeQuoteItem(this)" title="Kalemi Sil">
                             <i class="fas fa-trash"></i>
                         </button>

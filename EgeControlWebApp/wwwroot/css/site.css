@@ -20,3 +20,14 @@ html {
   transform: scaleX(2);
   transform-origin: left center;
 }
+
+/* Teklif kalemi satır kolon genişlikleri */
+.qi-name  { flex: 0 0 16%; max-width: 16%; padding: 0 4px; }
+.qi-desc  { flex: 0 0 10%; max-width: 10%; padding: 0 4px; }
+.qi-qty   { flex: 0 0 7%;  max-width: 7%;  padding: 0 4px; }
+.qi-unit  { flex: 0 0 7%;  max-width: 7%;  padding: 0 4px; }
+.qi-price { flex: 0 0 12%; max-width: 12%; padding: 0 4px; }
+.qi-disc  { flex: 0 0 9%;  max-width: 9%;  padding: 0 4px; }
+.qi-total { flex: 0 0 13%; max-width: 13%; padding: 0 4px; }
+.qi-term  { flex: 0 0 14%; max-width: 14%; padding: 0 4px; }
+.qi-del   { flex: 0 0 5%;  max-width: 5%;  padding: 0 4px; text-align: center; }

@@ -373,12 +373,12 @@
             
             // Create header row
             const headerRow = document.createElement('div');
-            headerRow.className = 'row g-2 text-muted small mb-0 px-2 text-center';
+            headerRow.className = 'd-flex text-muted small mb-0 px-2 text-center';
             
             // Create header columns
             const headers = ['Ürün/Hizmet', 'Açıklama', 'Miktar', 'Birim', 'Birim Fiyat', 'İndirim (%)', 'Toplam', 'Termin', 'Sil'];
             // Reallocate widths to give more room to price and total
-            const colSizes = ['col-md-2', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-1 text-center'];
+            const colSizes = ['qi-name', 'qi-desc', 'qi-qty', 'qi-unit', 'qi-price', 'qi-disc', 'qi-total', 'qi-term', 'qi-del'];
             
             for (let i = 0; i < headers.length; i++) {
                 const col = document.createElement('div');
@@ -389,7 +389,8 @@
             
             // Create input row
             const inputRow = document.createElement('div');
-            inputRow.className = 'row g-2 align-items-center px-2';
+            inputRow.className = 'd-flex align-items-center px-2';
+            inputRow.style.gap = '4px';
             
             // Create input fields
             const inputs = [
@@ -423,7 +424,7 @@
             
             // Create delete button column
             const deleteCol = document.createElement('div');
-            deleteCol.className = 'col-md-1 d-grid';
+            deleteCol.className = 'qi-del d-grid';
             
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
