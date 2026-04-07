@@ -146,7 +146,6 @@ namespace EgeControlWebApp.Services
                         col.Item().Row(statusRow =>
                         {
                             statusRow.RelativeItem().Text($"Geçerlilik: {quote.ValidUntil:dd.MM.yyyy}").FontSize(11);
-                            statusRow.RelativeItem().AlignCenter().Text($"Termin: {(string.IsNullOrWhiteSpace(quote.DeliveryTerm) ? "-" : quote.DeliveryTerm)}").FontSize(11);
                             statusRow.RelativeItem().AlignRight().Text($"Durum: {GetStatusText(quote.Status)}").FontSize(11);
                         });
 
@@ -214,6 +213,7 @@ namespace EgeControlWebApp.Services
                                     columns.RelativeColumn(2);
                                     columns.RelativeColumn(1);
                                     columns.RelativeColumn(2);
+                                    columns.RelativeColumn(2);
                                 });
 
                                 // header
@@ -225,6 +225,7 @@ namespace EgeControlWebApp.Services
                                     header.Cell().Element(HeaderCell).Text("Birim Fiyat");
                                     header.Cell().Element(HeaderCell).Text("İndirim");
                                     header.Cell().Element(HeaderCell).Text("Toplam");
+                                    header.Cell().Element(HeaderCell).Text("Termin");
 
                                     static IContainer HeaderCell(IContainer container) => container
                                         .Background("#F0F0F0")
@@ -252,6 +253,7 @@ namespace EgeControlWebApp.Services
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignRight().Text(CurrencyHelper.FormatCurrency(item.UnitPrice, quote.Currency ?? "TRY"));
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text($"%{item.DiscountPercentage:N1}");
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignRight().Text(CurrencyHelper.FormatCurrency(item.Total, quote.Currency ?? "TRY"));
+                                    table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.DeliveryTerm ?? "-");
                                 }
                             });
 
@@ -269,6 +271,7 @@ namespace EgeControlWebApp.Services
                                     columns.RelativeColumn(4); // Ürün/Hizmet
                                     columns.RelativeColumn(1); // Miktar
                                     columns.RelativeColumn(1); // Birim
+                                    columns.RelativeColumn(2); // Termin
                                 });
 
                                 // header
@@ -277,6 +280,7 @@ namespace EgeControlWebApp.Services
                                     header.Cell().Element(HeaderCell).Text("Ürün/Hizmet");
                                     header.Cell().Element(HeaderCell).Text("Miktar");
                                     header.Cell().Element(HeaderCell).Text("Birim");
+                                    header.Cell().Element(HeaderCell).Text("Termin");
 
                                     static IContainer HeaderCell(IContainer container) => container
                                         .Background("#F0F0F0")
@@ -301,6 +305,7 @@ namespace EgeControlWebApp.Services
                                         );
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.Quantity.ToString("N2"));
                                     table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.Unit);
+                                    table.Cell().Border(1).BorderColor("#CCCCCC").Padding(4).AlignCenter().Text(item.DeliveryTerm ?? "-");
                                 }
                             });
 

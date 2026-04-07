@@ -342,10 +342,6 @@ namespace EgeControlWebApp.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("DeliveryTerm")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("LastModifiedBy")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -415,6 +411,10 @@ namespace EgeControlWebApp.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeliveryTerm")
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("DiscountAmount")

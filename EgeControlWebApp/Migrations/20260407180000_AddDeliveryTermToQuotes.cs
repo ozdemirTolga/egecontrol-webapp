@@ -12,7 +12,7 @@ namespace EgeControlWebApp.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "DeliveryTerm",
-                table: "Quotes",
+                table: "QuoteItems",
                 type: "TEXT",
                 maxLength: 200,
                 nullable: true);
@@ -23,7 +23,7 @@ namespace EgeControlWebApp.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "DeliveryTerm",
-                table: "Quotes");
+                table: "QuoteItems");
         }
     }
 }

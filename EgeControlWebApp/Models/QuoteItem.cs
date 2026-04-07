@@ -51,6 +51,10 @@ namespace EgeControlWebApp.Models
         [Display(Name = "Sıra")]
         public int SortOrder { get; set; }
 
+        [Display(Name = "Termin")]
+        [StringLength(200)]
+        public string? DeliveryTerm { get; set; }
+
     // Navigation property
     [ForeignKey("QuoteId")]
     [ValidateNever]

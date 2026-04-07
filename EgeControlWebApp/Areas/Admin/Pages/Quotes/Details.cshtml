@@ -157,7 +157,6 @@
                                 <div class="col-md-6">
                                     <p><strong>Oluşturma Tarihi:</strong> @Model.Quote.CreatedAt.ToString("dd.MM.yyyy")</p>
                                     <p><strong>Geçerlilik Tarihi:</strong> @Model.Quote.ValidUntil.ToString("dd.MM.yyyy")</p>
-                                    <p><strong>Termin:</strong> @(Model.Quote.DeliveryTerm ?? "-")</p>
                                     <p><strong>KDV Oranı:</strong> %@Model.Quote.VatRate</p>
                                     <p><strong>Oluşturan:</strong> 
                                         @if (Model.Quote.CreatedByUser != null)
@@ -225,6 +224,7 @@
                                             <th>Birim Fiyat</th>
                                             <th>İndirim (%)</th>
                                             <th>Toplam</th>
+                                            <th>Termin</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -238,20 +238,21 @@
                                                 <td>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(item.UnitPrice, Model.Quote.Currency ?? "TRY")</td>
                                                 <td>@item.DiscountPercentage.ToString("N1")</td>
                                                 <td>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(item.Total, Model.Quote.Currency ?? "TRY")</td>
+                                                <td>@(item.DeliveryTerm ?? "-")</td>
                                             </tr>
                                         }
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <th colspan="6" class="text-end">Ara Toplam:</th>
+                                            <th colspan="7" class="text-end">Ara Toplam:</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.SubTotal, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                         <tr>
-                                            <th colspan="6" class="text-end">KDV (%@Model.Quote.VatRate):</th>
+                                            <th colspan="7" class="text-end">KDV (%@Model.Quote.VatRate):</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.VatAmount, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                         <tr class="table-primary">
-                                            <th colspan="6" class="text-end">GENEL TOPLAM:</th>
+                                            <th colspan="7" class="text-end">GENEL TOPLAM:</th>
                                             <th>@EgeControlWebApp.Models.CurrencyHelper.FormatCurrency(Model.Quote.TotalAmount, Model.Quote.Currency ?? "TRY")</th>
                                         </tr>
                                     </tfoot>

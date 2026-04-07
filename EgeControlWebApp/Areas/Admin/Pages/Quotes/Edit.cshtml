@@ -159,13 +159,6 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="mb-3">
-                                            <label asp-for="Quote.DeliveryTerm" class="form-label">Termin</label>
-                                            <input asp-for="Quote.DeliveryTerm" class="form-control" placeholder="Örn: 4-6 Hafta" />
-                                            <span asp-validation-for="Quote.DeliveryTerm" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
                                             <label asp-for="Quote.VatRate" class="form-label">KDV Oranı (%)</label>
                                             <input asp-for="Quote.VatRate" type="text" class="form-control" />
                                             <span asp-validation-for="Quote.VatRate" class="text-danger"></span>
@@ -224,12 +217,13 @@
                                             <input type="hidden" asp-for="Quote.QuoteItemsList[i].QuoteId" />
                                             <div class="row g-2 text-muted small mb-0 px-2 text-center">
                                                 <div class="col-md-2">Ürün/Hizmet</div>
-                                                <div class="col-md-2">Açıklama</div>
+                                                <div class="col-md-1">Açıklama</div>
                                                 <div class="col-md-1">Miktar</div>
                                                 <div class="col-md-1">Birim</div>
                                                 <div class="col-md-2">Birim Fiyat</div>
                                                 <div class="col-md-1">İndirim (%)</div>
-                                                <div class="col-md-2">Toplam</div>
+                                                <div class="col-md-1">Toplam</div>
+                                                <div class="col-md-1">Termin</div>
                                                 <div class="col-md-1 text-center">Sil</div>
                                             </div>
                                             <div class="row g-2 align-items-center px-2">
@@ -237,7 +231,7 @@
                                                     <input asp-for="Quote.QuoteItemsList[i].ItemName" class="form-control text-center" placeholder="Ürün/Hizmet" />
                                                     <span asp-validation-for="Quote.QuoteItemsList[i].ItemName" class="text-danger"></span>
                                                 </div>
-                                                <div class="col-md-2">
+                                                <div class="col-md-1">
                                                     <input asp-for="Quote.QuoteItemsList[i].Description" class="form-control text-center" placeholder="Açıklama" />
                                                     <span asp-validation-for="Quote.QuoteItemsList[i].Description" class="text-danger"></span>
                                                 </div>
@@ -253,8 +247,11 @@
                                                 <div class="col-md-1">
                                                     <input asp-for="Quote.QuoteItemsList[i].DiscountPercentage" type="text" class="form-control discount-input text-center" placeholder="İndirim %" />
                                                 </div>
-                                                <div class="col-md-2">
+                                                <div class="col-md-1">
                                                     <input type="text" class="form-control total-display text-center" readonly placeholder="Toplam" />
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <input asp-for="Quote.QuoteItemsList[i].DeliveryTerm" class="form-control text-center" placeholder="Termin" />
                                                 </div>
                                                 <div class="col-md-1 d-grid">
                                                     <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeQuoteItem(this)" title="Kalemi Sil">
@@ -393,12 +390,13 @@
                 <input type="hidden" name="Quote.QuoteItemsList[${itemIndex}].QuoteId" value="@Model.Quote.Id" />
                 <div class="row g-2 text-muted small mb-0 px-2 text-center">
                     <div class="col-md-2">Ürün/Hizmet</div>
-                    <div class="col-md-2">Açıklama</div>
+                    <div class="col-md-1">Açıklama</div>
                     <div class="col-md-1">Miktar</div>
                     <div class="col-md-1">Birim</div>
                     <div class="col-md-2">Birim Fiyat</div>
                     <div class="col-md-1">İndirim (%)</div>
-                    <div class="col-md-2">Toplam</div>
+                    <div class="col-md-1">Toplam</div>
+                    <div class="col-md-1">Termin</div>
                     <div class="col-md-1 text-center">Sil</div>
                 </div>
                 <div class="row g-2 align-items-center px-2">
@@ -407,7 +405,7 @@
                             <input name="Quote.QuoteItemsList[${itemIndex}].ItemName" class="form-control text-center" placeholder="Ürün/Hizmet" />
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <div class="mb-3">
                             <input name="Quote.QuoteItemsList[${itemIndex}].Description" class="form-control text-center" placeholder="Açıklama" />
                         </div>
@@ -424,8 +422,11 @@
                         <div class="col-md-1">
                             <input name="Quote.QuoteItemsList[${itemIndex}].DiscountPercentage" type="text" class="form-control discount-input text-center" placeholder="İndirim %" value="0,0" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <input type="text" class="form-control total-display text-center" readonly value="₺0,00" placeholder="Toplam" />
+                    </div>
+                    <div class="col-md-1">
+                        <input name="Quote.QuoteItemsList[${itemIndex}].DeliveryTerm" class="form-control text-center" placeholder="Termin" />
                     </div>
                     <div class="col-md-1 d-grid">
                         <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeQuoteItem(this)" title="Kalemi Sil">
