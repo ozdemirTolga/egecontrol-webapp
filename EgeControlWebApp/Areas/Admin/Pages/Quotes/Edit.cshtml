@@ -8,11 +8,6 @@
 
 <style>
     /* Quote items hizalama düzeltmeleri */
-    .quote-item .row {
-        align-items: center;
-        min-height: 0;
-    }
-    
     .quote-item .form-group,
     .quote-item .mb-3 {
         margin-bottom: 0 !important;
@@ -22,40 +17,8 @@
     .quote-item .form-control {
         height: 38px;
         font-size: 0.875rem;
-        text-align: center; /* tüm kutularda metni ortala */
-    }
-    
-    .quote-item .form-label {
-        font-size: 0.875rem;
-        margin-bottom: 4px;
-        font-weight: 500;
-    }
-    
-    /* Miktar ve İndirim alanları için özel stil */
-    .quote-item .quantity-input {
         text-align: center;
-        max-width: 80px;
-        min-width: 80px;
-    }
-    
-    .quote-item .discount-input {
-        text-align: center;
-        max-width: 80px;
-    }
-    
-    /* İndirim alanında spinner butonları GÖRÜNSÜN: gizlemeyi kaldırdık */
-    
-    /* Miktar alanları için stepper butonlarını GÖSTER */
-    .quote-item .quantity-input::-webkit-outer-spin-button,
-    .quote-item .quantity-input::-webkit-inner-spin-button {
-        -webkit-appearance: auto !important;
-        display: block !important;
-    }
-    
-    /* HERHANGI BİR + - BUTONUNU GİZLE - SADECE İNDİRİM İÇİN */
-    .quote-item .discount-stepper-btn {
-        display: none !important;
-        visibility: hidden !important;
+        width: 100%;
     }
     
     /* Diğer butonlar */
@@ -64,39 +27,21 @@
         margin-top: 0;
     }
     
-    /* Stepper butonları tamamen gizle - eğer varsa */
+    /* Stepper butonları tamamen gizle */
     .quote-item .stepper-btn,
     .quote-item button[onclick*="adjust"],
-    .quote-item .btn[onclick*="adjustQuantity"],
-    .quote-item .btn[onclick*="adjustDiscount"],
     .quote-item .input-group-text,
     .quote-item .input-group-prepend,
     .quote-item .input-group-append {
         display: none !important;
-        visibility: hidden !important;
     }
     
-    /* Input group'ları da gizle - sadece input'u göster */
-    .quote-item .stepper-group,
     .quote-item .input-group {
         display: block !important;
     }
     
-    /* Input group içindeki input'ları düzelt */
     .quote-item .input-group .form-control {
         border-radius: 0.375rem !important;
-    }
-
-    /* Match Create page: fixed widths for price and total */
-    .quote-item .price-input {
-        max-width: 120px;
-        min-width: 120px;
-        margin: 0 auto;
-    }
-    .quote-item .total-display {
-        max-width: 150px;
-        min-width: 150px;
-        margin: 0 auto;
     }
 </style>
 
