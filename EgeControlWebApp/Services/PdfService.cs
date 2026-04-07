@@ -146,6 +146,7 @@ namespace EgeControlWebApp.Services
                         col.Item().Row(statusRow =>
                         {
                             statusRow.RelativeItem().Text($"Geçerlilik: {quote.ValidUntil:dd.MM.yyyy}").FontSize(11);
+                            statusRow.RelativeItem().AlignCenter().Text($"Termin: {(string.IsNullOrWhiteSpace(quote.DeliveryTerm) ? "-" : quote.DeliveryTerm)}").FontSize(11);
                             statusRow.RelativeItem().AlignRight().Text($"Durum: {GetStatusText(quote.Status)}").FontSize(11);
                         });
 

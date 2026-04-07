@@ -157,6 +157,7 @@
                                 <div class="col-md-6">
                                     <p><strong>Oluşturma Tarihi:</strong> @Model.Quote.CreatedAt.ToString("dd.MM.yyyy")</p>
                                     <p><strong>Geçerlilik Tarihi:</strong> @Model.Quote.ValidUntil.ToString("dd.MM.yyyy")</p>
+                                    <p><strong>Termin:</strong> @(Model.Quote.DeliveryTerm ?? "-")</p>
                                     <p><strong>KDV Oranı:</strong> %@Model.Quote.VatRate</p>
                                     <p><strong>Oluşturan:</strong> 
                                         @if (Model.Quote.CreatedByUser != null)

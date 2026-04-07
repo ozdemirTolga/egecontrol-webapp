@@ -56,6 +56,10 @@ namespace EgeControlWebApp.Models
         [StringLength(3)]
         public string Currency { get; set; } = "EUR";
 
+        [Display(Name = "Termin")]
+        [StringLength(200)]
+        public string? DeliveryTerm { get; set; }
+
         [Display(Name = "Notlar")]
         [StringLength(1000)]
         public string? Notes { get; set; }

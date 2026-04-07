@@ -211,6 +211,13 @@
                         </div>
                         <div class="col-md-3">
                             <div class="form-group mb-3">
+                                <label asp-for="Quote.DeliveryTerm" class="form-label"></label>
+                                <input asp-for="Quote.DeliveryTerm" class="form-control" placeholder="Örn: 4-6 Hafta" />
+                                <span asp-validation-for="Quote.DeliveryTerm" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
                                 <label asp-for="Quote.VatRate" class="form-label"></label>
                                 <div class="input-group">
                                     <input asp-for="Quote.VatRate" class="form-control" type="text" />

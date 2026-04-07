@@ -150,11 +150,18 @@
                                     <span asp-validation-for="Quote.Description" class="text-danger"></span>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="mb-3">
                                             <label asp-for="Quote.ValidUntil" class="form-label">Geçerlilik Tarihi</label>
                                             <input asp-for="Quote.ValidUntil" type="date" class="form-control" />
                                             <span asp-validation-for="Quote.ValidUntil" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label asp-for="Quote.DeliveryTerm" class="form-label">Termin</label>
+                                            <input asp-for="Quote.DeliveryTerm" class="form-control" placeholder="Örn: 4-6 Hafta" />
+                                            <span asp-validation-for="Quote.DeliveryTerm" class="text-danger"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-3">

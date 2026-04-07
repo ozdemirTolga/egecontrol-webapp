@@ -62,6 +62,7 @@
                             <th>Başlık</th>
                             <th>Tutar</th>
                             <th>Durum</th>
+                            <th>Termin</th>
                             <th>Tarih</th>
                             <th>Oluşturan</th>
                             <th>Son Değiştiren</th>
@@ -103,6 +104,7 @@
                                             break;
                                     }
                                 </td>
+                                <td>@(quote.DeliveryTerm ?? "-")</td>
                                 <td>@quote.QuoteDate.ToString("dd.MM.yyyy")</td>
                                 <td>
                                     @if (quote.CreatedByUser is not null)
