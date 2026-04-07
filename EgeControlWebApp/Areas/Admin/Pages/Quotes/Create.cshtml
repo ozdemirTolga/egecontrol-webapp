@@ -6,13 +6,23 @@
 }
 
 <style>
-    /* Quote items hizalama düzeltmeleri */
+    /* Teklif kalemi kolon genişlikleri */
+    .qi-name  { width: 16% !important; min-width: 16% !important; max-width: 16% !important; flex: 0 0 16% !important; padding: 0 6px; box-sizing: border-box; }
+    .qi-desc  { width: 10% !important; min-width: 10% !important; max-width: 10% !important; flex: 0 0 10% !important; padding: 0 6px; box-sizing: border-box; }
+    .qi-qty   { width: 7% !important;  min-width: 7% !important;  max-width: 7% !important;  flex: 0 0 7% !important;  padding: 0 6px; box-sizing: border-box; }
+    .qi-unit  { width: 7% !important;  min-width: 7% !important;  max-width: 7% !important;  flex: 0 0 7% !important;  padding: 0 6px; box-sizing: border-box; }
+    .qi-price { width: 12% !important; min-width: 12% !important; max-width: 12% !important; flex: 0 0 12% !important; padding: 0 6px; box-sizing: border-box; }
+    .qi-disc  { width: 10% !important; min-width: 10% !important; max-width: 10% !important; flex: 0 0 10% !important; padding: 0 6px; box-sizing: border-box; }
+    .qi-total { width: 13% !important; min-width: 13% !important; max-width: 13% !important; flex: 0 0 13% !important; padding: 0 6px; box-sizing: border-box; }
+    .qi-term  { width: 14% !important; min-width: 14% !important; max-width: 14% !important; flex: 0 0 14% !important; padding: 0 6px; box-sizing: border-box; }
+    .qi-del   { width: 5% !important;  min-width: 5% !important;  max-width: 5% !important;  flex: 0 0 5% !important;  padding: 0 6px; box-sizing: border-box; text-align: center; }
+
+    /* Quote items hizalama */
     .quote-item .form-group,
     .quote-item .mb-3 {
         margin-bottom: 0 !important;
     }
     
-    /* Tüm form kontrollerini aynı yükseklikte yap */
     .quote-item .form-control {
         height: 38px;
         font-size: 0.875rem;
@@ -20,7 +30,6 @@
         width: 100%;
     }
     
-    /* Diğer butonlar */
     .quote-item .btn-danger {
         height: 38px;
         margin-top: 0;
@@ -30,7 +39,6 @@
         justify-content: center;
     }
     
-    /* Stepper butonları tamamen gizle */
     .quote-item .stepper-btn,
     .quote-item button[onclick*="adjust"],
     .quote-item .input-group-text,
