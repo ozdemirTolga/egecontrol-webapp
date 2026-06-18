@@ -56,6 +56,9 @@ public sealed class SolBotFilterOptions
     public decimal MinSafetyScore { get; set; } = 70m;
 
     [Range(0, 100)]
+    public decimal QuarantineScoreGrace { get; set; } = 5m;
+
+    [Range(0, 100)]
     public decimal MaxWashTradingScore { get; set; } = 35m;
 
     public int MinUniqueHolders { get; set; } = 25;

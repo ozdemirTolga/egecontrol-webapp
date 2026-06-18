@@ -189,7 +189,7 @@ public sealed class TokenFilterEngine : ITokenFilterEngine
         var status = reasons.Count switch
         {
             0 when safetyScore >= _options.MinSafetyScore => FilterStatus.Allow,
-            _ when safetyScore >= _options.MinSafetyScore - 5m && reasons.All(reason => reason is "not_enough_unique_holders") => FilterStatus.Quarantine,
+            _ when safetyScore >= _options.MinSafetyScore - _options.QuarantineScoreGrace && reasons.All(reason => reason is "not_enough_unique_holders") => FilterStatus.Quarantine,
             _ => FilterStatus.Reject
         };
 
