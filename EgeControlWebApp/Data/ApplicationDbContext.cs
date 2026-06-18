@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using EgeControlWebApp.Models;
+using EgeControlWebApp.Modules.SolBot.Persistence;
 
 namespace EgeControlWebApp.Data;
 
@@ -18,6 +19,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<GalleryItem> GalleryItems { get; set; } = default!;
     public DbSet<SiteSetting> SiteSettings { get; set; } = default!;
     public DbSet<VisitorLog> VisitorLogs { get; set; } = default!;
+    public DbSet<SolBotTradeRecord> SolBotTrades { get; set; } = default!;
+    public DbSet<SolBotFillRecord> SolBotFills { get; set; } = default!;
+    public DbSet<SolBotPositionRecord> SolBotPositions { get; set; } = default!;
+    public DbSet<SolBotBalanceSnapshotRecord> SolBotBalanceSnapshots { get; set; } = default!;
+    public DbSet<SolBotMetricRecord> SolBotMetrics { get; set; } = default!;
+    public DbSet<SolBotEventLogRecord> SolBotEventLogs { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +74,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
             entity.Property(qi => qi.Total)
                 .HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<SolBotTradeRecord>(entity =>
+        {
+            entity.HasIndex(trade => trade.TokenMint);
+            entity.HasOne(trade => trade.Position)
+                .WithMany(position => position.Trades)
+                .HasForeignKey(trade => trade.PositionId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<SolBotFillRecord>(entity =>
+        {
+            entity.HasOne(fill => fill.Trade)
+                .WithMany(trade => trade.Fills)
+                .HasForeignKey(fill => fill.TradeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SolBotPositionRecord>(entity =>
+        {
+            entity.HasIndex(position => new { position.TokenMint, position.Status });
         });
 
         // SQL Server test için geçici olarak seed data kapatıldı

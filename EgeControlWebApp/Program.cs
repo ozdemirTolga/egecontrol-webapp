@@ -6,6 +6,7 @@ using EgeControlWebApp.Data;
 using EgeControlWebApp.Services;
 using EgeControlWebApp.Models;
 using EgeControlWebApp.Infrastructure.Binding;
+using EgeControlWebApp.Modules.SolBot;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -130,6 +131,7 @@ builder.Services.AddScoped<IGalleryService, GalleryService>();
 builder.Services.AddScoped<ISiteSettingsService, SiteSettingsService>();
 builder.Services.AddScoped<IVisitorService, VisitorService>();
 builder.Services.AddSingleton<RateLimitingService>();
+builder.Services.AddSolBot(builder.Configuration);
 
 var app = builder.Build();
 
